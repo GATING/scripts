@@ -14,13 +14,13 @@ async function main() {
       console.log(`${$.name}CDN缓存刷新成功`)
     }
   });
-  await updateShareCodes();
+  await getRankingList();
   if (!$.body) await scriptsCDN();
   if ($.body) {
     eval($.body);
   }
 }
-function updateShareCodes(url = 'https://raw.githubusercontent.com/yangtingxiao/QuantumultX/master/scripts/jd/jd_rankingList.js') {
+function getRankingList(url = 'https://raw.githubusercontent.com/yangtingxiao/QuantumultX/master/scripts/jd/jd_rankingList.js') {
   return new Promise(resolve => {
     $.get({url}, async (err, resp, data) => {
       try {

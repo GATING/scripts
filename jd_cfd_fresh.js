@@ -570,20 +570,6 @@ function showMsg() {
     });
 }
 
-//格式化助力码
-function shareCodesFormat() {
-    return new Promise(async resolve => {
-        $.newShareCodes = []
-        const readShareCodeRes = await readShareCode();
-        if (readShareCodeRes && readShareCodeRes.code === 200) {
-          $.newShareCodes = [...new Set([...$.shareCodes, ...(readShareCodeRes.data || [])])];
-        } else {
-          $.newShareCodes = [...new Set([...$.shareCodes])];
-        }
-        console.log(`您将要助力的好友${JSON.stringify($.newShareCodes)}`)
-        resolve();
-    })
-}
 function readShareCode() {
     return new Promise(async resolve => {
         $.get({url: `https://ghproxy.com/https://raw.githubusercontent.com/jiulan/helpRepository/main/json/cfd_hb.json`, 'timeout': 10000}, (err, resp, data) => {

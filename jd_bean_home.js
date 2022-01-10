@@ -420,6 +420,7 @@ function doTask2() {
     })
 }
 
+
 function getUserInfo() {
   return new Promise(resolve => {
     $.post(taskUrl('signBeanGroupStageIndex', 'body'), async (err, resp, data) => {

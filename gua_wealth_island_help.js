@@ -29,9 +29,7 @@ function randomString(e) {
   return n
 }
 $.InviteList = []
-$.innerInviteList = [
-  '39A33B86BFEC8FDDFC4842ED3BAC7222BC62CB6C47663611B7CAD1813009C4DD','9A4EA754EF8D592FE2E007F799696F51C28580FBA005FD732FA66E2554BDA1B9'
-];
+$.innerInviteList = [];
 const HelpAuthorFlag = false;//是否助力  true 助力，false 不助力
 
 let codeIndex = $.getval('gua_wealth_island_codeId') || '' // 定义提交助力码的账号如2,3,5
@@ -82,7 +80,6 @@ $.appId = 10032;
   let getShareNum = 10
   let getShareNums = 0
   if (HelpAuthorFlag) {
-   
   }else{
     $.InviteLists.push(...$.InviteList);
   }

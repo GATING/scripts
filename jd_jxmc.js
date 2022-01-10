@@ -864,45 +864,16 @@ function randomString(e) {
   return n
 }
 
-
-
 //格式化助力码
 function shareCodesFormat() {
   return new Promise(async resolve => {
     $.newShareCodes = []
-    const readShareCodeRes = await readShareCode();
-    if (readShareCodeRes && readShareCodeRes.code === 200) {
-      $.newShareCodes = [...new Set([...$.inviteCodeList, ...($.res || []), ...(readShareCodeRes.data || [])])];
-    } else {
-      $.newShareCodes = [...new Set([...$.inviteCodeList, ...($.res || [])])];
-    }
+    $.newShareCodes = [...new Set([...$.inviteCodeList, ...($.res || [])])];
     console.log(`\n您将要助力的好友${JSON.stringify($.newShareCodes)}`)
     resolve();
   })
 }
-function readShareCode() {
-  return new Promise(async resolve => {
-    $.get({url: `https://transfer.nz.lu/jxmc`, timeout: 30 * 1000}, (err, resp, data) => {
-      try {
-        if (err) {
-          console.log(JSON.stringify(err))
-          console.log(`${$.name} readShareCode API请求失败，请检查网路重试`)
-        } else {
-          if (data) {
-            console.log(`\n随机取20个码放到您固定的互助码后面(不影响已有固定互助)`)
-            data = JSON.parse(data);
-          }
-        }
-      } catch (e) {
-        $.logErr(e, resp)
-      } finally {
-        resolve(data);
-      }
-    })
-    await $.wait(30 * 1000);
-    resolve()
-  })
-}
+
 function uploadShareCode(code) {
   return new Promise(async resolve => {
     $.post({url: `https://transfer.nz.lu/upload/jxmc?code=${code}&ptpin=${encodeURIComponent(encodeURIComponent($.UserName))}`, timeout: 30 * 1000}, (err, resp, data) => {

@@ -6,7 +6,7 @@ TG https://t.me/duckjobs
 
 新人助力10,老用户5
 
-10 3 * * * jd_mpdzcar_help.js
+10 3 * * * jd_mpdzcar.js
 */
 const $ = new Env('头文字J 助力');
 const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';

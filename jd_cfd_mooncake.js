@@ -429,7 +429,6 @@ function helpByStage(shareCodes) {
 }
 
 
-
 // 获取用户信息
 function getUserInfo(showInvite = true) {
   return new Promise(async (resolve) => {
@@ -605,7 +604,7 @@ function showMsg() {
 
 function readShareCode() {
   return new Promise(async resolve => {
-    $.get({url: `http://transfer.nz.lu/cfd`, timeout: 10000}, (err, resp, data) => {
+    $.get({url: ``, timeout: 10000}, (err, resp, data) => {
       try {
         if (err) {
           console.log(JSON.stringify(err))
@@ -630,12 +629,6 @@ function readShareCode() {
 function shareCodesFormat() {
   return new Promise(async resolve => {
     $.newShareCodes = []
-    // const readShareCodeRes = await readShareCode();
-    // if (readShareCodeRes && readShareCodeRes.code === 200) {
-    //   $.newShareCodes = [...new Set([...$.shareCodes, ...$.strMyShareIds, ...(readShareCodeRes.data || [])])];
-    // } else {
-    //   $.newShareCodes = [...new Set([...$.shareCodes, ...$.strMyShareIds])];
-    // }
     $.newShareCodes = [...new Set([...$.shareCodes, ...$.strMyShareIds])];
     console.log(`您将要助力的好友${JSON.stringify($.newShareCodes)}`)
     resolve();
@@ -746,7 +739,7 @@ async function requestAlgo() {
       "expandParams": ""
     })
   }
-  return new Promise(async resolve => {
+  new Promise(async resolve => {
     $.post(options, (err, resp, data) => {
       try {
         if (err) {
