@@ -53,8 +53,8 @@ if (UidFileexists) {
       );
       $.index = i + 1;
       strRemark = envs[i].remarks;
-      struid = getuuid(strRemark, $.UserName);
-      if (struid) {
+      //   struid = getuuid(strRemark, $.UserName);
+      if (strRemark) {
         //这是为了处理ninjia的remark格式
         strRemark = strRemark.replace(/@@.*/, "");
         // strRemark = strRemark.replace(";", "");
