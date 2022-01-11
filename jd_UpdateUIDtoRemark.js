@@ -56,7 +56,12 @@ if (UidFileexists) {
       //   struid = getuuid(strRemark, $.UserName);
       if (strRemark) {
         //这是为了处理ninjia的remark格式
-        strRemark = strRemark.replace(/@@.*/, "");
+
+        strRemark = strRemark
+          .replace("strRemark=", "")
+          .replace("remark=", "")
+          .replace(";;", ";")
+          .replace(/@@.*/, "");
         // strRemark = strRemark.replace(";", "");
 
         // var Tempindex = strRemark.indexOf("@@");
@@ -71,7 +76,7 @@ if (UidFileexists) {
         const updateEnvBody = await updateEnv(
           cookie,
           envs[i]._id,
-          `strRemark=${strRemark};`
+          `remark=${strRemark};`
         );
 
         if (updateEnvBody.code == 200) console.log("更新Remark 成功!");
