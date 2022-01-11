@@ -189,43 +189,43 @@ function getJxNc(){
     };
   }
 
-  return new Promise(resolve => {
-    $.get(
-      JXNC_taskurl('query', `type=1`),
-      async (err, resp, data) => {
-        try {
-          if (err) {
-            console.log(`${JSON.stringify(err)}`);
-            console.log(`京喜农场 API请求失败，请检查网路重试`);
-          } else {
-            data = data.match(/try\{Query\(([\s\S]*)\)\;\}catch\(e\)\{\}/)[1];
-            if (safeGet(data)) {
-              data = JSON.parse(data);
-              if (data["ret"] === 0) {
-                if (data.active) {
-                  let shareCodeJson = {
-                    'smp': data.smp,
-                    'active': data.active,
-                    'joinnum': data.joinnum,
-                  };
-                  console.log(`注意：京喜农场 种植种子发生变化的时候，互助码也会变！！`);
-                  console.log(`【京东账号${$.index}（${$.UserName}）京喜农场】` + JSON.stringify(shareCodeJson));
-                } else {
-                  console.log(`【京东账号${$.index}（${$.UserName}）京喜农场】未选择种子，请先去京喜农场选择种子`);
-                }
-              }
-            } else {
-              console.log(`京喜农场返回值解析异常：${JSON.stringify(data)}`);
-            }
-          }
-        } catch (e) {
-          $.logErr(e, resp);
-        } finally {
-          resolve()
-        }
-      }
-    );
-  })
+  // return new Promise(resolve => {
+  //   $.get(
+  //     JXNC_taskurl('query', `type=1`),
+  //     async (err, resp, data) => {
+  //       try {
+  //         if (err) {
+  //           console.log(`${JSON.stringify(err)}`);
+  //           console.log(`京喜农场 API请求失败，请检查网路重试`);
+  //         } else {
+  //           data = data.match(/try\{Query\(([\s\S]*)\)\;\}catch\(e\)\{\}/)[1];
+  //           if (safeGet(data)) {
+  //             data = JSON.parse(data);
+  //             if (data["ret"] === 0) {
+  //               if (data.active) {
+  //                 let shareCodeJson = {
+  //                   'smp': data.smp,
+  //                   'active': data.active,
+  //                   'joinnum': data.joinnum,
+  //                 };
+  //                 console.log(`注意：京喜农场 种植种子发生变化的时候，互助码也会变！！`);
+  //                 console.log(`【京东账号${$.index}（${$.UserName}）京喜农场】` + JSON.stringify(shareCodeJson));
+  //               } else {
+  //                 console.log(`【京东账号${$.index}（${$.UserName}）京喜农场】未选择种子，请先去京喜农场选择种子`);
+  //               }
+  //             }
+  //           } else {
+  //             console.log(`京喜农场返回值解析异常：${JSON.stringify(data)}`);
+  //           }
+  //         }
+  //       } catch (e) {
+  //         $.logErr(e, resp);
+  //       } finally {
+  //         resolve()
+  //       }
+  //     }
+  //   );
+  // })
 }
 
 function getJdPet(){
