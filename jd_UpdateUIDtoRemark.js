@@ -60,7 +60,7 @@ if (UidFileexists) {
         strRemark = strRemark
           .replace("strRemark=", "")
           .replace("remark=", "")
-          .replace(";;", ";")
+          .replace(/;?;$/, "")
           .replace(/@@.*/, "");
         // strRemark = strRemark.replace(";", "");
 
