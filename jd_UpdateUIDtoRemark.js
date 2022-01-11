@@ -2,107 +2,115 @@
 cron "30 10 * * *" jd_UpdateUIDtoRemark.js, tag:Uid迁移工具
  */
 
-const $ = new Env('WxPusherUid迁移工具');
-const notify = $.isNode() ? require('./sendNotify') : '';
+const $ = new Env("WxPusherUid迁移工具");
+const notify = $.isNode() ? require("./sendNotify") : "";
 //Node.js用户请在jdCookie.js处填写京东ck;
-const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
-const got = require('got');
+const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const got = require("got");
 const {
-    getEnvs,
-    getEnvById,
-    DisableCk,
-    EnableCk,
-    updateEnv,
-    getstatus
-} = require('./ql');
+  getEnvs,
+  getEnvById,
+  DisableCk,
+  EnableCk,
+  updateEnv,
+  getstatus,
+} = require("./ql");
 
-let strUidFile = './CK_WxPusherUid.json';
-const fs = require('fs');
+let strUidFile = "./CK_WxPusherUid.json";
+const fs = require("fs");
 let UidFileexists = fs.existsSync(strUidFile);
 let TempCKUid = [];
 if (UidFileexists) {
-    console.log("检测到WxPusherUid文件，载入...");
-    TempCKUid = fs.readFileSync(strUidFile, 'utf-8');
-    if (TempCKUid) {
-        TempCKUid = TempCKUid.toString();
-        TempCKUid = JSON.parse(TempCKUid);
-    }
+  console.log("检测到WxPusherUid文件，载入...");
+  TempCKUid = fs.readFileSync(strUidFile, "utf-8");
+  if (TempCKUid) {
+    TempCKUid = TempCKUid.toString();
+    TempCKUid = JSON.parse(TempCKUid);
+  }
 }
 
+!(async () => {
+  const envs = await getEnvs();
+  if (!envs[0]) {
+    $.msg(
+      $.name,
+      "【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取",
+      "https://bean.m.jd.com/bean/signIndex.action",
+      {
+        "open-url": "https://bean.m.jd.com/bean/signIndex.action",
+      }
+    );
+    return;
+  }
+  var struid = "";
+  var strRemark = "";
+  for (let i = 0; i < envs.length; i++) {
+    if (envs[i].value) {
+      cookie = await getEnvById(envs[i]._id);
+      $.UserName = decodeURIComponent(
+        cookie.match(/pt_pin=([^; ]+)(?=;?)/) &&
+          cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]
+      );
+      $.index = i + 1;
+      strRemark = envs[i].remarks;
+      struid = getuuid(strRemark, $.UserName);
+      if (struid) {
+        //这是为了处理ninjia的remark格式
+        strRemark = strRemark.replace(/@@.*/, "");
+        // strRemark = strRemark.replace(";", "");
 
-!(async() => {
-    const envs = await getEnvs();
-    if (!envs[0]) {
-        $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/bean/signIndex.action', {
-            "open-url": "https://bean.m.jd.com/bean/signIndex.action"
-        });
-        return;
+        // var Tempindex = strRemark.indexOf("@@");
+        // if (Tempindex != -1) {
+        //     strRemark = strRemark + "@@" + struid;
+        // } else {
+        //     var DateTimestamp = new Date(envs[i].timestamp);
+        //     strRemark = strRemark + "@@" + DateTimestamp.getTime() + "@@" + struid;
+        // }
+        // console.log("\n"+$.UserName + `: \n` + strRemark);
+
+        const updateEnvBody = await updateEnv(
+          cookie,
+          envs[i]._id,
+          `strRemark=${strRemark};`
+        );
+
+        if (updateEnvBody.code == 200) console.log("更新Remark 成功!");
+        else console.log("更新Remark 失败!");
+      }
     }
-    var struid = "";
-    var strRemark = "";
-    for (let i = 0; i < envs.length; i++) {
-        if (envs[i].value) {
-            cookie = await getEnvById(envs[i]._id);
-            $.UserName = decodeURIComponent(cookie.match(/pt_pin=([^; ]+)(?=;?)/) && cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]);
-            $.index = i + 1;
-            strRemark = envs[i].remarks;
-            struid = getuuid(strRemark, $.UserName);
-            if (struid) {
-                //这是为了处理ninjia的remark格式
-                strRemark = strRemark.replace("remark=", "");
-                strRemark = strRemark.replace(";", "");
-
-                var Tempindex = strRemark.indexOf("@@");
-                if (Tempindex != -1) {
-                    strRemark = strRemark + "@@" + struid;
-                } else {
-                    var DateTimestamp = new Date(envs[i].timestamp);
-                    strRemark = strRemark + "@@" + DateTimestamp.getTime() + "@@" + struid;
-                }
-                console.log("\n"+$.UserName + `: \n` + strRemark);
-				
-				const updateEnvBody = await updateEnv(cookie,envs[i]._id,strRemark);
-				
-				if (updateEnvBody.code == 200) 
-					console.log("更新Remark 成功!");
-				else	
-					console.log("更新Remark 失败!");				
-            }
-        }
-    }
-
+  }
 })()
-.catch((e) => $.logErr(e))
-.finally(() => $.done())
+  .catch((e) => $.logErr(e))
+  .finally(() => $.done());
 
 function getuuid(strRemark, PtPin) {
-    var strTempuuid = "";
-    var strUid = "";
-    if (strRemark) {
-        var Tempindex = strRemark.indexOf("@@");
-        if (Tempindex != -1) {
-            var TempRemarkList = strRemark.split("@@");
-            for (let j = 1; j < TempRemarkList.length; j++) {
-                if (TempRemarkList[j]) {
-                    if (TempRemarkList[j].length > 4) {
-                        if (TempRemarkList[j].substring(0, 4) == "UID_") {
-                            strTempuuid = TempRemarkList[j];
-                            break;
-                        }
-                    }
-                }
+  var strTempuuid = "";
+  var strUid = "";
+  if (strRemark) {
+    var Tempindex = strRemark.indexOf("@@");
+    if (Tempindex != -1) {
+      var TempRemarkList = strRemark.split("@@");
+      for (let j = 1; j < TempRemarkList.length; j++) {
+        if (TempRemarkList[j]) {
+          if (TempRemarkList[j].length > 4) {
+            if (TempRemarkList[j].substring(0, 4) == "UID_") {
+              strTempuuid = TempRemarkList[j];
+              break;
             }
+          }
         }
+      }
     }
-    if (!strTempuuid && TempCKUid) {
-        for (let j = 0; j < TempCKUid.length; j++) {
-            if (PtPin == decodeURIComponent(TempCKUid[j].pt_pin)) {
-                strUid = TempCKUid[j].Uid;
-                break;
-            }
-        }
+  }
+  if (!strTempuuid && TempCKUid) {
+    for (let j = 0; j < TempCKUid.length; j++) {
+      if (PtPin == decodeURIComponent(TempCKUid[j].pt_pin)) {
+        strUid = TempCKUid[j].Uid;
+        break;
+      }
     }
-    return strUid;
+  }
+  return strUid;
 }
 
 // prettier-ignore
