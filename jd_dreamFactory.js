@@ -56,12 +56,14 @@ if ($.isNode()) {
   });
   if (process.env.JD_DEBUG && process.env.JD_DEBUG === "false")
     console.log = () => {};
+  // 根据pin值
   if (process.env.DREAMFACTORY_FORBID_ACCOUNT)
-    process.env.DREAMFACTORY_FORBID_ACCOUNT.split("&").map((item, index) =>
-      Number(item) === 0
-        ? (cookiesArr = [])
-        : cookiesArr.splice(Number(item) - 1 - index, 1)
-    );
+    process.env.DREAMFACTORY_FORBID_ACCOUNT.split(",").forEach((item) => {
+      const index = cookiesArr.findIndex(item?.match(/pt_pin=([^; ]+)(?=;?)/)[1]);
+      if (index !== -1) {
+        cookiesArr.splice(index, 1);
+      }
+    });
 } else {
   cookiesArr = [
     $.getdata("CookieJD"),
