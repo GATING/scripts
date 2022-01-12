@@ -1,14 +1,11 @@
 /*
 年货节红包
-cron 0 0,20 * * *  https://raw.githubusercontent.com/smiek2121/scripts/master/gua_nhjRed.js
+cron 0 0,8,20,22 * * *  https://raw.githubusercontent.com/smiek2121/scripts/master/gua_nhjRed.js
 整点跑 红包几率大点
 
-https://u.jd.com/SCLyQi4
-跳转到app 可查看助力情况
-
-变量：gua_nhjRed_rebateCode，若需要返利给自己，请自己修改环境变量[gua_nhjRed_rebateCodes]
-SCLyQi4换成自己的返利
+https://u.jd.com/SCLyQi4 京粉 转这个链接 然后 把后面的 写入配置文件
 export gua_nhjRed_rebateCode="SCLyQi4"
+方法二 直接写下面 不会建议送我 谢谢 我已经写了返利码谢谢
 */
 
 let rebateCodes = ''
@@ -27,7 +24,8 @@ if ($.isNode()) {
 } else {
   cookiesArr = [$.getdata('CookieJD'), $.getdata('CookieJD2'), ...jsonParse($.getdata('CookiesJD') || "[]").map(item => item.cookie)].filter(item => !!item);
 }
-rebateCodes = $.isNode() ? (process.env.gua_nhjRed_rebateCodes ? process.env.gua_nhjRed_rebateCodes : `${rebateCodes}`) : ($.getdata('gua_nhjRed_rebateCodes') ? $.getdata('gua_nhjRed_rebateCodes') : `${rebateCodes}`);
+rebateCodes = $.isNode() ? (process.env.gua_nhjRed_rebateCode ? process.env.gua_nhjRed_rebateCode : `${rebateCodes}`) : ($.getdata('gua_nhjRed_rebateCode') ? $.getdata('gua_nhjRed_rebateCode') : `${rebateCodes}`);
+
 rebateCode = rebateCodes
 message = ''
 newCookie = ''
@@ -60,11 +58,8 @@ let nowTime = new Date().getTime() + new Date().getTimezoneOffset()*60*1000 + 8*
     $.shareCodeArr = {}
     $.shareCodeArr["flag"] = true
   }
-  const flCodeArr = ["SLI8zFT", "SIMHz54", "StIuUgG"];
   try{
     for (let i = 0; i < cookiesArr.length; i++) {
-      rebateCode = rebateCodes ? rebateCodes : flCodeArr[Math.floor(Math.random() * flCodeArr.length)];
-      // console.log(rebateCode)
       cookie = cookiesArr[i];
       if (cookie) {
         $.UserName = decodeURIComponent(cookie.match(/pt_pin=([^; ]+)(?=;?)/) && cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1])
@@ -85,11 +80,9 @@ let nowTime = new Date().getTime() + new Date().getTimezoneOffset()*60*1000 + 8*
       if($.shareCodeArr[s]) shareCodeArr[s] = $.shareCodeArr[s]
     }
   }
-  
+
   for (let i = 0; i < cookiesArr.length; i++) {
     if($.endFlag) break
-    rebateCode = rebateCodes ? rebateCodes : flCodeArr[Math.floor(Math.random() * flCodeArr.length)];
-    // console.log(rebateCode)
     cookie = cookiesArr[i];
     if (cookie) {
       $.UserName = decodeURIComponent(cookie.match(/pt_pin=([^; ]+)(?=;?)/) && cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1])
@@ -103,9 +96,9 @@ let nowTime = new Date().getTime() + new Date().getTimezoneOffset()*60*1000 + 8*
   }
   if(Object.getOwnPropertyNames($.shareCodeArr).length > 0 && $.shareCodeArr["updateTime"] != pinUpdateTime) $.setdata($.shareCodeArr,'gua_JDnhjRed')
   if(message){
-    $.msg($.name, ``, `${message}\nhttps://u.jd.com/\n\n跳转到app 可查看助力情况`);
+    $.msg($.name, ``, `${message}\nhttps://u.jd.com/SCLyQi4\n\n跳转到app 可查看助力情况`);
     if ($.isNode()){
-      // await notify.sendNotify(`${$.name}`, `${message}\n\nhttps://u.jd.com/\n跳转到app 可查看助力情况`);
+      // await notify.sendNotify(`${$.name}`, `${message}\n\nhttps://u.jd.com/SCLyQi4\n跳转到app 可查看助力情况`);
     }
   }
 })()
@@ -181,7 +174,7 @@ function getCoupons(shareId = '',type = 1) {
   return new Promise(resolve => {
     let message = ''
     let opts = {
-      url: `https://api.m.jd.com/api?functionId=getCoupons&appid=u&_=${Date.now()}&loginType=2&body={%22actId%22:%22${$.actId}%22,%22unionActId%22:%2231137%22,%22unpl%22:%22%22,%22platform%22:4,%22unionShareId%22:%22${shareId}%22,%22d%22:%22${rebateCode}%22,%22eid%22:%22${$.eid}%22}&client=apple&clientVersion=8.3.6`,
+      url: `https://api.m.jd.com/api?functionId=getCoupons&appid=u&_=${Date.now()}&loginType=2&body={%22actId%22:%22${$.actId}%22,%22unionActId%22:%2231137%22,%22unpl%22:%22%22,%22platform%22:4,%22unionShareId%22:%22${shareId}%22,%22d%22:%22${rebateCode}%22,%22type%22:${type},%22eid%22:%22${$.eid}%22}&client=apple&clientVersion=8.3.6`,
       headers: {
         "Accept-Language": "zh-cn",
         "Accept-Encoding": "gzip, deflate, br",
@@ -240,8 +233,8 @@ function getCoupons(shareId = '',type = 1) {
               for(let i of res.data.groupInfo || []){
                 if(i.status == 2){
                   console.log(`助力满可以领取${i.info}元红包🧧`)
-                  // await $.wait(parseInt(Math.random() * 2000 + 2000, 10))
-                  // await getCoupons('',2)
+                  await $.wait(parseInt(Math.random() * 2000 + 2000, 10))
+                  await getCoupons('',2)
                 }
               }
             }
