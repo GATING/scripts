@@ -46,7 +46,9 @@ if ($.isNode()) {
   if (process.env.JD_DEBUG && process.env.JD_DEBUG === 'false') console.log = () => { };
   if (process.env.JDFACTORY_FORBID_ACCOUNT) {
     process.env.JDFACTORY_FORBID_ACCOUNT.split(",").forEach((item) => {
-      const index = cookiesArr.findIndex(item?.match(/pt_pin=([^; ]+)(?=;?)/)[1]);
+      const index = cookiesArr.findIndex((cookie) =>
+      cookie?.match(/pt_pin=([^; ]+)(?=;?)/)[1]?.includes(item)
+    );
       if (index !== -1) {
         cookiesArr.splice(index, 1);
       }
