@@ -161,58 +161,57 @@ const pkTeamNum = () => Math.ceil(cookiesArr.length / 30)
     })
 
 async function travel() {
-    try {
-        const mainMsgPopUp = await doApi("getMainMsgPopUp", { "channel": "1" })
-        mainMsgPopUp?.score && formatMsg(mainMsgPopUp.score, "首页弹窗")
-        const homeData = await doApi("getHomeData")
-        // console.log(homeData)
-        if (homeData) {
-            const { homeMainInfo: { todaySignStatus, secretp } } = homeData
-            if (secretp) $.secretp = secretp
-            if (!todaySignStatus) {
-                const { awardResult, nextRedPacketDays, progress, scoreResult } = await doApi("sign", null, null, true)
-                let ap = []
-                for (let key in awardResult || {}) {
-                    if (key === "couponResult") {
-                        const { usageThreshold, quota, desc } = awardResult[key]
-                        ap.push(`获得优惠券：满${usageThreshold || 0}减${quota || 0}（${desc}）`)
-                    } else if (key === "redPacketResult") {
-                        const { value } = awardResult[key]
-                        ap.push(`获得红包：${value}元`)
-                    } else {
-                        ap.push(`获得未知东东（${key}）：${JSON.stringify(awardResult[key])}`)
-                    }
-                }
-                ap.push(`还需签到${nextRedPacketDays}天获得红包`)
-                ap.push(`签到进度：${progress}`)
-                scoreResult?.score && formatMsg(scoreResult.score, "每日签到", ap.join("，"))
-            }
-            const collectAutoScore = await doApi("collectAutoScore", null, null, true)
-            collectAutoScore.produceScore && formatMsg(collectAutoScore.produceScore, "定时收集")
-            console.log("\n去看看战队\n")
-            await team()
-            console.log("\n去做主App任务\n")
-            await doAppTask()
-            if (puzzleFlag) {
-                console.log("\n去做做拼图任务")
-                const { doPuzzle } = safeRequire('./jd_travel_puzzle')
-                doPuzzle && await doPuzzle($, cookie)
-            }
-        }
-    } catch (e) {
-        console.log(e)
-    }
+    // try {
+    //     const mainMsgPopUp = await doApi("getMainMsgPopUp", { "channel": "1" })
+    //     mainMsgPopUp?.score && formatMsg(mainMsgPopUp.score, "首页弹窗")
+    //     const homeData = await doApi("getHomeData")
+    //     // console.log(homeData)
+    //     if (homeData) {
+    //         const { homeMainInfo: { todaySignStatus, secretp } } = homeData
+    //         if (secretp) $.secretp = secretp
+    //         if (!todaySignStatus) {
+    //             const { awardResult, nextRedPacketDays, progress, scoreResult } = await doApi("sign", null, null, true)
+    //             let ap = []
+    //             for (let key in awardResult || {}) {
+    //                 if (key === "couponResult") {
+    //                     const { usageThreshold, quota, desc } = awardResult[key]
+    //                     ap.push(`获得优惠券：满${usageThreshold || 0}减${quota || 0}（${desc}）`)
+    //                 } else if (key === "redPacketResult") {
+    //                     const { value } = awardResult[key]
+    //                     ap.push(`获得红包：${value}元`)
+    //                 } else {
+    //                     ap.push(`获得未知东东（${key}）：${JSON.stringify(awardResult[key])}`)
+    //                 }
+    //             }
+    //             ap.push(`还需签到${nextRedPacketDays}天获得红包`)
+    //             ap.push(`签到进度：${progress}`)
+    //             scoreResult?.score && formatMsg(scoreResult.score, "每日签到", ap.join("，"))
+    //         }
+    //         const collectAutoScore = await doApi("collectAutoScore", null, null, true)
+    //         collectAutoScore.produceScore && formatMsg(collectAutoScore.produceScore, "定时收集")
+    //         console.log("\n去看看战队\n")
+    //         await team()
+    //         console.log("\n去做主App任务\n")
+    //         await doAppTask()
+    //         if (puzzleFlag) {
+    //             console.log("\n去做做拼图任务")
+    //             const { doPuzzle } = safeRequire('./jd_travel_puzzle')
+    //             doPuzzle && await doPuzzle($, cookie)
+    //         }
+    //     }
+    // } catch (e) {
+    //     console.log(e)
+    // }
     if (helpFlag) {
-        try {
-            $.WxUA = getWxUA()
-            const WxHomeData = await doWxApi("getHomeData", { inviteId: "" })
-            $.WxSecretp = WxHomeData?.homeMainInfo?.secretp || $.secretp
-            console.log("\n去做微信小程序任务\n")
-            await doWxTask()
-        } catch (e) {
-            console.log(e)
-        }
-
+        // try {
+        //     $.WxUA = getWxUA()
+        //     const WxHomeData = await doWxApi("getHomeData", { inviteId: "" })
+        //     $.WxSecretp = WxHomeData?.homeMainInfo?.secretp || $.secretp
+        //     console.log("\n去做微信小程序任务\n")
+        //     await doWxTask()
+        // } catch (e) {
+        //     console.log(e)
+        // }
         try {
             console.log("\n去做金融App任务\n")
             $.sdkToken = "jdd01" + randomUUID({
@@ -275,12 +274,16 @@ async function team() {
             $.subSceneid = "HYGJZYh5"
             $.logBysha1 = true
             const { groupJoinInviteId, groupNum, groupName } = teamLeaderArr[n]
-            console.log(`${groupName}人数：${groupNum}，正在去加入他的队伍...`)
+            try {
+                console.log(`${groupName}人数：${groupNum}，正在去加入他的队伍...`)
             if (await joinTeam(groupJoinInviteId)) {
                 teamLeaderArr[n].groupNum += 1
                 await $.wait(2000)
                 teamPlayerAutoTeam[$.UserName] = n
                 break
+            }
+            } catch (error) {
+                console.log("加入队伍失败")
             }
             cookie = bakCookie, $.joyytoken = bakJoyyToken
             delete $.subSceneid
