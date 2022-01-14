@@ -47,6 +47,19 @@ if ($.isNode()) {
   })
   if (process.env.JD_DEBUG && process.env.JD_DEBUG === 'false') console.log = () => {};
   if (JSON.stringify(process.env).indexOf('GITHUB') > -1) process.exit(0);
+
+  // 添加财富岛过滤账号变量
+  if (process.env.CFD_FORBID_ACCOUNT){
+    process.env.CFD_FORBID_ACCOUNT.split(",").forEach((item) => {
+      const index = cookiesArr.findIndex((cookie) =>
+        cookie?.match(/pt_pin=([^; ]+)(?=;?)/)[1]?.includes(item)
+      );
+      if (index !== -1) {
+        cookiesArr.splice(index, 1);
+      }
+    });
+  }
+    
 } else {
   cookiesArr = [$.getdata('CookieJD'), $.getdata('CookieJD2'), ...jsonParse($.getdata('CookiesJD') || "[]").map(item => item.cookie)].filter(item => !!item);
 }
