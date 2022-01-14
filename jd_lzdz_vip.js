@@ -81,6 +81,7 @@ async function opencard05() {
     $.errorMessage = null
     await getFirstLZCK()
     await getToken();
+    await $.wait(10000)
     await task('dz/common/getSimpleActInfoVo', `activityId=${$.activityId}`, 1)
     if ($.token) {
         await getMyPing();
