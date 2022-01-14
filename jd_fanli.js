@@ -17,6 +17,7 @@ var timestamp = Math.round(new Date().getTime() / 1000).toString();
 
 let insertCodes = [];
 let inviteCodes = [];
+let uid = null;
 
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
@@ -161,6 +162,9 @@ function getTaskList() {
   });
 }
 function saveTaskRecord(taskId, taskType) {
+  if (!uid) {
+    return console.log(`${taskId + "---" + taskType}: 木有uid啊`);
+  }
   return new Promise((resolve) => {
     let body = { taskId: taskId, taskType: taskType, uid: uid, tt: tt };
 
