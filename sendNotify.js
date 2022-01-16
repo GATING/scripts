@@ -1500,6 +1500,10 @@ function getRemark(strRemark) {
 }
 
 async function sendNotifybyWxPucher(text, desp, PtPin, author = '\n\n本通知 By ccwav Mod', strsummary = "") {
+  let text_tmp = text;
+  let desp_tmp = desp;
+  let author_tmp = author;
+  let strsummary_tmp = strsummary;
 
   try {
     var Uids = [];
@@ -1512,6 +1516,10 @@ async function sendNotifybyWxPucher(text, desp, PtPin, author = '\n\n本通知 B
         Uids = getuuid(tempEnv.remarks, PtPin);
         UserRemark = getRemark(tempEnv.remarks);
         for (let Uid of Uids) {
+           text = text_tmp;
+           desp = desp_tmp;
+           author = author_tmp;
+           strsummary = strsummary_tmp;
 
           var strTempdesp = [];
           var strAllNotify = "";
