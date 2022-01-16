@@ -50,6 +50,12 @@ const inviteCodes = [];
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 $.tuanIds = [];
 $.appId = 10001;
+
+let WP_APP_TOKEN_ONE = "";
+if ($.isNode() && process.env.WP_APP_TOKEN_ONE) {
+  WP_APP_TOKEN_ONE = process.env.WP_APP_TOKEN_ONE;
+}
+
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item]);
