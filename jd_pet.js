@@ -42,6 +42,18 @@ if ($.isNode()) {
     })
     if (process.env.JD_DEBUG && process.env.JD_DEBUG === 'false')
         console.log = () => {};
+
+    console.log(`友情提示：设置环境变量 DDMC_FORBID_ACCOUNT="pin1,pin2,pin3,..." 控制哪个京东账号不运行此脚本。多个帐号使用,连接。`);
+    // 根据pin值过滤帐号
+    if (process.env.DDMC_FORBID_ACCOUNT)
+        process.env.DDMC_FORBID_ACCOUNT.split(",").forEach((item) => {
+            const index = cookiesArr.findIndex((cookie) =>
+                cookie?.match(/pt_pin=([^; ]+)(?=;?)/)[1]?.includes(item)
+            );
+            if (index !== -1) {
+                cookiesArr.splice(index, 1);
+            }
+        });
 } else {
     cookiesArr = [$.getdata('CookieJD'), $.getdata('CookieJD2'), ...jsonParse($.getdata('CookiesJD') || "[]").map(item => item.cookie)].filter(item => !!item);
 }

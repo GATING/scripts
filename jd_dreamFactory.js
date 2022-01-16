@@ -90,9 +90,7 @@ if ($.isNode()) {
   for (let i = 0; i < cookiesArr.length; i++) {
     if (cookiesArr[i]) {
       cookie = cookiesArr[i];
-      $.UserName = decodeURIComponent(
-        cookie.match(/pt_pin=([^; ]+)(?=;?)/) &&
-          cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]
+      $.UserName = decodeURIComponent( cookie.match(/pt_pin=([^; ]+)(?=;?)/) && cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]
       );
       $.index = i + 1;
       $.isLogin = true;
@@ -860,6 +858,13 @@ function userInfo() {
                           "",
                           `【京东账号${$.index}】${$.nickName}\n【生产商品】${$.productName}兑换已超时，请选择新商品进行制造`
                         );
+
+                        //添加一对一通知
+                        if ($.isNode() && WP_APP_TOKEN_ONE) {
+                          let tmpMessage = `【京东账号${$.index}】${$.nickName}\n【生产商品】${$.productName}兑换已超时，请选择新商品进行制造`;
+                          await notify.sendNotifybyWxPucher(`${$.name}`, tmpMessage, `${$.UserName}`);
+                        }
+
                         if (
                           `${notifyLevel}` === "3" ||
                           `${notifyLevel}` === "2"
@@ -890,6 +895,13 @@ function userInfo() {
                       "",
                       `【京东账号${$.index}】${$.nickName}\n【生产商品】${$.productName}\n【超时未完成】已失效，请选择新商品进行制造`
                     );
+
+                    //添加一对一通知
+                    if ($.isNode() && WP_APP_TOKEN_ONE) {
+                      let tmpMessage = `【京东账号${$.index}】${$.nickName}\n【生产商品】${$.productName}\n【超时未完成】已失效，请选择新商品进行制造`;
+                      await notify.sendNotifybyWxPucher(`${$.name}`, tmpMessage, `${$.UserName}`);
+                    }
+
                     if (
                       $.isNode() &&
                       (`${notifyLevel}` === "3" || `${notifyLevel}` === "2")
@@ -926,6 +938,12 @@ function userInfo() {
                         `京东账号${$.index}[${$.nickName}]京喜工厂未选择商品\n请手动去京东APP->游戏与互动->查看更多->京喜工厂 选择商品`
                       );
                       // if ($.isNode()) await notify.sendNotify(`${$.name} - 京东账号${$.index} - ${$.nickName}`, `京东账号${$.index}[${$.nickName}]京喜工厂未选择商品\n请手动去京东APP->游戏与互动->查看更多->京喜工厂 选择商品`)
+                      //添加一对一通知
+                      if ($.isNode() && WP_APP_TOKEN_ONE) {
+                        let tmpMessage = `京东账号${$.index}[${$.nickName}]京喜工厂未选择商品\n请手动去京东APP->游戏与互动->查看更多->京喜工厂 选择商品`;
+                        await notify.sendNotifybyWxPucher(`${$.name}`, tmpMessage, `${$.UserName}`);
+                      }
+
                       if ($.isNode() && `${notifyLevel}` === "3")
                         allMessage += `京东账号${$.index}[${
                           $.nickName
@@ -1733,6 +1751,13 @@ async function exchangeProNotify() {
           { "open-url": jxOpenUrl, "media-url": $.picture }
         );
         // if ($.isNode()) await notify.sendNotify(`${$.name} - 京东账号${$.index} - ${$.nickName}`, `【京东账号${$.index}】${$.nickName}\n【生产商品】${$.productName}${(exchangeEndTime - nowTimes) / 60*60*1000}分钟后兑换超时\n【兑换截止时间】${$.exchangeEndTime}\n请速去京喜APP->首页->好物0元造进行兑换`, { url: jxOpenUrl })
+
+        //添加一对一通知
+        if ($.isNode() && WP_APP_TOKEN_ONE) {
+          let tmpMessage = `【京东账号${$.index}】${$.nickName}\n【生产商品】${$.productName}${expiredTime}小时后兑换超时\n【兑换截止时间】${$.exchangeEndTime}\n请速去京喜APP->首页->好物0元造进行兑换`;
+          await notify.sendNotifybyWxPucher(`${$.name}`, tmpMessage, `${$.UserName}`);
+        }
+
         if (
           $.isNode() &&
           (`${notifyLevel}` === "1" ||
@@ -1757,6 +1782,11 @@ async function exchangeProNotify() {
           { "open-url": jxOpenUrl, "media-url": $.picture }
         );
         // if ($.isNode()) await notify.sendNotify(`${$.name} - 京东账号${$.index} - ${$.nickName}`, `【京东账号${$.index}】${$.nickName}\n【生产商品】${$.productName}已可兑换\n【兑换截止时间】${$.exchangeEndTime}\n请速去京喜APP->首页->好物0元造进行兑换`, { url: jxOpenUrl })
+        //添加一对一通知
+        if ($.isNode() && WP_APP_TOKEN_ONE) {
+          let tmpMessage = `【京东账号${$.index}】${$.nickName}\n【生产商品】${$.productName}${expiredTime}小时后兑换超时\n【兑换截止时间】${$.exchangeEndTime}\n请速去京喜APP->首页->好物0元造进行兑换`;
+          await notify.sendNotifybyWxPucher(`${$.name}`, tmpMessage, `${$.UserName}`);
+        }
         if (
           $.isNode() &&
           (`${notifyLevel}` === "1" ||
