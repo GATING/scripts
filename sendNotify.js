@@ -1531,7 +1531,7 @@ async function sendNotify(
 }
 
 function getuuid(strRemark, PtPin) {
-  var strTempuuid = "";
+  var strTempuuid = [];
   if (strRemark) {
     var Tempindex = strRemark.indexOf("@@");
     if (Tempindex != -1) {
@@ -1541,22 +1541,22 @@ function getuuid(strRemark, PtPin) {
         if (TempRemarkList[j]) {
           if (TempRemarkList[j].length > 4) {
             if (TempRemarkList[j].substring(0, 4) == "UID_") {
-              strTempuuid = TempRemarkList[j];
+              strTempuuid.push(TempRemarkList[j]);
               break;
             }
           }
         }
       }
-      if (!strTempuuid) {
+      if (strTempuuid.length == 0) {
         console.log("检索资料失败...");
       }
     }
   }
-  if (!strTempuuid && TempCKUid) {
+  if (strTempuuid.length==0 && TempCKUid) {
     console.log("正在从CK_WxPusherUid文件中检索资料...");
     for (let j = 0; j < TempCKUid.length; j++) {
       if (PtPin == decodeURIComponent(TempCKUid[j].pt_pin)) {
-        strTempuuid = TempCKUid[j].Uid;
+        strTempuuid.push(TempCKUid[j].Uid);
         break;
       }
     }
@@ -1637,7 +1637,7 @@ async function sendNotifybyWxPucher(
   strsummary = ""
 ) {
   try {
-    var Uid = "";
+    var Uids = [];
     var UserRemark = "";
     var strTempdesp = [];
     var strAllNotify = "";
@@ -1653,87 +1653,89 @@ async function sendNotifybyWxPucher(
       var tempEnv = await getEnvByPtPin(PtPin);
       if (tempEnv) {
         cookie = tempEnv.value;
-        Uid = getuuid(tempEnv.remarks, PtPin);
+        Uids = getuuid(tempEnv.remarks, PtPin);
         UserRemark = getRemark(tempEnv.remarks);
 
-        if (Uid) {
-          console.log("查询到Uid ：" + Uid);
-          WP_UIDS_ONE = Uid;
-          console.log("正在发送一对一通知,请稍后...");
+        for (let Uid of Uids) {
+          if (Uid) {
+            console.log("查询到Uid ：" + Uid);
+            WP_UIDS_ONE = Uid;
+            console.log("正在发送一对一通知,请稍后...");
 
-          if (text == "京东资产变动") {
-            try {
-              $.nickName = "";
-              $.FoundPin = "";
-              $.UserName = PtPin;
-              if (tempEnv.status == 0) {
-                if (TempCK) {
-                  for (let j = 0; j < TempCK.length; j++) {
-                    if (TempCK[j].pt_pin == $.UserName) {
-                      $.FoundPin = TempCK[j].pt_pin;
-                      $.nickName = TempCK[j].nickName;
+            if (text == "京东资产变动") {
+              try {
+                $.nickName = "";
+                $.FoundPin = "";
+                $.UserName = PtPin;
+                if (tempEnv.status == 0) {
+                  if (TempCK) {
+                    for (let j = 0; j < TempCK.length; j++) {
+                      if (TempCK[j].pt_pin == $.UserName) {
+                        $.FoundPin = TempCK[j].pt_pin;
+                        $.nickName = TempCK[j].nickName;
+                      }
+                    }
+                  }
+                  if (!$.FoundPin) {
+                    //缓存文件中有没有这个账号，调用京东接口获取别名,并更新缓存文件
+                    console.log($.UserName + "好像是新账号，尝试获取别名.....");
+                    await GetnickName();
+                    if (!$.nickName) {
+                      console.log(
+                          "别名获取失败，尝试调用另一个接口获取别名....."
+                      );
+                      await GetnickName2();
                     }
                   }
                 }
-                if (!$.FoundPin) {
-                  //缓存文件中有没有这个账号，调用京东接口获取别名,并更新缓存文件
-                  console.log($.UserName + "好像是新账号，尝试获取别名.....");
-                  await GetnickName();
-                  if (!$.nickName) {
-                    console.log(
-                      "别名获取失败，尝试调用另一个接口获取别名....."
-                    );
-                    await GetnickName2();
-                  }
-                }
-              }
 
-              $.nickName = $.nickName || $.UserName;
+                $.nickName = $.nickName || $.UserName;
 
-              //额外处理1，nickName包含星号
-              $.nickName = $.nickName.replace(new RegExp(`[*]`, "gm"), "[*]");
+                //额外处理1，nickName包含星号
+                $.nickName = $.nickName.replace(new RegExp(`[*]`, "gm"), "[*]");
 
-              var Tempinfo = getQLinfo(
-                cookie,
-                tempEnv.created,
-                tempEnv.timestamp,
-                tempEnv.remarks
-              );
-              if (Tempinfo) {
-                Tempinfo = $.nickName + Tempinfo;
-                desp = desp.replace(
-                  new RegExp(`${$.UserName}|${$.nickName}`, "gm"),
-                  Tempinfo
+                var Tempinfo = getQLinfo(
+                    cookie,
+                    tempEnv.created,
+                    tempEnv.timestamp,
+                    tempEnv.remarks
                 );
-              }
+                if (Tempinfo) {
+                  Tempinfo = $.nickName + Tempinfo;
+                  desp = desp.replace(
+                      new RegExp(`${$.UserName}|${$.nickName}`, "gm"),
+                      Tempinfo
+                  );
+                }
 
-              //额外处理2，nickName不包含星号，但是确实是手机号
-              var tempname = $.UserName;
-              if (tempname.length == 13 && tempname.substring(8)) {
-                tempname =
-                  tempname.substring(0, 3) +
-                  "[*][*][*][*][*]" +
-                  tempname.substring(8);
-                desp = desp.replace(new RegExp(tempname, "gm"), $.Remark);
+                //额外处理2，nickName不包含星号，但是确实是手机号
+                var tempname = $.UserName;
+                if (tempname.length == 13 && tempname.substring(8)) {
+                  tempname =
+                      tempname.substring(0, 3) +
+                      "[*][*][*][*][*]" +
+                      tempname.substring(8);
+                  desp = desp.replace(new RegExp(tempname, "gm"), $.Remark);
+                }
+              } catch (err) {
+                console.log("替换出错了");
+                console.log("Debug Name1 :" + $.UserName);
+                console.log("Debug Name2 :" + $.nickName);
+                console.log("Debug Remark :" + $.Remark);
               }
-            } catch (err) {
-              console.log("替换出错了");
-              console.log("Debug Name1 :" + $.UserName);
-              console.log("Debug Name2 :" + $.nickName);
-              console.log("Debug Remark :" + $.Remark);
             }
+            if (UserRemark) {
+              text = text + " (" + UserRemark + ")";
+            }
+            console.log("处理完成，开始发送通知...");
+            desp = buildLastDesp(desp, author);
+            if (strAllNotify) {
+              desp = strAllNotify + "\n" + desp;
+            }
+            await wxpusherNotifyByOne(text, desp, strsummary);
+          } else {
+            console.log("未查询到用户的Uid,取消一对一通知发送...");
           }
-          if (UserRemark) {
-            text = text + " (" + UserRemark + ")";
-          }
-          console.log("处理完成，开始发送通知...");
-          desp = buildLastDesp(desp, author);
-          if (strAllNotify) {
-            desp = strAllNotify + "\n" + desp;
-          }
-          await wxpusherNotifyByOne(text, desp, strsummary);
-        } else {
-          console.log("未查询到用户的Uid,取消一对一通知发送...");
         }
       }
     } else {
