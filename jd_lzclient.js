@@ -12,6 +12,10 @@ let cookiesArr = [],
 let activityIdList = [];
 let lz_cookie = {};
 
+if (process.env.RUSH_LZCLIENT && process.env.RUSH_LZCLIENT != "") {
+  activityIdList = process.env.RUSH_LZCLIENT.split(",");
+}
+
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item]);

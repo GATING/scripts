@@ -2,29 +2,23 @@
 cron "30 * * * *" jd_CheckCK.js, tag:京东CK检测by-ccwav
  */
 //详细说明参考 https://github.com/ccwav/QLScript2.
-const $ = new Env('京东CK检测');
-const notify = $.isNode() ? require('./sendNotify') : '';
+const $ = new Env("京东CK检测");
+const notify = $.isNode() ? require("./sendNotify") : "";
 //Node.js用户请在jdCookie.js处填写京东ck;
-const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
-const got = require('got');
-const {
-    getEnvs,
-	getEnvById,
-    DisableCk,
-    EnableCk,
-    getstatus
-} = require('./ql');
+const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const got = require("got");
+const { getEnvs, getEnvById, DisableCk, EnableCk, getstatus } = require("./ql");
 const api = got.extend({
-        retry: {
-            limit: 0
-        },
-        responseType: 'json',
-    });
+  retry: {
+    limit: 0,
+  },
+  responseType: "json",
+});
 
 let ShowSuccess = "false",
-CKAlwaysNotify = "false",
-CKAutoEnable = "true",
-NoWarnError = "false";
+  CKAlwaysNotify = "false",
+  CKAutoEnable = "true",
+  NoWarnError = "false";
 
 let MessageUserGp2 = "";
 let MessageUserGp3 = "";
@@ -44,535 +38,650 @@ let IndexGp3 = 0;
 let IndexGp4 = 0;
 let IndexAll = 0;
 
-let TempErrorMessage = '',
-TempSuccessMessage = '',
-TempDisableMessage = '',
-TempEnableMessage = '',
-TempOErrorMessage = '';
+let TempErrorMessage = "",
+  TempSuccessMessage = "",
+  TempDisableMessage = "",
+  TempEnableMessage = "",
+  TempOErrorMessage = "";
 
-let allMessage = '',
-ErrorMessage = '',
-SuccessMessage = '',
-DisableMessage = '',
-EnableMessage = '',
-OErrorMessage = '';
+let allMessage = "",
+  ErrorMessage = "",
+  SuccessMessage = "",
+  DisableMessage = "",
+  EnableMessage = "",
+  OErrorMessage = "";
 
-let allMessageGp2 = '',
-ErrorMessageGp2 = '',
-SuccessMessageGp2 = '',
-DisableMessageGp2 = '',
-EnableMessageGp2 = '',
-OErrorMessageGp2 = '';
+let allMessageGp2 = "",
+  ErrorMessageGp2 = "",
+  SuccessMessageGp2 = "",
+  DisableMessageGp2 = "",
+  EnableMessageGp2 = "",
+  OErrorMessageGp2 = "";
 
-let allMessageGp3 = '',
-ErrorMessageGp3 = '',
-SuccessMessageGp3 = '',
-DisableMessageGp3 = '',
-EnableMessageGp3 = '',
-OErrorMessageGp3 = '';
+let allMessageGp3 = "",
+  ErrorMessageGp3 = "",
+  SuccessMessageGp3 = "",
+  DisableMessageGp3 = "",
+  EnableMessageGp3 = "",
+  OErrorMessageGp3 = "";
 
-let allMessageGp4 = '',
-ErrorMessageGp4 = '',
-SuccessMessageGp4 = '',
-DisableMessageGp4 = '',
-EnableMessageGp4 = '',
-OErrorMessageGp4 = '';
+let allMessageGp4 = "",
+  ErrorMessageGp4 = "",
+  SuccessMessageGp4 = "",
+  DisableMessageGp4 = "",
+  EnableMessageGp4 = "",
+  OErrorMessageGp4 = "";
 
 let strAllNotify = "";
 let strNotifyOneTemp = "";
 let WP_APP_TOKEN_ONE = "";
 if ($.isNode() && process.env.WP_APP_TOKEN_ONE) {
-    WP_APP_TOKEN_ONE = process.env.WP_APP_TOKEN_ONE;
+  WP_APP_TOKEN_ONE = process.env.WP_APP_TOKEN_ONE;
 }
 
-let ReturnMessageTitle = '';
+let ReturnMessageTitle = "";
 
 if ($.isNode() && process.env.BEANCHANGE_USERGP2) {
-    MessageUserGp2 = process.env.BEANCHANGE_USERGP2 ? process.env.BEANCHANGE_USERGP2.split('&') : [];
-    console.log(`检测到设定了分组推送2`);
+  MessageUserGp2 = process.env.BEANCHANGE_USERGP2
+    ? process.env.BEANCHANGE_USERGP2.split("&")
+    : [];
+  console.log(`检测到设定了分组推送2`);
 }
 
 if ($.isNode() && process.env.BEANCHANGE_USERGP3) {
-    MessageUserGp3 = process.env.BEANCHANGE_USERGP3 ? process.env.BEANCHANGE_USERGP3.split('&') : [];
-    console.log(`检测到设定了分组推送3`);
+  MessageUserGp3 = process.env.BEANCHANGE_USERGP3
+    ? process.env.BEANCHANGE_USERGP3.split("&")
+    : [];
+  console.log(`检测到设定了分组推送3`);
 }
 
 if ($.isNode() && process.env.BEANCHANGE_USERGP4) {
-    MessageUserGp4 = process.env.BEANCHANGE_USERGP4 ? process.env.BEANCHANGE_USERGP4.split('&') : [];
-    console.log(`检测到设定了分组推送4`);
+  MessageUserGp4 = process.env.BEANCHANGE_USERGP4
+    ? process.env.BEANCHANGE_USERGP4.split("&")
+    : [];
+  console.log(`检测到设定了分组推送4`);
 }
 
 if ($.isNode() && process.env.CHECKCK_SHOWSUCCESSCK) {
-    ShowSuccess = process.env.CHECKCK_SHOWSUCCESSCK;
+  ShowSuccess = process.env.CHECKCK_SHOWSUCCESSCK;
 }
 if ($.isNode() && process.env.CHECKCK_CKALWAYSNOTIFY) {
-    CKAlwaysNotify = process.env.CHECKCK_CKALWAYSNOTIFY;
+  CKAlwaysNotify = process.env.CHECKCK_CKALWAYSNOTIFY;
 }
 if ($.isNode() && process.env.CHECKCK_CKAUTOENABLE) {
-    CKAutoEnable = process.env.CHECKCK_CKAUTOENABLE;
+  CKAutoEnable = process.env.CHECKCK_CKAUTOENABLE;
 }
 if ($.isNode() && process.env.CHECKCK_CKNOWARNERROR) {
-    NoWarnError = process.env.CHECKCK_CKNOWARNERROR;
+  NoWarnError = process.env.CHECKCK_CKNOWARNERROR;
 }
 
 if ($.isNode() && process.env.CHECKCK_ALLNOTIFY) {
-
-    strAllNotify = process.env.CHECKCK_ALLNOTIFY;
-/*     if (strTempNotify.length > 0) {
+  strAllNotify = process.env.CHECKCK_ALLNOTIFY;
+  /*     if (strTempNotify.length > 0) {
         for (var TempNotifyl in strTempNotify) {
             strAllNotify += strTempNotify[TempNotifyl] + '\n';
         }
     } */
-    console.log(`检测到设定了温馨提示,将在推送信息中置顶显示...`);
-    strAllNotify = `\n【✨✨✨✨温馨提示✨✨✨✨】\n` + strAllNotify;
-    console.log(strAllNotify);
+  console.log(`检测到设定了温馨提示,将在推送信息中置顶显示...`);
+  strAllNotify = `\n【✨✨✨✨温馨提示✨✨✨✨】\n` + strAllNotify;
+  console.log(strAllNotify);
 }
 
-!(async() => {
-    const envs = await getEnvs();
-    if (!envs[0]) {
-        $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/bean/signIndex.action', {
-            "open-url": "https://bean.m.jd.com/bean/signIndex.action"
-        });
-        return;
-    }
+!(async () => {
+  const envs = await getEnvs();
+  if (!envs[0]) {
+    $.msg(
+      $.name,
+      "【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取",
+      "https://bean.m.jd.com/bean/signIndex.action",
+      {
+        "open-url": "https://bean.m.jd.com/bean/signIndex.action",
+      }
+    );
+    return;
+  }
 
-    for (let i = 0; i < envs.length; i++) {
-        if (envs[i].value) {
-            cookie = await getEnvById(envs[i]._id);			
-            $.UserName = (cookie.match(/pt_pin=([^; ]+)(?=;?)/) && cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1])
-            $.UserName2 = decodeURIComponent($.UserName);
-            $.index = i + 1;
-            $.isLogin = true;
-            $.error = '';
-            $.NoReturn = '';
-            $.nickName = "";
-            TempErrorMessage = '';
-            TempSuccessMessage = '';
-            TempDisableMessage = '';
-            TempEnableMessage = '';
-            TempOErrorMessage = '';
+  for (let i = 0; i < envs.length; i++) {
+    if (envs[i].value) {
+      var tempid = 0;
+      if (envs[i]._id) {
+        tempid = envs[i]._id;
+      }
+      if (envs[i].id) {
+        tempid = envs[i].id;
+      }
+      cookie = await getEnvById(tempid);
+      $.UserName =
+        cookie.match(/pt_pin=([^; ]+)(?=;?)/) &&
+        cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1];
+      $.UserName2 = decodeURIComponent($.UserName);
+      $.index = i + 1;
+      $.isLogin = true;
+      $.error = "";
+      $.NoReturn = "";
+      $.nickName = "";
+      TempErrorMessage = "";
+      TempSuccessMessage = "";
+      TempDisableMessage = "";
+      TempEnableMessage = "";
+      TempOErrorMessage = "";
 
-            console.log(`开始检测【京东账号${$.index}】${$.UserName2} ....\n`);
-            if (MessageUserGp4) {
-                userIndex4 = MessageUserGp4.findIndex((item) => item === $.UserName);
-            }
-            if (MessageUserGp2) {
+      console.log(`开始检测【京东账号${$.index}】${$.UserName2} ....\n`);
+      if (MessageUserGp4) {
+        userIndex4 = MessageUserGp4.findIndex((item) => item === $.UserName);
+      }
+      if (MessageUserGp2) {
+        userIndex2 = MessageUserGp2.findIndex((item) => item === $.UserName);
+      }
+      if (MessageUserGp3) {
+        userIndex3 = MessageUserGp3.findIndex((item) => item === $.UserName);
+      }
 
-                userIndex2 = MessageUserGp2.findIndex((item) => item === $.UserName);
-            }
-            if (MessageUserGp3) {
+      if (userIndex2 != -1) {
+        console.log(`账号属于分组2`);
+        IndexGp2 += 1;
+        ReturnMessageTitle = `【账号${IndexGp2}🆔】${$.UserName2}`;
+      }
+      if (userIndex3 != -1) {
+        console.log(`账号属于分组3`);
+        IndexGp3 += 1;
+        ReturnMessageTitle = `【账号${IndexGp3}🆔】${$.UserName2}`;
+      }
+      if (userIndex4 != -1) {
+        console.log(`账号属于分组4`);
+        IndexGp4 += 1;
+        ReturnMessageTitle = `【账号${IndexGp4}🆔】${$.UserName2}`;
+      }
+      if (userIndex4 == -1 && userIndex2 == -1 && userIndex3 == -1) {
+        console.log(`账号没有分组`);
+        IndexAll += 1;
+        ReturnMessageTitle = `【账号${IndexAll}🆔】${$.UserName2}`;
+      }
 
-                userIndex3 = MessageUserGp3.findIndex((item) => item === $.UserName);
-            }
+      await TotalBean();
+      if ($.NoReturn) {
+        console.log(`接口1检测失败，尝试使用接口2....\n`);
+        await isLoginByX1a0He();
+      } else {
+        if ($.isLogin) {
+          if (!$.nickName) {
+            console.log(`获取的别名为空，尝试使用接口2验证....\n`);
+            await isLoginByX1a0He();
+          } else {
+            console.log(`成功获取到别名: ${$.nickName},Pass!\n`);
+          }
+        }
+      }
 
-            if (userIndex2 != -1) {
-                console.log(`账号属于分组2`);
-                IndexGp2 += 1;
-                ReturnMessageTitle = `【账号${IndexGp2}🆔】${$.UserName2}`;
-            }
-            if (userIndex3 != -1) {
-                console.log(`账号属于分组3`);
-                IndexGp3 += 1;
-                ReturnMessageTitle = `【账号${IndexGp3}🆔】${$.UserName2}`;
-            }
-            if (userIndex4 != -1) {
-                console.log(`账号属于分组4`);
-                IndexGp4 += 1;
-                ReturnMessageTitle = `【账号${IndexGp4}🆔】${$.UserName2}`;
-            }
-            if (userIndex4 == -1 && userIndex2 == -1 && userIndex3 == -1) {
-                console.log(`账号没有分组`);
-                IndexAll += 1;
-                ReturnMessageTitle = `【账号${IndexAll}🆔】${$.UserName2}`;
-            }
+      if ($.error) {
+        console.log(`有错误，跳出....`);
+        TempOErrorMessage = $.error;
+      } else {
+        const strnowstatus = await getstatus(tempid);
+        if (strnowstatus == 99) {
+          strnowstatus = envs[i].status;
+        }
+        if (!$.isLogin) {
+          if (strnowstatus == 0) {
+            const DisableCkBody = await DisableCk(tempid);
+            if (DisableCkBody.code == 200) {
+              if ($.isNode() && WP_APP_TOKEN_ONE) {
+                strNotifyOneTemp = `京东账号: ${
+                  $.nickName || $.UserName2
+                } 已失效,自动禁用成功!\n如果要继续挂机，请联系管理员重新登录账号，账号有效期为30天.`;
 
-            await TotalBean();
-            if ($.NoReturn) {
-                console.log(`接口1检测失败，尝试使用接口2....\n`);
-                await isLoginByX1a0He();
+                if (strAllNotify) strNotifyOneTemp += `\n` + strAllNotify;
+
+                await notify.sendNotifybyWxPucher(
+                  `${$.name}`,
+                  strNotifyOneTemp,
+                  `${$.UserName2}`
+                );
+              }
+              console.log(
+                `京东账号${$.index} : ${
+                  $.nickName || $.UserName2
+                } 已失效,自动禁用成功!\n`
+              );
+              TempDisableMessage = ReturnMessageTitle + ` (自动禁用成功!)\n`;
+              TempErrorMessage = ReturnMessageTitle + ` 已失效,自动禁用成功!\n`;
             } else {
-                if ($.isLogin) {
-                    if (!$.nickName) {
-                        console.log(`获取的别名为空，尝试使用接口2验证....\n`);
-                        await isLoginByX1a0He();
-                    } else {
-                        console.log(`成功获取到别名: ${$.nickName},Pass!\n`);
-                    }
-                }
+              if ($.isNode() && WP_APP_TOKEN_ONE) {
+                strNotifyOneTemp = `京东账号: ${
+                  $.nickName || $.UserName2
+                } 已失效!\n如果要继续挂机，请联系管理员重新登录账号，账号有效期为30天.`;
+
+                if (strAllNotify) strNotifyOneTemp += `\n` + strAllNotify;
+
+                await notify.sendNotifybyWxPucher(
+                  `${$.name}`,
+                  strNotifyOneTemp,
+                  `${$.UserName2}`
+                );
+              }
+              console.log(
+                `京东账号${$.index} : ${
+                  $.nickName || $.UserName2
+                } 已失效,自动禁用失败!\n`
+              );
+              TempDisableMessage = ReturnMessageTitle + ` (自动禁用失败!)\n`;
+              TempErrorMessage = ReturnMessageTitle + ` 已失效,自动禁用失败!\n`;
             }
-
-            if ($.error) {
-                console.log(`有错误，跳出....`);
-                TempOErrorMessage = $.error;
-
-            } else {
-                const strnowstatus = await getstatus(envs[i]._id);
-                if (strnowstatus == 99) {
-                    strnowstatus = envs[i].status;
-                }
-                if (!$.isLogin) {
-
-                    if (strnowstatus == 0) {
-                        const DisableCkBody = await DisableCk(envs[i]._id);
-                        if (DisableCkBody.code == 200) {
-                            if ($.isNode() && WP_APP_TOKEN_ONE) {
-                                strNotifyOneTemp = `京东账号: ${$.nickName || $.UserName2} 已失效,自动禁用成功!\n如果要继续挂机，请联系管理员重新登录账号，账号有效期为30天.`
-
-                                    if (strAllNotify)
-                                        strNotifyOneTemp += `\n` + strAllNotify;
-
-                                    await notify.sendNotifybyWxPucher(`${$.name}`, strNotifyOneTemp, `${$.UserName2}`);
-                            }
-                            console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已失效,自动禁用成功!\n`);
-                            TempDisableMessage = ReturnMessageTitle + ` (自动禁用成功!)\n`;
-                            TempErrorMessage = ReturnMessageTitle + ` 已失效,自动禁用成功!\n`;
-                        } else {
-                            if ($.isNode() && WP_APP_TOKEN_ONE) {
-                                strNotifyOneTemp = `京东账号: ${$.nickName || $.UserName2} 已失效!\n如果要继续挂机，请联系管理员重新登录账号，账号有效期为30天.`
-
-                                    if (strAllNotify)
-                                        strNotifyOneTemp += `\n` + strAllNotify;
-
-                                    await notify.sendNotifybyWxPucher(`${$.name}`, strNotifyOneTemp, `${$.UserName2}`);
-                            }
-                            console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已失效,自动禁用失败!\n`);
-                            TempDisableMessage = ReturnMessageTitle + ` (自动禁用失败!)\n`;
-                            TempErrorMessage = ReturnMessageTitle + ` 已失效,自动禁用失败!\n`;
-                        }
-                    } else {
-                        console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已失效,已禁用!\n`);
-                        TempErrorMessage = ReturnMessageTitle + ` 已失效,已禁用.\n`;
-                    }
-                } else {
-                    if (strnowstatus == 1) {
-
-                        if (CKAutoEnable == "true") {
-                            const EnableCkBody = await EnableCk(envs[i]._id);
-                            if (EnableCkBody.code == 200) {
-                                if ($.isNode() && WP_APP_TOKEN_ONE) {
-                                    await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已恢复,自动启用成功!\n祝您挂机愉快...`, `${$.UserName2}`);
-                                }
-                                console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已恢复,自动启用成功!\n`);
-                                TempEnableMessage = ReturnMessageTitle + ` (自动启用成功!)\n`;
-                                TempSuccessMessage = ReturnMessageTitle + ` (自动启用成功!)\n`;
-                            } else {
-                                if ($.isNode() && WP_APP_TOKEN_ONE) {
-                                    await notify.sendNotifybyWxPucher(`${$.name}`, `京东账号: ${$.nickName || $.UserName2} 已恢复,但自动启用失败!\n请联系管理员处理...`, `${$.UserName2}`);
-                                }
-                                console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已恢复,但自动启用失败!\n`);
-                                TempEnableMessage = ReturnMessageTitle + ` (自动启用失败!)\n`;
-                            }
-                        } else {
-                            console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 已恢复，可手动启用!\n`);
-                            TempEnableMessage = ReturnMessageTitle + ` 已恢复，可手动启用.\n`;
-                        }
-                    } else {
-                        console.log(`京东账号${$.index} : ${$.nickName || $.UserName2} 状态正常!\n`);
-                        TempSuccessMessage = ReturnMessageTitle + `\n`;
-                    }
-                }
-            }
-
-            if (userIndex2 != -1) {
-                ErrorMessageGp2 += TempErrorMessage;
-                SuccessMessageGp2 += TempSuccessMessage;
-                DisableMessageGp2 += TempDisableMessage;
-                EnableMessageGp2 += TempEnableMessage;
-                OErrorMessageGp2 += TempOErrorMessage;
-            }
-            if (userIndex3 != -1) {
-                ErrorMessageGp3 += TempErrorMessage;
-                SuccessMessageGp3 += TempSuccessMessage;
-                DisableMessageGp3 += TempDisableMessage;
-                EnableMessageGp3 += TempEnableMessage;
-                OErrorMessageGp3 += TempOErrorMessage;
-            }
-            if (userIndex4 != -1) {
-                ErrorMessageGp4 += TempErrorMessage;
-                SuccessMessageGp4 += TempSuccessMessage;
-                DisableMessageGp4 += TempDisableMessage;
-                EnableMessageGp4 += TempEnableMessage;
-                OErrorMessageGp4 += TempOErrorMessage;
-            }
-
-            if (userIndex4 == -1 && userIndex2 == -1 && userIndex3 == -1) {
-                ErrorMessage += TempErrorMessage;
-                SuccessMessage += TempSuccessMessage;
-                DisableMessage += TempDisableMessage;
-                EnableMessage += TempEnableMessage;
-                OErrorMessage += TempOErrorMessage;
-            }
-
-        }
-        console.log(`等待2秒.......	\n`);
-        await $.wait(2 * 1000)
-    }
-
-    if ($.isNode()) {
-        if (MessageUserGp2) {
-            if (OErrorMessageGp2) {
-                allMessageGp2 += `👇👇👇👇👇检测出错账号👇👇👇👇👇\n` + OErrorMessageGp2 + `\n\n`;
-            }
-            if (DisableMessageGp2) {
-                allMessageGp2 += `👇👇👇👇👇自动禁用账号👇👇👇👇👇\n` + DisableMessageGp2 + `\n\n`;
-            }
-            if (EnableMessageGp2) {
-                if (CKAutoEnable == "true") {
-                    allMessageGp2 += `👇👇👇👇👇自动启用账号👇👇👇👇👇\n` + EnableMessageGp2 + `\n\n`;
-                } else {
-                    allMessageGp2 += `👇👇👇👇👇账号已恢复👇👇👇👇👇\n` + EnableMessageGp2 + `\n\n`;
-                }
-            }
-
-            if (ErrorMessageGp2) {
-                allMessageGp2 += `👇👇👇👇👇失效账号👇👇👇👇👇\n` + ErrorMessageGp2 + `\n\n`;
-            } else {
-                allMessageGp2 += `👇👇👇👇👇失效账号👇👇👇👇👇\n 一个失效的都没有呢，羡慕啊...\n\n`;
-            }
-
-            if (ShowSuccess == "true" && SuccessMessage) {
-                allMessageGp2 += `👇👇👇👇👇有效账号👇👇👇👇👇\n` + SuccessMessageGp2 + `\n`;
-            }
-
-            if (NoWarnError == "true") {
-                OErrorMessageGp2 = "";
-            }
-
-            if ($.isNode() && (EnableMessageGp2 || DisableMessageGp2 || OErrorMessageGp2 || CKAlwaysNotify == "true")) {
-                console.log("京东CK检测#2：");
-                console.log(allMessageGp2);
-
-                if (strAllNotify)
-                    allMessageGp2 += `\n` + strAllNotify;
-
-                await notify.sendNotify("京东CK检测#2", `${allMessageGp2}`, {
-                    url: `https://bean.m.jd.com/beanDetail/index.action?resourceValue=bean`
-                })
-            }
-        }
-        if (MessageUserGp3) {
-            if (OErrorMessageGp3) {
-                allMessageGp3 += `👇👇👇👇👇检测出错账号👇👇👇👇👇\n` + OErrorMessageGp3 + `\n\n`;
-            }
-            if (DisableMessageGp3) {
-                allMessageGp3 += `👇👇👇👇👇自动禁用账号👇👇👇👇👇\n` + DisableMessageGp3 + `\n\n`;
-            }
-            if (EnableMessageGp3) {
-                if (CKAutoEnable == "true") {
-                    allMessageGp3 += `👇👇👇👇👇自动启用账号👇👇👇👇👇\n` + EnableMessageGp3 + `\n\n`;
-                } else {
-                    allMessageGp3 += `👇👇👇👇👇账号已恢复👇👇👇👇👇\n` + EnableMessageGp3 + `\n\n`;
-                }
-            }
-
-            if (ErrorMessageGp3) {
-                allMessageGp3 += `👇👇👇👇👇失效账号👇👇👇👇👇\n` + ErrorMessageGp3 + `\n\n`;
-            } else {
-                allMessageGp3 += `👇👇👇👇👇失效账号👇👇👇👇👇\n 一个失效的都没有呢，羡慕啊...\n\n`;
-            }
-
-            if (ShowSuccess == "true" && SuccessMessage) {
-                allMessageGp3 += `👇👇👇👇👇有效账号👇👇👇👇👇\n` + SuccessMessageGp3 + `\n`;
-            }
-
-            if (NoWarnError == "true") {
-                OErrorMessageGp3 = "";
-            }
-
-            if ($.isNode() && (EnableMessageGp3 || DisableMessageGp3 || OErrorMessageGp3 || CKAlwaysNotify == "true")) {
-                console.log("京东CK检测#3：");
-                console.log(allMessageGp3);
-                if (strAllNotify)
-                    allMessageGp3 += `\n` + strAllNotify;
-
-                await notify.sendNotify("京东CK检测#3", `${allMessageGp3}`, {
-                    url: `https://bean.m.jd.com/beanDetail/index.action?resourceValue=bean`
-                })
-            }
-        }
-        if (MessageUserGp4) {
-            if (OErrorMessageGp4) {
-                allMessageGp4 += `👇👇👇👇👇检测出错账号👇👇👇👇👇\n` + OErrorMessageGp4 + `\n\n`;
-            }
-            if (DisableMessageGp4) {
-                allMessageGp4 += `👇👇👇👇👇自动禁用账号👇👇👇👇👇\n` + DisableMessageGp4 + `\n\n`;
-            }
-            if (EnableMessageGp4) {
-                if (CKAutoEnable == "true") {
-                    allMessageGp4 += `👇👇👇👇👇自动启用账号👇👇👇👇👇\n` + EnableMessageGp4 + `\n\n`;
-                } else {
-                    allMessageGp4 += `👇👇👇👇👇账号已恢复👇👇👇👇👇\n` + EnableMessageGp4 + `\n\n`;
-                }
-            }
-
-            if (ErrorMessageGp4) {
-                allMessageGp4 += `👇👇👇👇👇失效账号👇👇👇👇👇\n` + ErrorMessageGp4 + `\n\n`;
-            } else {
-                allMessageGp4 += `👇👇👇👇👇失效账号👇👇👇👇👇\n 一个失效的都没有呢，羡慕啊...\n\n`;
-            }
-
-            if (ShowSuccess == "true" && SuccessMessage) {
-                allMessageGp4 += `👇👇👇👇👇有效账号👇👇👇👇👇\n` + SuccessMessageGp4 + `\n`;
-            }
-
-            if (NoWarnError == "true") {
-                OErrorMessageGp4 = "";
-            }
-
-            if ($.isNode() && (EnableMessageGp4 || DisableMessageGp4 || OErrorMessageGp4 || CKAlwaysNotify == "true")) {
-                console.log("京东CK检测#4：");
-                console.log(allMessageGp4);
-                if (strAllNotify)
-                    allMessageGp4 += `\n` + strAllNotify;
-
-                await notify.sendNotify("京东CK检测#4", `${allMessageGp4}`, {
-                    url: `https://bean.m.jd.com/beanDetail/index.action?resourceValue=bean`
-                })
-            }
-        }
-
-        if (OErrorMessage) {
-            allMessage += `👇👇👇👇👇检测出错账号👇👇👇👇👇\n` + OErrorMessage + `\n\n`;
-        }
-        if (DisableMessage) {
-            allMessage += `👇👇👇👇👇自动禁用账号👇👇👇👇👇\n` + DisableMessage + `\n\n`;
-        }
-        if (EnableMessage) {
-            if (CKAutoEnable == "true") {
-                allMessage += `👇👇👇👇👇自动启用账号👇👇👇👇👇\n` + EnableMessage + `\n\n`;
-            } else {
-                allMessage += `👇👇👇👇👇账号已恢复👇👇👇👇👇\n` + EnableMessage + `\n\n`;
-            }
-        }
-
-        if (ErrorMessage) {
-            allMessage += `👇👇👇👇👇失效账号👇👇👇👇👇\n` + ErrorMessage + `\n\n`;
+          } else {
+            console.log(
+              `京东账号${$.index} : ${
+                $.nickName || $.UserName2
+              } 已失效,已禁用!\n`
+            );
+            TempErrorMessage = ReturnMessageTitle + ` 已失效,已禁用.\n`;
+          }
         } else {
-            allMessage += `👇👇👇👇👇失效账号👇👇👇👇👇\n 一个失效的都没有呢，羡慕啊...\n\n`;
+          if (strnowstatus == 1) {
+            if (CKAutoEnable == "true") {
+              const EnableCkBody = await EnableCk(tempid);
+              if (EnableCkBody.code == 200) {
+                if ($.isNode() && WP_APP_TOKEN_ONE) {
+                  await notify.sendNotifybyWxPucher(
+                    `${$.name}`,
+                    `京东账号: ${
+                      $.nickName || $.UserName2
+                    } 已恢复,自动启用成功!\n祝您挂机愉快...`,
+                    `${$.UserName2}`
+                  );
+                }
+                console.log(
+                  `京东账号${$.index} : ${
+                    $.nickName || $.UserName2
+                  } 已恢复,自动启用成功!\n`
+                );
+                TempEnableMessage = ReturnMessageTitle + ` (自动启用成功!)\n`;
+                TempSuccessMessage = ReturnMessageTitle + ` (自动启用成功!)\n`;
+              } else {
+                if ($.isNode() && WP_APP_TOKEN_ONE) {
+                  await notify.sendNotifybyWxPucher(
+                    `${$.name}`,
+                    `京东账号: ${
+                      $.nickName || $.UserName2
+                    } 已恢复,但自动启用失败!\n请联系管理员处理...`,
+                    `${$.UserName2}`
+                  );
+                }
+                console.log(
+                  `京东账号${$.index} : ${
+                    $.nickName || $.UserName2
+                  } 已恢复,但自动启用失败!\n`
+                );
+                TempEnableMessage = ReturnMessageTitle + ` (自动启用失败!)\n`;
+              }
+            } else {
+              console.log(
+                `京东账号${$.index} : ${
+                  $.nickName || $.UserName2
+                } 已恢复，可手动启用!\n`
+              );
+              TempEnableMessage = ReturnMessageTitle + ` 已恢复，可手动启用.\n`;
+            }
+          } else {
+            console.log(
+              `京东账号${$.index} : ${$.nickName || $.UserName2} 状态正常!\n`
+            );
+            TempSuccessMessage = ReturnMessageTitle + `\n`;
+          }
         }
+      }
 
-        if (ShowSuccess == "true" && SuccessMessage) {
-            allMessage += `👇👇👇👇👇有效账号👇👇👇👇👇\n` + SuccessMessage + `\n`;
+      if (userIndex2 != -1) {
+        ErrorMessageGp2 += TempErrorMessage;
+        SuccessMessageGp2 += TempSuccessMessage;
+        DisableMessageGp2 += TempDisableMessage;
+        EnableMessageGp2 += TempEnableMessage;
+        OErrorMessageGp2 += TempOErrorMessage;
+      }
+      if (userIndex3 != -1) {
+        ErrorMessageGp3 += TempErrorMessage;
+        SuccessMessageGp3 += TempSuccessMessage;
+        DisableMessageGp3 += TempDisableMessage;
+        EnableMessageGp3 += TempEnableMessage;
+        OErrorMessageGp3 += TempOErrorMessage;
+      }
+      if (userIndex4 != -1) {
+        ErrorMessageGp4 += TempErrorMessage;
+        SuccessMessageGp4 += TempSuccessMessage;
+        DisableMessageGp4 += TempDisableMessage;
+        EnableMessageGp4 += TempEnableMessage;
+        OErrorMessageGp4 += TempOErrorMessage;
+      }
+
+      if (userIndex4 == -1 && userIndex2 == -1 && userIndex3 == -1) {
+        ErrorMessage += TempErrorMessage;
+        SuccessMessage += TempSuccessMessage;
+        DisableMessage += TempDisableMessage;
+        EnableMessage += TempEnableMessage;
+        OErrorMessage += TempOErrorMessage;
+      }
+    }
+    console.log(`等待2秒.......	\n`);
+    await $.wait(2 * 1000);
+  }
+
+  if ($.isNode()) {
+    if (MessageUserGp2) {
+      if (OErrorMessageGp2) {
+        allMessageGp2 +=
+          `👇👇👇👇👇检测出错账号👇👇👇👇👇\n` + OErrorMessageGp2 + `\n\n`;
+      }
+      if (DisableMessageGp2) {
+        allMessageGp2 +=
+          `👇👇👇👇👇自动禁用账号👇👇👇👇👇\n` + DisableMessageGp2 + `\n\n`;
+      }
+      if (EnableMessageGp2) {
+        if (CKAutoEnable == "true") {
+          allMessageGp2 +=
+            `👇👇👇👇👇自动启用账号👇👇👇👇👇\n` + EnableMessageGp2 + `\n\n`;
+        } else {
+          allMessageGp2 +=
+            `👇👇👇👇👇账号已恢复👇👇👇👇👇\n` + EnableMessageGp2 + `\n\n`;
         }
+      }
 
-        if (NoWarnError == "true") {
-            OErrorMessage = "";
+      if (ErrorMessageGp2) {
+        allMessageGp2 +=
+          `👇👇👇👇👇失效账号👇👇👇👇👇\n` + ErrorMessageGp2 + `\n\n`;
+      } else {
+        allMessageGp2 += `👇👇👇👇👇失效账号👇👇👇👇👇\n 一个失效的都没有呢，羡慕啊...\n\n`;
+      }
+
+      if (ShowSuccess == "true" && SuccessMessage) {
+        allMessageGp2 +=
+          `👇👇👇👇👇有效账号👇👇👇👇👇\n` + SuccessMessageGp2 + `\n`;
+      }
+
+      if (NoWarnError == "true") {
+        OErrorMessageGp2 = "";
+      }
+
+      if (
+        $.isNode() &&
+        (EnableMessageGp2 ||
+          DisableMessageGp2 ||
+          OErrorMessageGp2 ||
+          CKAlwaysNotify == "true")
+      ) {
+        console.log("京东CK检测#2：");
+        console.log(allMessageGp2);
+
+        if (strAllNotify) allMessageGp2 += `\n` + strAllNotify;
+
+        await notify.sendNotify("京东CK检测#2", `${allMessageGp2}`, {
+          url: `https://bean.m.jd.com/beanDetail/index.action?resourceValue=bean`,
+        });
+      }
+    }
+    if (MessageUserGp3) {
+      if (OErrorMessageGp3) {
+        allMessageGp3 +=
+          `👇👇👇👇👇检测出错账号👇👇👇👇👇\n` + OErrorMessageGp3 + `\n\n`;
+      }
+      if (DisableMessageGp3) {
+        allMessageGp3 +=
+          `👇👇👇👇👇自动禁用账号👇👇👇👇👇\n` + DisableMessageGp3 + `\n\n`;
+      }
+      if (EnableMessageGp3) {
+        if (CKAutoEnable == "true") {
+          allMessageGp3 +=
+            `👇👇👇👇👇自动启用账号👇👇👇👇👇\n` + EnableMessageGp3 + `\n\n`;
+        } else {
+          allMessageGp3 +=
+            `👇👇👇👇👇账号已恢复👇👇👇👇👇\n` + EnableMessageGp3 + `\n\n`;
         }
+      }
 
-        if ($.isNode() && (EnableMessage || DisableMessage || OErrorMessage || CKAlwaysNotify == "true")) {
-            console.log("京东CK检测：");
-            console.log(allMessage);
-			if (strAllNotify)
-                    allMessage += `\n` + strAllNotify;
-				
-            await notify.sendNotify(`${$.name}`, `${allMessage}`, {
-                url: `https://bean.m.jd.com/beanDetail/index.action?resourceValue=bean`
-            })
+      if (ErrorMessageGp3) {
+        allMessageGp3 +=
+          `👇👇👇👇👇失效账号👇👇👇👇👇\n` + ErrorMessageGp3 + `\n\n`;
+      } else {
+        allMessageGp3 += `👇👇👇👇👇失效账号👇👇👇👇👇\n 一个失效的都没有呢，羡慕啊...\n\n`;
+      }
+
+      if (ShowSuccess == "true" && SuccessMessage) {
+        allMessageGp3 +=
+          `👇👇👇👇👇有效账号👇👇👇👇👇\n` + SuccessMessageGp3 + `\n`;
+      }
+
+      if (NoWarnError == "true") {
+        OErrorMessageGp3 = "";
+      }
+
+      if (
+        $.isNode() &&
+        (EnableMessageGp3 ||
+          DisableMessageGp3 ||
+          OErrorMessageGp3 ||
+          CKAlwaysNotify == "true")
+      ) {
+        console.log("京东CK检测#3：");
+        console.log(allMessageGp3);
+        if (strAllNotify) allMessageGp3 += `\n` + strAllNotify;
+
+        await notify.sendNotify("京东CK检测#3", `${allMessageGp3}`, {
+          url: `https://bean.m.jd.com/beanDetail/index.action?resourceValue=bean`,
+        });
+      }
+    }
+    if (MessageUserGp4) {
+      if (OErrorMessageGp4) {
+        allMessageGp4 +=
+          `👇👇👇👇👇检测出错账号👇👇👇👇👇\n` + OErrorMessageGp4 + `\n\n`;
+      }
+      if (DisableMessageGp4) {
+        allMessageGp4 +=
+          `👇👇👇👇👇自动禁用账号👇👇👇👇👇\n` + DisableMessageGp4 + `\n\n`;
+      }
+      if (EnableMessageGp4) {
+        if (CKAutoEnable == "true") {
+          allMessageGp4 +=
+            `👇👇👇👇👇自动启用账号👇👇👇👇👇\n` + EnableMessageGp4 + `\n\n`;
+        } else {
+          allMessageGp4 +=
+            `👇👇👇👇👇账号已恢复👇👇👇👇👇\n` + EnableMessageGp4 + `\n\n`;
         }
+      }
 
+      if (ErrorMessageGp4) {
+        allMessageGp4 +=
+          `👇👇👇👇👇失效账号👇👇👇👇👇\n` + ErrorMessageGp4 + `\n\n`;
+      } else {
+        allMessageGp4 += `👇👇👇👇👇失效账号👇👇👇👇👇\n 一个失效的都没有呢，羡慕啊...\n\n`;
+      }
+
+      if (ShowSuccess == "true" && SuccessMessage) {
+        allMessageGp4 +=
+          `👇👇👇👇👇有效账号👇👇👇👇👇\n` + SuccessMessageGp4 + `\n`;
+      }
+
+      if (NoWarnError == "true") {
+        OErrorMessageGp4 = "";
+      }
+
+      if (
+        $.isNode() &&
+        (EnableMessageGp4 ||
+          DisableMessageGp4 ||
+          OErrorMessageGp4 ||
+          CKAlwaysNotify == "true")
+      ) {
+        console.log("京东CK检测#4：");
+        console.log(allMessageGp4);
+        if (strAllNotify) allMessageGp4 += `\n` + strAllNotify;
+
+        await notify.sendNotify("京东CK检测#4", `${allMessageGp4}`, {
+          url: `https://bean.m.jd.com/beanDetail/index.action?resourceValue=bean`,
+        });
+      }
     }
 
+    if (OErrorMessage) {
+      allMessage +=
+        `👇👇👇👇👇检测出错账号👇👇👇👇👇\n` + OErrorMessage + `\n\n`;
+    }
+    if (DisableMessage) {
+      allMessage +=
+        `👇👇👇👇👇自动禁用账号👇👇👇👇👇\n` + DisableMessage + `\n\n`;
+    }
+    if (EnableMessage) {
+      if (CKAutoEnable == "true") {
+        allMessage +=
+          `👇👇👇👇👇自动启用账号👇👇👇👇👇\n` + EnableMessage + `\n\n`;
+      } else {
+        allMessage +=
+          `👇👇👇👇👇账号已恢复👇👇👇👇👇\n` + EnableMessage + `\n\n`;
+      }
+    }
+
+    if (ErrorMessage) {
+      allMessage += `👇👇👇👇👇失效账号👇👇👇👇👇\n` + ErrorMessage + `\n\n`;
+    } else {
+      allMessage += `👇👇👇👇👇失效账号👇👇👇👇👇\n 一个失效的都没有呢，羡慕啊...\n\n`;
+    }
+
+    if (ShowSuccess == "true" && SuccessMessage) {
+      allMessage += `👇👇👇👇👇有效账号👇👇👇👇👇\n` + SuccessMessage + `\n`;
+    }
+
+    if (NoWarnError == "true") {
+      OErrorMessage = "";
+    }
+
+    if (
+      $.isNode() &&
+      (EnableMessage ||
+        DisableMessage ||
+        OErrorMessage ||
+        CKAlwaysNotify == "true")
+    ) {
+      console.log("京东CK检测：");
+      console.log(allMessage);
+      if (strAllNotify) allMessage += `\n` + strAllNotify;
+
+      await notify.sendNotify(`${$.name}`, `${allMessage}`, {
+        url: `https://bean.m.jd.com/beanDetail/index.action?resourceValue=bean`,
+      });
+    }
+  }
 })()
-.catch((e) => $.logErr(e))
-.finally(() => $.done())
+  .catch((e) => $.logErr(e))
+  .finally(() => $.done());
 
 function TotalBean() {
-    return new Promise(async resolve => {
-        const options = {
-            url: "https://me-api.jd.com/user_new/info/GetJDUserInfoUnion",
-            headers: {
-                Host: "me-api.jd.com",
-                Accept: "*/*",
-                Connection: "keep-alive",
-                Cookie: cookie,
-                "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1"),
-                "Accept-Language": "zh-cn",
-                "Referer": "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&",
-                "Accept-Encoding": "gzip, deflate, br"
+  return new Promise(async (resolve) => {
+    const options = {
+      url: "https://me-api.jd.com/user_new/info/GetJDUserInfoUnion",
+      headers: {
+        Host: "me-api.jd.com",
+        Accept: "*/*",
+        Connection: "keep-alive",
+        Cookie: cookie,
+        "User-Agent": $.isNode()
+          ? process.env.JD_USER_AGENT
+            ? process.env.JD_USER_AGENT
+            : require("./USER_AGENTS").USER_AGENT
+          : $.getdata("JDUA")
+          ? $.getdata("JDUA")
+          : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
+        "Accept-Language": "zh-cn",
+        Referer: "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&",
+        "Accept-Encoding": "gzip, deflate, br",
+      },
+    };
+    $.get(options, (err, resp, data) => {
+      try {
+        if (err) {
+          $.logErr(err);
+          $.nickName = decodeURIComponent($.UserName);
+          $.NoReturn = `${$.nickName} :` + `${JSON.stringify(err)}\n`;
+        } else {
+          if (data) {
+            data = JSON.parse(data);
+            if (data["retcode"] === "1001") {
+              $.isLogin = false; //cookie过期
+              $.nickName = decodeURIComponent($.UserName);
+              return;
             }
+            if (
+              data["retcode"] === "0" &&
+              data.data &&
+              data.data.hasOwnProperty("userInfo")
+            ) {
+              $.nickName = data.data.userInfo.baseInfo.nickname;
+            } else {
+              $.nickName = decodeURIComponent($.UserName);
+              console.log("Debug Code:" + data["retcode"]);
+              $.NoReturn = `${$.nickName} :` + `服务器返回未知状态，不做变动\n`;
+            }
+          } else {
+            $.nickName = decodeURIComponent($.UserName);
+            $.log("京东服务器返回空数据");
+            $.NoReturn = `${$.nickName} :` + `服务器返回空数据，不做变动\n`;
+          }
         }
-        $.get(options, (err, resp, data) => {
-            try {
-                if (err) {
-                    $.logErr(err)
-                    $.nickName = decodeURIComponent($.UserName);
-                    $.NoReturn = `${$.nickName} :` + `${JSON.stringify(err)}\n`;
-                } else {
-                    if (data) {
-                        data = JSON.parse(data);
-                        if (data['retcode'] === "1001") {
-                            $.isLogin = false; //cookie过期
-                            $.nickName = decodeURIComponent($.UserName);
-                            return;
-                        }
-                        if (data['retcode'] === "0" && data.data && data.data.hasOwnProperty("userInfo")) {
-                            $.nickName = (data.data.userInfo.baseInfo.nickname);
-                        } else {
-                            $.nickName = decodeURIComponent($.UserName);
-                            console.log("Debug Code:" + data['retcode']);
-                            $.NoReturn = `${$.nickName} :` + `服务器返回未知状态，不做变动\n`;
-                        }
-                    } else {
-                        $.nickName = decodeURIComponent($.UserName);
-                        $.log('京东服务器返回空数据');
-                        $.NoReturn = `${$.nickName} :` + `服务器返回空数据，不做变动\n`;
-                    }
-                }
-            } catch (e) {
-                $.nickName = decodeURIComponent($.UserName);
-                $.logErr(e)
-                $.NoReturn = `${$.nickName} : 检测出错，不做变动\n`;
-            }
-            finally {
-                resolve();
-            }
-        })
-    })
+      } catch (e) {
+        $.nickName = decodeURIComponent($.UserName);
+        $.logErr(e);
+        $.NoReturn = `${$.nickName} : 检测出错，不做变动\n`;
+      } finally {
+        resolve();
+      }
+    });
+  });
 }
 function isLoginByX1a0He() {
-    return new Promise((resolve) => {
-        const options = {
-            url: 'https://plogin.m.jd.com/cgi-bin/ml/islogin',
-            headers: {
-                "Cookie": cookie,
-                "referer": "https://h5.m.jd.com/",
-                "User-Agent": "jdapp;iPhone;10.1.2;15.0;network/wifi;Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
-            },
+  return new Promise((resolve) => {
+    const options = {
+      url: "https://plogin.m.jd.com/cgi-bin/ml/islogin",
+      headers: {
+        Cookie: cookie,
+        referer: "https://h5.m.jd.com/",
+        "User-Agent":
+          "jdapp;iPhone;10.1.2;15.0;network/wifi;Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
+      },
+    };
+    $.get(options, (err, resp, data) => {
+      try {
+        if (data) {
+          data = JSON.parse(data);
+          if (data.islogin === "1") {
+            console.log(`使用X1a0He写的接口加强检测: Cookie有效\n`);
+          } else if (data.islogin === "0") {
+            $.isLogin = false;
+            console.log(`使用X1a0He写的接口加强检测: Cookie无效\n`);
+          } else {
+            console.log(`使用X1a0He写的接口加强检测: 未知返回，不作变更...\n`);
+            $.error =
+              `${$.nickName} :` + `使用X1a0He写的接口加强检测: 未知返回...\n`;
+          }
         }
-        $.get(options, (err, resp, data) => {
-            try {
-                if (data) {
-                    data = JSON.parse(data);
-                    if (data.islogin === "1") {
-                        console.log(`使用X1a0He写的接口加强检测: Cookie有效\n`)
-                    } else if (data.islogin === "0") {
-                        $.isLogin = false;
-                        console.log(`使用X1a0He写的接口加强检测: Cookie无效\n`)
-                    } else {
-                        console.log(`使用X1a0He写的接口加强检测: 未知返回，不作变更...\n`)
-                        $.error = `${$.nickName} :` + `使用X1a0He写的接口加强检测: 未知返回...\n`
-                    }
-                }
-            } catch (e) {
-                console.log(e);
-            }
-            finally {
-                resolve();
-            }
-        });
+      } catch (e) {
+        console.log(e);
+      } finally {
+        resolve();
+      }
     });
+  });
 }
 function jsonParse(str) {
-    if (typeof str == "string") {
-        try {
-            return JSON.parse(str);
-        } catch (e) {
-            console.log(e);
-            $.msg($.name, '', '请勿随意在BoxJs输入框修改内容\n建议通过脚本去获取cookie')
-            return [];
-        }
+  if (typeof str == "string") {
+    try {
+      return JSON.parse(str);
+    } catch (e) {
+      console.log(e);
+      $.msg(
+        $.name,
+        "",
+        "请勿随意在BoxJs输入框修改内容\n建议通过脚本去获取cookie"
+      );
+      return [];
     }
+  }
 }
 
 // prettier-ignore
