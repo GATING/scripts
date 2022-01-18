@@ -65,12 +65,12 @@ async function processLineByLine(jrbodys) {
       console.log(`${jr_file} '不存在,跳过'`);
     }
   }
-  if (jrbodys.length != cookiesArr.length) {
-    console.error(
-      `CK和JRBODY长度不匹配,不使用JRBODY,请阅读脚本开头说明.当前ck长度:${cookiesArr.length},JRBODY长度:${jrbodys.length}`
-    );
-    jrbodys = undefined;
-  }
+  // if (jrbodys.length != cookiesArr.length) {
+  //   console.error(
+  //     `CK和JRBODY长度不匹配,不使用JRBODY,请阅读脚本开头说明.当前ck长度:${cookiesArr.length},JRBODY长度:${jrbodys.length}`
+  //   );
+  //   jrbodys = undefined;
+  // }
   for (let i = 0; i < cookiesArr.length; i++) {
     const data = {
       cookie: cookiesArr[i],
