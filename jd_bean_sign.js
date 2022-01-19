@@ -76,7 +76,7 @@ async function processLineByLine(jrbodys) {
       cookie: cookiesArr[i],
     };
     if (jrbodys) {
-      if (jrbodys[i].startsWith("reqData=")) {
+      if (jrbodys[i] && jrbodys[i].startsWith("reqData=")) {
         data["jrBody"] = jrbodys[i];
       } else {
         console.log(`跳过第${i + 1}个JRBODY,为空或格式不正确`);
