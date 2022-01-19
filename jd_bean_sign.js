@@ -204,7 +204,7 @@ hostname = ms.jr.jd.com, me-api.jd.com, api.m.jd.com
             JingDongGetCash(stop), //京东领现金
             //         JingDongShake(stop), //京东摇一摇
             JDSecKilling(stop), //京东秒杀
-            // JingRongDoll(stop, 'JRDoll', '京东金融-签壹', '4D25A6F482'),
+            JingRongDoll(stop, "JRDoll", "京东金融-签壹", "4D25A6F482"),
             // JingRongDoll(stop, 'JRThreeDoll', '京东金融-签叁', '69F5EC743C'),
             // JingRongDoll(stop, 'JRFourDoll', '京东金融-签肆', '30C4F86264'),
             // JingRongDoll(stop, 'JRFiveDoll', '京东金融-签伍', '1D06AA3B0F')
