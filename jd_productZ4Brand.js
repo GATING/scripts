@@ -156,6 +156,7 @@ async function doTask() {
     if (
       $.oneTask.assignmentType === 3 ||
       $.oneTask.assignmentType === 0 ||
+      $.oneTask.assignmentType === 1 ||
       $.oneTask.assignmentType === 7
     ) {
       if ($.oneTask.assignmentType === 7) {
@@ -166,7 +167,10 @@ async function doTask() {
         console.log(`任务：${$.oneTask.assignmentName}，去执行`);
       }
       let subInfo =
-        $.oneTask.ext.followShop || $.oneTask.ext.brandMemberList || "";
+        $.oneTask.ext.followShop ||
+        $.oneTask.ext.brandMemberList ||
+        $.oneTask.ext.shoppingActivity ||
+        "";
       if (subInfo && subInfo[0]) {
         $.runInfo = subInfo[0];
       } else {
