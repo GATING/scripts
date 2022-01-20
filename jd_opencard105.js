@@ -154,15 +154,7 @@ let activityCookie = "";
     `入口:\nhttps://lzdz1-isv.isvjcloud.com/dingzhi/customized/common/index/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`
   );
   let shareUuidArr = [
-    $.shareUuid,
-    "f76b0dcd728548dc8c7bb60dba272f2d",
-    "b07290687bec42d7853a56531f6cece3",
-    "00828aeec7ce4ebcb28c63a32b1fda34",
-    "d9b1c4660a4a400b9225ce9e4c42f08e",
-    "1bdc55d58ba74670aa00bc90d19d7c0b",
-    "d6bfce0bbd4d41aaa08dbd3f41697da6",
-    "50d9a7fcd452463c8668633b01116632",
-    "d62d0215e17e4a6890df3e413d5ba403",
+   
   ];
   let s = Math.floor(Math.random() * 10);
   let n = 0;
