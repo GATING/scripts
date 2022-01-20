@@ -45,7 +45,7 @@ let token = [
     "755A1AA058A02D18CCB4D239E35FCB5B",
     "5AED62EAD871BE2882DA8F3BFA75058C",
     "9F381F12C3F055A10876E2F70A0CB879",
-    "7B5F56D2C881AC0B9FAE411B43D317A1"
+    "7B5F56D2C881AC0B9FAE411B43D317A1",
   ]),
 ];
 if (process.env.DPQDTK) {
@@ -59,8 +59,9 @@ if (!token.length) {
   console.log("无店铺签到token,不执行.需自备token:环境变DPQDTK: tk1&tk2.");
   return;
 }
-const $ = new Env("店铺签到");
 
+const $ = new Env("店铺签到");
+  
 const notify = $.isNode() ? require("./sendNotify") : "";
 //Node.js用户请在jdCookie.js处填写京东ck;
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
