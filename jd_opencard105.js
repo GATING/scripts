@@ -149,13 +149,11 @@ let activityCookie = "";
     return;
   }
   $.activityId = "dz220106100001616201Union";
-  $.shareUuid = "";
+  $.shareUuid = "433e30f8e591421db3abda354c1be0a9";
   console.log(
     `入口:\nhttps://lzdz1-isv.isvjcloud.com/dingzhi/customized/common/index/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`
   );
-  let shareUuidArr = [
-   
-  ];
+  let shareUuidArr = [];
   let s = Math.floor(Math.random() * 10);
   let n = 0;
   if (s == 1) n = Math.floor(Math.random() * shareUuidArr.length);
