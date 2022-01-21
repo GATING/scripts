@@ -58,7 +58,7 @@ $.logic = async function () {
     `activityId=${$.activityId}`
   );
   if (!actInfo.result || !actInfo.data) {
-    $.log(`获取活动信息失败`);
+    $.log(`获取活动信息失败`, actInfo);
     return;
   }
   $.jdActivityId = actInfo.data.jdActivityId;
