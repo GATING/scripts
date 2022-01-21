@@ -36,8 +36,8 @@ let guaopenwait = "0"
 let guaopencard_draw = "0"
 
 const $ = new Env('1.21~1.28 年货不打烊 好物带回家');
-const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
-const notify = $.isNode() ? require('./sendNotify') : '';
+const jdCookieNode = $.isNode() ? require('../jdCookie.js') : '';
+const notify = $.isNode() ? require('../sendNotify') : '';
 let cleanCart = ''
 if($.isNode()){
   try{

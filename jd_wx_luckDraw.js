@@ -20,7 +20,7 @@ $.logic = async function () {
   $.activityUrl = $.activityUrl.replace("#", "&");
   $.activityId = $.getQueryString($.activityUrl, "activityId");
   if (!$.activityId || !$.activityUrl) {
-    $.log(`活动id不存在`);
+    $.log(`活动id不存在`, $.activityUrl);
     return;
   }
   $.log(`活动id: ${$.activityId}`, `活动url: ${$.activityUrl}`);
