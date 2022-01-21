@@ -3,6 +3,7 @@ const { Env } = mode ? require("../magic") : require("./magic");
 const $ = new Env("M幸运抽奖");
 $.lz =
   "LZ_TOKEN_KEY=lztokef1eb8494b0af868bd18bdaf8;LZ_TOKEN_VALUE=Aa5RE8RuY4X3zA==;";
+// $.lz = 'LZ_TOKEN_KEY=lztokenpage4336c040925f419d83ce6028307ef6e2;LZ_TOKEN_VALUE=B0oH3vDY2bhHWuKbVaJ+XQ==;';
 $.activityUrl = process.env.M_WX_LUCK_DRAW_URL
   ? process.env.M_WX_LUCK_DRAW_URL
   : "";
