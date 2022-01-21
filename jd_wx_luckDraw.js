@@ -3,7 +3,6 @@ const { Env } = mode ? require("../magic") : require("./magic");
 const $ = new Env("M幸运抽奖");
 $.lz =
   "LZ_TOKEN_KEY=lztokef1eb8494b0af868bd18bdaf8;LZ_TOKEN_VALUE=Aa5RE8RuY4X3zA==;";
-// $.lz = 'LZ_TOKEN_KEY=lztokenpage4336c040925f419d83ce6028307ef6e2;LZ_TOKEN_VALUE=B0oH3vDY2bhHWuKbVaJ+XQ==;';
 $.activityUrl = process.env.M_WX_LUCK_DRAW_URL
   ? process.env.M_WX_LUCK_DRAW_URL
   : "";
@@ -20,7 +19,7 @@ $.logic = async function () {
   $.activityUrl = $.activityUrl.replace("#", "&");
   $.activityId = $.getQueryString($.activityUrl, "activityId");
   if (!$.activityId || !$.activityUrl) {
-    $.log(`活动id不存在`, $.activityUrl);
+    $.log(`活动id不存在`);
     return;
   }
   $.log(`活动id: ${$.activityId}`, `活动url: ${$.activityUrl}`);
@@ -58,7 +57,7 @@ $.logic = async function () {
     `activityId=${$.activityId}`
   );
   if (!actInfo.result || !actInfo.data) {
-    $.log(`获取活动信息失败`, actInfo);
+    $.log(`获取活动信息失败`);
     return;
   }
   $.jdActivityId = actInfo.data.jdActivityId;
@@ -194,6 +193,7 @@ $.after = async function () {
 $.run({ filename: __filename }).catch((reason) => $.log(reason));
 
 async function api(fn, body, isv) {
+  console.log("domain:", $.domain);
   let url = `https://${$.domain}/${fn}`;
   let ck = $.lz + (($.Pin && "AUTH_C_USER=" + $.Pin + ";") || "");
   ck = isv ? `IsvToken=${$.Token};` + ck : ck;
