@@ -214,7 +214,7 @@ async function run() {
           await $.wait(parseInt(Math.random() * 1000 + 4000, 10))
         }
         await takePostRequest('addCart');
-        await $.wait(parseInt(Math.random() * 2000 + 4000, 10))
+        await $.wait(parseInt(Math.random() * 1000 + 4000, 10))
         if(cleanCart && goodsArr !== false){
           // await $.wait(parseInt(Math.random() * 1000 + 4000, 10))
           await cleanCart.clean(cookie,'https://jd.smiek.tk/jdcleancatr_21102717',goodsArr || [ ])
@@ -268,7 +268,7 @@ async function run() {
       }
     }else{
       if($.index % 3 == 0) console.log('休息1分钟，别被黑ip了\n可持续发展')
-      if($.index % 3 == 0) await $.wait(parseInt(Math.random() * 5000 + 60000, 10))
+      if($.index % 3 == 0) await $.wait(parseInt(Math.random() * 5000 + 6000, 10))
     }
   } catch (e) {
     console.log(e)
