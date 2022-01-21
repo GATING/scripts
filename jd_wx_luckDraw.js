@@ -193,7 +193,6 @@ $.after = async function () {
 $.run({ filename: __filename }).catch((reason) => $.log(reason));
 
 async function api(fn, body, isv) {
-  console.log("domain:", $.domain);
   let url = `https://${$.domain}/${fn}`;
   let ck = $.lz + (($.Pin && "AUTH_C_USER=" + $.Pin + ";") || "");
   ck = isv ? `IsvToken=${$.Token};` + ck : ck;
