@@ -67,7 +67,7 @@ if (process.env.NO_RUSH && process.env.NO_RUSH != "") {
             $.authorNum = `${random(1000000, 9999999)}`
             $.randomCode = random(1000000, 9999999)
             $.activityId = '14e6bdc3ee7a496f87b89eee902a370e'
-            $.activityShopId = '1000004489'
+            $.activityShopId = '1000013169'
             $.activityUrl = `https://lzdz1-isv.isvjd.com/dingzhi/dz/openCard/activity/${$.authorNum}?activityId=${$.activityId}&shareUuid=${encodeURIComponent($.authorCode)}&adsource=null&shareuserid4minipg=null&shopid=${$.activityShopId}&lng=00.000000&lat=00.000000&sid=&un_area=`
             if (isRush === true) {
                 console.log("未检测到不执行环境变量，执行任务")
