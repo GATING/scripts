@@ -14,8 +14,8 @@ function openCardActivity(activityId, activityUrl, pin, num, againUserIndex) {
   return new Promise((resolve) => {
     const prefix = activityUrl.includes("cjhydz") ? "cjhydz" : "lzkjdz";
     const $ = new Env("微定制瓜分京豆");
-    const notify = $.isNode() ? require("./sendNotify") : "";
-    const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+    const notify = $.isNode() ? require("../sendNotify") : "";
+    const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
     let cookiesArr = [],
       cookie = "",
       message = "",
