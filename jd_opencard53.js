@@ -42,9 +42,6 @@ let cleanCart = ''
 if($.isNode()){
   try{
     const fs = require('fs');
-    if (fs.existsSync('./cleancart_activity.js')) {
-      cleanCart = require('./cleancart_activity');
-    }
   }catch(e){
   }
 }
@@ -93,7 +90,7 @@ let activityCookie =''
     return;
   }
   $.activityId = "dzlhkkkbblnt20220121A"
-  $.shareUuid = "4a18d9d3a3a04d8abaff01e6e792f87d"
+  $.shareUuid = ""
   console.log(`入口:\nhttps://lzdz1-isv.isvjcloud.com/dingzhi/customized/common/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`)
 
   for (let i = 0; i < cookiesArr.length; i++) {
