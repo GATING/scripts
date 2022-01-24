@@ -68,7 +68,7 @@ let activityCookie =''
     return;
   }
   $.activityId = "0e7eb2b10c29433293867bd626383361"
-  $.shareUuid = "3b3c10dfbbc948d9b1f4fdd05ba9e936"
+  $.shareUuid = ""
   $.venderIds = "1000095981"
   console.log(`入口:\nhttps://lzdz-isv.isvjcloud.com/welfare/unite/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`)
   for (let i = 0; i < cookiesArr.length; i++) {
