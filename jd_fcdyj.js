@@ -84,18 +84,6 @@ const JD_API_HOST = `https://api.m.jd.com`;
                 await help($.rid, $.inviter, 2)
             }
         }
-        if (new Date().getHours() >= 10) {
-            if ($.authorCode && $.authorCode.length) {
-                console.log(`\n${$.UserName} 去助力\n`)
-                for (let j = 0; j < $.authorCode.length; j++) {
-                    let item = $.authorCode[j];
-                    await help(item.redEnvelopeId, item.inviter, 1)
-                    await $.wait(1000)
-                    await help(item.redEnvelopeId, item.inviter, 2)
-                }
-
-            }
-        }
         console.log(`\n******查询【京东账号${$.index}】${$.nickName || $.UserName}红包情况******\n`);
         await getinfo()
         if ($.canDraw) {
