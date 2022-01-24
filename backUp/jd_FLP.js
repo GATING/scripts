@@ -16,8 +16,8 @@ cron "18 2,15 * * *" script-path=https://raw.githubusercontent.com/KingRan/JDJB/
 组队分豆-飞利浦 = type=cron,script-path=https://raw.githubusercontent.com/KingRan/JDJB/main/jd_teamFLP.js, cronexpr="18 2,15 * * *", timeout=3600, enable=true
 */
 const $ = new Env("组队分豆-飞利浦");
-const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
-const notify = $.isNode() ? require('./sendNotify') : '';
+const jdCookieNode = $.isNode() ? require('../jdCookie.js') : '';
+const notify = $.isNode() ? require('../sendNotify') : '';
 let cookiesArr = [], cookie = '', message = '';
 let ownCode = null;
 if ($.isNode()) {
