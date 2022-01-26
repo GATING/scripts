@@ -69,15 +69,14 @@ if (!token.length) {
   console.log("无店铺签到token,不执行.需自备token:环境变DPQDTK: tk1&tk2.");
   return;
 }
-
 const $ = new Env("店铺签到");
-
 const notify = $.isNode() ? require("./sendNotify") : "";
 //Node.js用户请在jdCookie.js处填写京东ck;
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 //IOS等用户直接用NobyDa的jd cookie
 let cookiesArr = [],
   cookie = "",
+  allMessage = "",
   message;
 const JD_API_HOST = "https://api.m.jd.com/api?appid=interCenter_shopSign";
 
@@ -85,6 +84,7 @@ let activityId = "";
 let vender = "";
 let num = 0;
 let shopname = "";
+
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item]);
