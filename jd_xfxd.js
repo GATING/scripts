@@ -4,7 +4,12 @@ cron 18 0 * * * jd_xfxd.js
 活动入口：京东APP->我的->会员店->天天领京豆->幸福小店
 TG频道：https://t.me/tom_210120
 */
-
+if (process.env.XFXD != "true") {
+  console.log(
+    "默认不运行,设置XFXD为true来运行\n需要手动过新手任务后运行\n入口:APP-我的-左上角plus专属-会员店->天天领京豆->幸福小店\n可能黑号，建议只跑一次"
+  );
+  return;
+}
 const $ = new Env("京东幸福小店");
 const jsname = "京东幸福小店";
 const logDebug = 0;
