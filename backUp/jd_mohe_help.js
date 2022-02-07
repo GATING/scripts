@@ -19,8 +19,8 @@ cron "5 0,19 * * *" script-path=https://raw.githubusercontent.com/KingRan/JDJB/m
 5G超级盲盒 = type=cron,script-path=https://raw.githubusercontent.com/KingRan/JDJB/main/jd_mohe_help.js, cronexpr="5 0,19 * * *", timeout=3600, enable=true
  */
 const $ = new Env('5G超级盲盒内部互助');
-const notify = $.isNode() ? require('./sendNotify') : '';
-const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
+const notify = $.isNode() ? require('../sendNotify') : '';
+const jdCookieNode = $.isNode() ? require('../jdCookie.js') : '';
 let jdNotify = true;//是否关闭通知，false打开通知推送，true关闭通知推送
 let cookiesArr = [], cookie = '', message, allMessage = '';
 
@@ -149,7 +149,7 @@ function taskurl(body = {}) {
             'origin': 'https://blindbox5g.jd.com',
             "cookie": cookie,
             "referer": "https://blindbox5g.jd.com",
-            "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1")
+            "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('../USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1")
         }
     }
 }

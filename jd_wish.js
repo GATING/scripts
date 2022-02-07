@@ -27,8 +27,16 @@ let message = "",
 let cookiesArr = [],
   cookie = "";
 const JD_API_HOST = "https://api.m.jd.com/client.action";
-let appIdArr = ["1GFNRxq8", "1GVFUx6g", "1E1xZy6s", "1GVJWyqg", "1GFRRyqo"];
+let appIdArr = [
+  "1EFRQwA",
+  "1GFNRxq8",
+  "1GVFUx6g",
+  "1E1xZy6s",
+  "1GVJWyqg",
+  "1GFRRyqo",
+];
 let appNameArr = [
+  "疯狂砸金蛋",
   "新年宠粉",
   "JOY年味之旅",
   "PLUS生活特权",

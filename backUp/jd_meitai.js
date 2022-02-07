@@ -4,8 +4,8 @@ https://t.me/aaron_scriptsG
 https://t.me/jdscrip
 */
 const $ = new Env("美泰");
-const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
-const notify = $.isNode() ? require('./sendNotify') : '';
+const jdCookieNode = $.isNode() ? require('../jdCookie.js') : '';
+const notify = $.isNode() ? require('../sendNotify') : '';
 let cookiesArr = [], cookie = '', message = '';
 let ownCode = null;
 if ($.isNode()) {
