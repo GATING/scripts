@@ -134,7 +134,8 @@ class UserInfo {
     console.log(
       "\n请先手动进游戏过了新手引导再跑脚本\n活动入口：京东APP->我的->会员店->天天领京豆->幸福小店\n目前应该每天只能换20豆和10豆两档了，如果兑换失败的，尝试换IP或者手动兑换吧"
     );
-
+    // 只运行账号1
+    userList = userList.slice(0, 1);
     for (let user of userList) {
       console.log(`\n=========== 开始账号 ${user.nickname} ===========`);
 
@@ -149,7 +150,7 @@ class UserInfo {
       await user.updateSave();
       await $.wait(1000);
 
-      for (let id = 1; id > 0; id--) {
+      for (let id = 6; id > 0; id--) {
         await user.sendBean(id);
         await $.wait(1000);
       }

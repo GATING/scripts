@@ -77,9 +77,28 @@ $.logic = async function () {
   });
 };
 
+const jdCookieNode = require("./jdCookie.js");
+let cookies = [];
+Object.keys(jdCookieNode).forEach((item) => {
+  cookies.push(jdCookieNode[item]);
+});
+
+let blacklist = [];
+if (process.env.FARM_AUTO_ACCOUNT) {
+  process.env.FARM_AUTO_ACCOUNT.split(",").forEach((item) => {
+    const index = cookiesArr.findIndex((cookie) =>
+      cookie?.match(/pt_pin=([^; ]+)(?=;?)/)[1]?.includes(item)
+    );
+    if (index !== -1) {
+      blacklist.push(index);
+    }
+  });
+}
+
 $.run({
   wait: [2000, 3000],
   whitelist: [],
+  blacklist: blacklist,
 }).catch((reason) => $.log(reason));
 
 // noinspection DuplicatedCode
