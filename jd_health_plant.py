@@ -120,24 +120,16 @@ except:
 
 
 if "JD_COOKIE" in os.environ:
-        cookies1 = []
-        cookie1 = os.environ["JD_COOKIE"].split('&')
-        cookies1 = os.environ["JD_COOKIE"]
-        for i in cookies1:
-            cookies.append(cookies1[int(i)-1])
+        cookies = os.environ["JD_COOKIE"].split('&')
         printT ("已获取并使用Env环境plant_cookies")
 else:
     if cookie == '':
         printT ("变量plant_cookie未填写")
         exit (0)
 
-if "charge_targe_id" in os.environ:
-    if len (os.environ["charge_targe_id"]) > 8:
-        charge_targe_ids = os.environ["charge_targe_id"]
-        charge_targe_ids = charge_targe_ids.split ('&')
-    else:
-        charge_targe_id = os.environ["charge_targe_id"]
-        printT (f"已获取并使用Env环境 charge_targe_id={charge_targe_id}")
+if len(cookies) > 1:
+    charge_targe_ids = list(map(lambda x:"11111",cookies))
+    printT (f"已获取并使用Env环境 charge_targe_id={charge_targe_id}")
 else:
     printT("变量charge_targe_id未填写，无法充能")
 
