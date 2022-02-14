@@ -121,6 +121,7 @@ except:
 
 if "JD_COOKIE" in os.environ:
         cookies1 = []
+        cookie1 = os.environ["JD_COOKIE"].split('&')
         cookies1 = os.environ["JD_COOKIE"]
         for i in cookies1:
             cookies.append(cookies1[int(i)-1])
