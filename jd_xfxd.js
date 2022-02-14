@@ -88,6 +88,9 @@ class UserInfo {
     let url = `https://jd-plusshop-7goyzspef1de45ca-1307535713.ap-shanghai.app.tcloudbase.com/main`;
     this.save.items.data["101001003"] =
       700000 + Math.floor(Math.random() * 100000);
+    this.save.level = 30; //等级
+    this.save.items.data["101002002"] = 20 + Math.floor(Math.random() * 100000); //道具快速收益
+    this.save.items.data["101002001"] = 9999;
     this.save.beanRecord = {};
     this.save.updateVersion += 1;
     let body = {
