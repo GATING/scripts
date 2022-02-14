@@ -78,7 +78,7 @@ let activityCookie = "";
     );
     return;
   }
-  $.shareUuid = "";
+  $.shareUuid = "fa802cee6e8146aba29762905e9e2c08";
   for (let i = 0; i < cookiesArr.length; i++) {
     cookie = cookiesArr[i];
     if (cookie) {
