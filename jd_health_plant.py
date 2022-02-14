@@ -119,18 +119,10 @@ except:
 #######################################################################
 
 
-if "plant_cookie" in os.environ:
-    if len (os.environ["plant_cookie"]) == 1:
-        is_ck = int(os.environ["plant_cookie"])
-        cookie1 = os.environ["JD_COOKIE"].split('&')
-        cookie = cookie1[is_ck-1]
-        printT ("已获取并使用Env环境cookie")
-    elif len (os.environ["plant_cookie"]) > 1:
+if "JD_COOKIE" in os.environ:
         cookies1 = []
         cookies1 = os.environ["JD_COOKIE"]
-        cookies1 = cookies1.split ('&')
-        is_ck = os.environ["plant_cookie"].split('&')
-        for i in is_ck:
+        for i in cookies1:
             cookies.append(cookies1[int(i)-1])
         printT ("已获取并使用Env环境plant_cookies")
 else:
