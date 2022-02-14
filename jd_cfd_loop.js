@@ -37,6 +37,16 @@ if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item])
   })
+  if (process.env.CFD_FORBID_ACCOUNT) {
+    process.env.CFD_FORBID_ACCOUNT.split(",").forEach((item) => {
+      const index = cookiesArr.findIndex((cookie) =>
+        cookie?.match(/pt_pin=([^; ]+)(?=;?)/)[1]?.includes(item)
+      );
+      if (index !== -1) {
+        cookiesArr.splice(index, 1);
+      }
+    });
+  }
   if (process.env.JD_DEBUG && process.env.JD_DEBUG === 'false') console.log = () => {};
   if (JSON.stringify(process.env).indexOf('GITHUB') > -1) process.exit(0);
 } else {
