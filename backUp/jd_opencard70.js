@@ -15,8 +15,8 @@ let guaopenwait = "0";
 let guaopencard_draw = "3";
 
 const $ = new Env("2.14~2.21 大牌联合 臻宠会员");
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
-const notify = $.isNode() ? require("./sendNotify") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
 let cleanCart = "";
 if ($.isNode()) {
   try {
