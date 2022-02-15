@@ -86,7 +86,7 @@ Object.keys(jdCookieNode).forEach((item) => {
 let blacklist = [];
 if (process.env.FARM_AUTO_ACCOUNT) {
   process.env.FARM_AUTO_ACCOUNT.split(",").forEach((item) => {
-    const index = cookiesArr.findIndex((cookie) =>
+    const index = cookies.findIndex((cookie) =>
       cookie?.match(/pt_pin=([^; ]+)(?=;?)/)[1]?.includes(item)
     );
     if (index !== -1) {
