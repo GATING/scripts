@@ -11,8 +11,8 @@ cron:15 14,22 15 2 *
 
 
 const $ = new Env('2022欢度元宵 邀人助力');
-const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
-const notify = $.isNode() ? require('./sendNotify') : '';
+const jdCookieNode = $.isNode() ? require('../jdCookie.js') : '';
+const notify = $.isNode() ? require('../sendNotify') : '';
 CryptoScripts()
 $.CryptoJS = $.isNode() ? require('crypto-js') : CryptoJS;
 //IOS等用户直接用NobyDa的jd cookie
