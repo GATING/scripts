@@ -11,7 +11,6 @@ cron:10 10 10 10 *
 10 10 10 10 * jd_cjzdgf.js, tag=CJ组队瓜分京豆, enabled=true
 
 */
-const $ = new Env("CJ组队瓜分京豆");
 let jd_cjhy_activityId = "2584bc5fb137415c87cedbb2e56bda3c"; // 活动ID
 let jd_cjhy_activityUrl = "https://cjhydz-isv.isvjcloud.com"; // 活动地址
 
@@ -21,7 +20,6 @@ if (process.env.jd_cjhy_activityId && process.env.jd_cjhy_activityUrl) {
 } else {
   return;
 }
-
 
 var _0xodz = "jsjiami.com.v6",
   _0xodz_ = ["_0xodz"],
