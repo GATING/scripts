@@ -18,7 +18,10 @@ let jd_cjhy_activityUrl = "https://cjhydz-isv.isvjcloud.com"; // 活动地址
 if (process.env.jd_cjhy_activityId && process.env.jd_cjhy_activityUrl) {
   jd_cjhy_activityId = process.env.jd_cjhy_activityId;
   jd_cjhy_activityUrl = process.env.jd_cjhy_activityUrl;
+} else {
+  return;
 }
+
 
 var _0xodz = "jsjiami.com.v6",
   _0xodz_ = ["_0xodz"],
