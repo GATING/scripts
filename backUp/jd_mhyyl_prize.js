@@ -3,8 +3,8 @@
 cron 10 22 * * * https://raw.githubusercontent.com/333333/jd/main/scripts/jd_mhyyl_prize.js
 * */
 const $ = new Env("萌虎摇摇乐奖励列表");
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
-const notify = $.isNode() ? require("./sendNotify") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
 let cookiesArr = [];
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
