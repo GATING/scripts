@@ -29,7 +29,7 @@ const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 let cookiesArr = [],
   cookie = "",
   message;
-const linkIdArr = [];
+const linkIdArr = ["Eu7-E0CUzqYyhZJo9d3YkQ"];
 let linkId;
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
@@ -135,7 +135,7 @@ function reward_query() {
   return new Promise((resolve) => {
     $.get(
       taskGetUrl("spring_reward_query", {
-        inviter: [],
+        inviter: ["_QNMEYwFR-VgUJMSMVER3Q"],
         linkId,
       }),
       async (err, resp, data) => {
@@ -165,7 +165,7 @@ async function redPacket() {
   return new Promise((resolve) => {
     $.get(
       taskGetUrl("spring_reward_receive", {
-        inviter: [],
+        inviter: ["_QNMEYwFR-VgUJMSMVER3Q"],
         linkId,
       }),
       async (err, resp, data) => {
