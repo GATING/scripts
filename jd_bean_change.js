@@ -1118,6 +1118,7 @@ async function bean() {
   }
 
   await redPacket();
+  await getCoupon();
 }
 
 async function Monthbean() {
@@ -1196,6 +1197,151 @@ async function Monthbean() {
       $.allexpenseBean += Number(item.amount);
     }
   }
+}
+
+function getCoupon() {
+  return new Promise((resolve) => {
+    let options = {
+      url: `https://wq.jd.com/activeapi/queryjdcouponlistwithfinance?state=1&wxadd=1&filterswitch=1&_=${Date.now()}&sceneval=2&g_login_type=1&callback=jsonpCBKB&g_ty=ls`,
+      headers: {
+        authority: "wq.jd.com",
+        "User-Agent": $.isNode()
+          ? process.env.JD_USER_AGENT
+            ? process.env.JD_USER_AGENT
+            : require("./USER_AGENTS").USER_AGENT
+          : $.getdata("JDUA")
+          ? $.getdata("JDUA")
+          : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
+        accept: "*/*",
+        referer: "https://wqs.jd.com/",
+        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+        cookie: cookie,
+      },
+    };
+    $.get(options, async (err, resp, data) => {
+      try {
+        data = JSON.parse(data.match(new RegExp(/jsonpCBK.?\((.*);*/))[1]);
+        let couponTitle = "";
+        let couponId = "";
+        // 删除可使用且非超市、生鲜、京贴
+        let useable = data.coupon.useable;
+        // console.log(`=================${JSON.stringify(useable)}`);
+        for (let i = 0; i < useable.length; i++) {
+          if (useable[i].limitStr.indexOf("全品类") > -1) {
+            // console.log(`=================${useable[i].couponTitle}`);
+            $.beginTime = useable[i].beginTime;
+            if (
+              $.beginTime < new Date().getTime() &&
+              useable[i].quota < 20 &&
+              useable[i].coupontype === 1
+            ) {
+              $.todayEndTime = new Date(
+                new Date(new Date().getTime()).setHours(23, 59, 59, 999)
+              ).getTime();
+              $.tomorrowEndTime = new Date(
+                new Date(new Date().getTime() + 24 * 60 * 60 * 1000).setHours(
+                  23,
+                  59,
+                  59,
+                  999
+                )
+              ).getTime();
+              $.couponEndTime = useable[i].endTime;
+              $.couponName = useable[i].limitStr;
+              $.platFormInfo = useable[i].platFormInfo;
+              $.value满 = parseFloat(useable[i].quota);
+              $.value减 = parseFloat(useable[i].discount);
+              if ($.couponEndTime < $.todayEndTime) {
+                // $.message += `【京东红包】${$.jdRed}(将过期${$.jdRedExpire.toFixed(2)})元 \n`;
+                $.message += `【东券-全品类】=满${$.value满}-${$.value减}元(今日将过期🧧🧧🧧🧧 )----${$.platFormInfo}\n`;
+              } else {
+                // console.log(`======22222========${useable[i].couponTitle}`);
+                $.message += `【东券-全品类】=满${$.value满}-${$.value减}元----${$.platFormInfo}\n`;
+              }
+            }
+          }
+          if (useable[i].couponTitle.indexOf("极速版APP活动") > -1) {
+            $.todayEndTime = new Date(
+              new Date(new Date().getTime()).setHours(23, 59, 59, 999)
+            ).getTime();
+            $.tomorrowEndTime = new Date(
+              new Date(new Date().getTime() + 24 * 60 * 60 * 1000).setHours(
+                23,
+                59,
+                59,
+                999
+              )
+            ).getTime();
+            $.couponEndTime = useable[i].endTime;
+            $.startIndex = useable[i].couponTitle.indexOf("-") - 3;
+            $.endIndex = useable[i].couponTitle.indexOf("元") + 1;
+
+            $.couponName = useable[i].couponTitle.substring(
+              $.startIndex,
+              $.endIndex
+            );
+
+            if ($.couponEndTime < $.todayEndTime) {
+              // console.log(`=================${useable[i].couponTitle}`);
+              // $.message += `【京东红包】${$.jdRed}(将过期${$.jdRedExpire.toFixed(2)})元 \n`;
+              $.message += `【极速优惠券】${$.couponName}(今日将过期🧧🧧🧧🧧) \n`;
+            } else if ($.couponEndTime < $.tomorrowEndTime) {
+              $.message += `【极速优惠券】${$.couponName}(明日将过期) \n`;
+            } else {
+              $.couponEndTime = timeFormat(parseInt($.couponEndTime));
+              $.message += `【极速优惠券】${$.couponName}(过期时间:${$.couponEndTime}) \n`;
+            }
+          }
+          //8是支付券， 7是白条券
+          if (useable[i].couponStyle == 7 || useable[i].couponStyle == 8) {
+            $.beginTime = useable[i].beginTime;
+            if (
+              $.beginTime > new Date().getTime() ||
+              useable[i].quota > 50 ||
+              useable[i].coupontype != 1
+            ) {
+              continue;
+            }
+            $.couponType = "白条券";
+            if (useable[i].couponStyle == 8) {
+              $.couponType = "支付券";
+            }
+            $.message += `【${$.couponType}】===${useable[i].quota}-${useable[i].discount}() \n`;
+            $.platFormInfo = useable[i].platFormInfo;
+
+            $.message += `${$.platFormInfo}\n`;
+
+            $.todayEndTime = new Date(
+              new Date(new Date().getTime()).setHours(23, 59, 59, 999)
+            ).getTime();
+            $.tomorrowEndTime = new Date(
+              new Date(new Date().getTime() + 24 * 60 * 60 * 1000).setHours(
+                23,
+                59,
+                59,
+                999
+              )
+            ).getTime();
+            $.couponEndTime = new Date(parseInt(useable[i].endTime))
+              .toLocaleString()
+              .replace(/:\d{1,2}$/, " ");
+
+            if (useable[i].endTime < $.todayEndTime) {
+              $.message += `过期时间: ${$.couponEndTime}(今日将过期🧧🧧🧧🧧) \n`;
+            } else if (useable[i].endTime < $.tomorrowEndTime) {
+              $.message += `过期时间: ${$.couponEndTime}(明日日将过期🧧🧧🧧🧧) \n`;
+            } else {
+              $.message += `过期时间: ${$.couponEndTime}\n`;
+            }
+          }
+        }
+      } catch (e) {
+        $.logErr(e, resp);
+      } finally {
+        resolve();
+      }
+    });
+  });
 }
 
 async function jdCash() {
