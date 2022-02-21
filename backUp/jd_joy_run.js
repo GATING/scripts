@@ -129,24 +129,27 @@ async function main() {
     );
     return;
   }
-  let readTokenRes = await getNetToken(
-    "https://raw.githubusercontent.com/11111115/JDHelp/main/joy_run_token.json"
-  );
-  if (readTokenRes && readTokenRes.code === 200) {
-    $.LKYLToken =
-      readTokenRes.data[0] ||
-      ($.isNode()
-        ? process.env.JOY_RUN_TOKEN
-          ? process.env.JOY_RUN_TOKEN
-          : jdJoyRunToken
-        : $.getdata("jdJoyRunToken") || jdJoyRunToken);
-  } else {
+  if (process.env.JOY_RUN_TOKEN) {
     $.LKYLToken = $.isNode()
       ? process.env.JOY_RUN_TOKEN
         ? process.env.JOY_RUN_TOKEN
         : jdJoyRunToken
       : $.getdata("jdJoyRunToken") || jdJoyRunToken;
+  } else {
+    let readTokenRes = await getNetToken(
+      "https://raw.githubusercontent.com/11111115/JDHelp/main/joy_run_token.json"
+    );
+    if (readTokenRes && readTokenRes.code === 200) {
+      $.LKYLToken =
+        readTokenRes.data[0] ||
+        ($.isNode()
+          ? process.env.JOY_RUN_TOKEN
+            ? process.env.JOY_RUN_TOKEN
+            : jdJoyRunToken
+          : $.getdata("jdJoyRunToken") || jdJoyRunToken);
+    }
   }
+
   console.log(`打印token：${$.LKYLToken ? $.LKYLToken : "暂无token"}\n`);
   if (!$.LKYLToken) {
     $.msg(
