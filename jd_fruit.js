@@ -7,6 +7,8 @@
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 互助码shareCode请先手动运行脚本查看打印可看到
 一天只能帮助3个人。多出的助力码无效
+每号间隔（毫秒），默认0毫秒（0分钟）
+export fruit_sleep=20000
 
 ==========================Quantumultx=========================
 [task_local]
@@ -96,6 +98,9 @@ if ($.isNode() && process.env.WP_APP_TOKEN_ONE) {
       option = {};
       $.retry = 0;
       await jdFruit();
+    }
+    if ($.isNode()) {
+      process.env.fruit_sleep ? await $.wait(Number(process.env.fruit_sleep)) : ''
     }
   }
   if ($.isNode() && allMessage && $.ctrTemp) {
