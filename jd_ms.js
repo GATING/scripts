@@ -210,7 +210,7 @@ function getTaskList() {
 }
 
 function doTask(body) {
-  body = {...body, "encryptProjectId": $.encryptProjectId, "sourceCode": sourceCode, "ext": {},"extParam":{"businessData":{"random":25500725},"signStr":timestamp+"~1hj9fq9","sceneid":"MShPageh5"} }
+  body = {...body, "encryptProjectId": $.encryptProjectId, "sourceCode": sourceCode, "ext": {},"extParam":{"businessData":{"random":25500725},"signStr":timestamp+"~0m7qdq1","sceneid":"MShPageh5"} }
   return new Promise(resolve => {
     $.post(taskPostUrl('doInteractiveAssignment', body), (err, resp, data) => {
       try {

@@ -3179,7 +3179,9 @@ async function cfd() {
         return;
       }
     }
-
+    if (!beginInfo.MarkList.daily_task_win) {
+      await setMark();
+    }
     // 寻宝
     console.log(`寻宝`);
     let XBDetail = beginInfo.XbStatus.XBDetail.filter(
@@ -3225,7 +3227,7 @@ async function cfd() {
     await $.wait(3000);
     for (let key of Object.keys($.info.buildInfo.buildList)) {
       let vo = $.info.buildInfo.buildList[key];
-      let body = `strBuildIndex=${vo.strBuildIndex}`;
+      let body = `strBuildIndex=${vo.strBuildIndex}&dwType=1`;
       await getBuildInfo(body, vo);
       await $.wait(3000);
     }
@@ -4034,6 +4036,7 @@ async function getActTask(type = true) {
                 vo.dwCompleteNum !== vo.dwTargetNum &&
                 vo.dwTargetNum < 10
               ) {
+                if (vo.strTaskName === "升级1个建筑") continue;
                 console.log(`开始【🐮牛牛任务】${vo.strTaskName}`);
                 for (let i = vo.dwCompleteNum; i < vo.dwTargetNum; i++) {
                   console.log(
@@ -4223,7 +4226,7 @@ async function getBuildInfo(body, buildList, type = true) {
               $.info.ddwCoinBalance >= data.ddwNextLvlCostCoin * 3
             ) {
               console.log(`【${buildNmae}】满足升级条件，开始升级`);
-              const body = `ddwCostCoin=${data.ddwNextLvlCostCoin}&strBuildIndex=${data.strBuildIndex}`;
+              const body = `strBuildIndex=${data.strBuildIndex}&ddwCostCoin=${data.ddwNextLvlCostCoin}`;
               await $.wait(3000);
               let buildLvlUpRes = await buildLvlUp(body);
               if (buildLvlUpRes.iRet === 0) {
@@ -4246,6 +4249,31 @@ async function getBuildInfo(body, buildList, type = true) {
         resolve(data);
       }
     });
+  });
+}
+function setMark() {
+  return new Promise((resolve) => {
+    $.get(
+      taskUrl("user/SetMark", `strMark=daily_task_win&strValue=1&dwType=1`),
+      (err, resp, data) => {
+        try {
+          if (err) {
+            console.log(`${JSON.stringify(err)}`);
+            console.log(`${$.name} SetMark API请求失败，请检查网路重试`);
+          } else {
+            data = JSON.parse(
+              data
+                .replace(/\n/g, "")
+                .match(new RegExp(/jsonpCBK.?\((.*);*\)/))[1]
+            );
+          }
+        } catch (e) {
+          $.logErr(e, resp);
+        } finally {
+          resolve();
+        }
+      }
+    );
   });
 }
 function collectCoin(body) {
@@ -4375,10 +4403,10 @@ function getUserInfo(showInvite = true) {
       taskUrl(
         `user/QueryUserInfo`,
         `ddwTaskId=&strShareId=&strMarkList=${encodeURIComponent(
-          "guider_step,collect_coin_auth,guider_medal,guider_over_flag,build_food_full,build_sea_full,build_shop_full,build_fun_full,medal_guider_show,guide_guider_show,guide_receive_vistor,daily_task,guider_daily_task"
-        )}&strPgUUNum=${token["farm_jstoken"]}&strPgtimestamp=${
-          token["timestamp"]
-        }&strPhoneID=${token["phoneid"]}`
+          "guider_step,collect_coin_auth,guider_medal,guider_over_flag,build_food_full,build_sea_full,build_shop_full,build_fun_full,medal_guider_show,guide_guider_show,guide_receive_vistor,daily_task,guider_daily_task,cfd_has_show_selef_point,choose_goods_has_show,daily_task_win,new_user_task_win,guider_new_user_task,guider_daily_task_icon,guider_nn_task_icon,tool_layer,new_ask_friend_m"
+        )}&strPgtimestamp=${token["timestamp"]}&strPhoneID=${
+          token["phoneid"]
+        }&strPgUUNum=${token["farm_jstoken"]}&strVersion=1.0.1&dwIsReJoin=1`
       ),
       async (err, resp, data) => {
         try {
@@ -4406,6 +4434,7 @@ function getUserInfo(showInvite = true) {
               StoryInfo = {},
               Business = {},
               XbStatus = {},
+              MarkList = {},
             } = data;
             if (showInvite) {
               console.log(`获取用户信息：${sErrMsg}\n${$.showLog ? data : ""}`);
@@ -4430,6 +4459,7 @@ function getUserInfo(showInvite = true) {
               LeadInfo,
               StoryInfo,
               XbStatus,
+              MarkList,
             };
             resolve({
               buildInfo,
@@ -4439,6 +4469,7 @@ function getUserInfo(showInvite = true) {
               LeadInfo,
               StoryInfo,
               XbStatus,
+              MarkList,
             });
           }
         } catch (e) {
