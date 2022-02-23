@@ -130,7 +130,7 @@ def draw(activityid,eid,fp):
         'Origin':'https://jrmkt.jd.com',
         'User-Agent':UserAgent,
         'Connection':'keep-alive',
-        'Referer':'https://jrmkt.jd.com/ptp/wl/vouchers.html?activityId=Q029794F612c2E2O1D2a0N161v0Z2i2s9nJ&jrcontainer=h5&jrlogin=true&jrcloseweb=false',
+        'Referer':'https://jrmkt.jd.com/ptp/wl/vouchers.html?activityId=Q72966994128142102X259KS&jrcontainer=h5&jrlogin=true&jrcloseweb=false',
         'Content-Length':str(len(data)),
         'Cookie':ck
         }
@@ -175,6 +175,6 @@ if __name__ == '__main__':
         info=JDSignValidator('https://prodev.m.jd.com/mall/active/498THTs5KGNqK5nEaingGsKEi6Ao/index.html')
         eid=json.loads(geteid(info[1],info[2]).split('_*')[1])['eid']
         fp=info[0]
-        draw('Q029794F612c2E2O1D2a0N161v0Z2i2s9nJ',eid,fp)
+        draw('Q72966994128142102X259KS',eid,fp)
         if sendNotifyflag:
             send('京东白条抽奖通知',username+'抽到'+str(prizeAward)+'的优惠券了，速去京东金融-白条-天天试手气查看')
