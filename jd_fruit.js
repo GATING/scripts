@@ -104,6 +104,7 @@ if ($.isNode() && process.env.WP_APP_TOKEN_ONE) {
       option = {};
       $.retry = 0;
       await GetCollect();
+      await $.wait(1500);
     }
   }
   for (let i = 0; i < cookiesArr.length; i++) {
@@ -141,6 +142,7 @@ if ($.isNode() && process.env.WP_APP_TOKEN_ONE) {
       option = {};
       $.retry = 0;
       await jdFruit();
+      await $.wait(20 * 1000);
     }
     if ($.isNode()) {
       process.env.fruit_sleep
