@@ -771,26 +771,14 @@ async function showMsg() {
   ReturnMessage += `\n`;
 
   if ($.beanCount) {
-    ReturnMessage += `【当前京豆】${$.beanCount}豆(≈${(
-      ($.beanCount - $.beanChangeXi) /
-      100
-    ).toFixed(2)}元)\n`;
-    strsummary += `【当前京豆】${$.beanCount}豆(≈${(
-      ($.beanCount - $.beanChangeXi) /
-      100
-    ).toFixed(2)}元)\n`;
+    ReturnMessage += `【当前京豆】${$.beanCount-$.beanChangeXi}豆(≈${(($.beanCount-$.beanChangeXi)/ 100).toFixed(2)}元)\n`;
+		strsummary+= `【当前京豆】${$.beanCount-$.beanChangeXi}豆(≈${(($.beanCount-$.beanChangeXi)/ 100).toFixed(2)}元)\n`;
   } else {
     if ($.levelName || $.JingXiang)
       ReturnMessage += `【当前京豆】获取失败,接口返回空数据\n`;
     else {
-      ReturnMessage += `【当前京豆】${$.beanCount}豆(≈${(
-        ($.beanCount - $.beanChangeXi) /
-        100
-      ).toFixed(2)}元)\n`;
-      strsummary += `【当前京豆】${$.beanCount}豆(≈${(
-        ($.beanCount - $.beanChangeXi) /
-        100
-      ).toFixed(2)}元)\n`;
+      ReturnMessage += `【当前京豆】${$.beanCount-$.beanChangeXi}豆(≈${(($.beanCount-$.beanChangeXi)/ 100).toFixed(2)}元)\n`;
+			strsummary += `【当前京豆】${$.beanCount-$.beanChangeXi}豆(≈${(($.beanCount-$.beanChangeXi)/ 100).toFixed(2)}元)\n`;
     }
   }
 
@@ -1118,14 +1106,14 @@ async function showMsg() {
 
   if ($.YunFeiQuan) {
     var strTempYF = "【免运费券】" + $.YunFeiQuan + "张";
-    if ($.YunFeiQuanEndTime) strTempYF += ",有效期至" + $.YunFeiQuanEndTime;
+    if ($.YunFeiQuanEndTime) strTempYF+="(有效期至"+$.YunFeiQuanEndTime+")";;
     strTempYF += "\n";
     ReturnMessage += strTempYF;
     strsummary += strTempYF;
   }
   if ($.YunFeiQuan2) {
     var strTempYF2 = "【免运费券】" + $.YunFeiQuan2 + "张";
-    if ($.YunFeiQuanEndTime2) strTempYF += ",有效期至" + $.YunFeiQuanEndTime;
+    if ($.YunFeiQuanEndTime2) strTempYF+="(有效期至"+$.YunFeiQuanEndTime+")";;
     strTempYF2 += "\n";
     ReturnMessage += strTempYF2;
     strsummary += strTempYF2;

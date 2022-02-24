@@ -1107,6 +1107,7 @@ async function masterHelpShare() {
       continue;
     }
     await masterHelp(code);
+    await $.wait(2000);
     if ($.helpResult.code === "0") {
       if ($.helpResult.helpResult.code === "0") {
         //助力成功
