@@ -7,7 +7,7 @@ TG https://t.me/duckjobs
 
 JD_CART_REMOVESIZE || 20; // 运行一次取消多全部已关注的商品。数字0表示不取关任何商品
 JD_CART_REMOVEALL || true;    //是否清空，如果为false，则上面设置了多少就只删除多少条
-7 7 7 7 * jd_wxCollectionActivity.js
+
 */
 const $ = new Env("加购物车抽奖");
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
@@ -17,26 +17,13 @@ let cookiesArr = [],
   message = "",
   isPush = false;
 let activityIdList = [
-  "2701356dd9f943598d23f8bdcd4066f3",
-  "e0c65cb138434f608287d66909cd54c6",
-  "8a0ad3fc74cd4292afb4bff13e7d8b06",
-  "12d1661235b549e295000e153e9a3a6e",
-  "c9c10f1346ae4a62b91d64a424c7bcbd",
-  "a57870570c8a4654853e8e35e98f6f7a",
-  "4d4d17632b994c2ab9831442047b1fea",
-  "5cdb40f4a5814b04b421b7b336c495eb",
-  "8d207ae60ea944cc911bace506fa742c",
-  "543c2077cb7e4b1ba59edcf34311a208",
-  "4d63ebec326844e68bafd8f74b953c56",
-  "0935160f681f4e9ca12d4a0780917a92",
-  "c506b38e84cc4e06b24bb6ef0c023249",
-  "a14958b3b1b4438aadb1beb0bf160ef0",
-  "a1ff0b367a9f4148ac19557cf112084b",
-  "e11c896abebd4dbabcc6623694ce29cf",
-  "d325f01ef533489e9425bee08f19a006",
-  "f9a90dc70d0b491ea16cdfb118a64e99",
-  "82b2e9dd9e8f405c8c7b2cb4d6c412a9",
-  "3069cd3fa7474166abd58c072232677c",
+  "bdacfcba95964d04b3e1cf0cb0e186dd",
+  "6cb3e11671af40f9a8ab461d68995583",
+  "892cb7fbfb844d0098e7f11d69bad6bd",
+  "cb052bef22334cd29089a39a52dfa1ed",
+  "51de2cce01754429a6a0bc10c369ad8a",
+  "a1e3fb99b82345738aee4cc907224232",
+  "6818e794a8d143328a819e0a22aced29",
 ];
 let lz_cookie = {};
 
@@ -74,7 +61,7 @@ $.keywordsNum = 0;
     );
     return;
   }
-  // activityIdList = await getActivityIdList('https://raw.githubusercontent.com/FKPYW/dongge/master/code/wxCollectionActivity.json')
+  // activityIdList = await getActivityIdList('https://raw.githubusercontent.com/FKPYW/777777/master/code/wxCollectionActivity.json')
   for (let a in activityIdList) {
     activityId = activityIdList[a];
     console.log("开起第 " + a + " 个活动，活动id：" + activityId);
@@ -128,9 +115,9 @@ $.keywordsNum = 0;
         $.getPrize = null;
         await addCart();
         if ($.drawInfoName === false || $.getPrize === null) {
-          break;
+          //break
         } else if ($.getPrize != null && !$.getPrize.includes("京豆")) {
-          break;
+          //break
         }
         await $.wait(2000);
         // await requireConfig();
