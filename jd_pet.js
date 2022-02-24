@@ -41,6 +41,7 @@ let notify = $.isNode() ? require("./sendNotify") : "";
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 let newShareCodes = [];
 let NoNeedCodes = [];
+let lnrun = 0;
 
 let WP_APP_TOKEN_ONE = "";
 if ($.isNode() && process.env.WP_APP_TOKEN_ONE) {
@@ -143,7 +144,7 @@ console.log(`共${cookiesArr.length}个京东账号\n`);
         taskInfoKey = [];
         option = {};
         await GetShareCode();
-        await $.wait(2 * 1000);
+        await $.wait(3 * 1000);
       }
     }
     console.log("\n互助码收集完毕，开始执行日常任务...\n");
@@ -186,8 +187,13 @@ console.log(`共${cookiesArr.length}个京东账号\n`);
       goodsUrl = "";
       taskInfoKey = [];
       option = {};
+      lnrun++;
       await jdPet();
-      await $.wait(30 * 1000);
+      if (lnrun == 3) {
+        console.log(`\n【访问接口次数达到3次，休息一分钟.....】\n`);
+        await $.wait(60 * 1000);
+        lnrun = 0;
+      }
     }
   }
   if ($.isNode() && allMessage && $.ctrTemp) {
