@@ -1131,7 +1131,7 @@ function Env(t, e) {
 // 1dd895c75bda49aeb47481ae404c58da
 (async () => {
   await openCardActivity(
-    process.env.jd_zdjr_activityId,
+    "7051ebbb5d6f44a4a081ab5b738ee470",
     "https://cjhydz-isv.isvjcloud.com",
     "qq674964222",
     160,
