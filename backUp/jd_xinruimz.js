@@ -9,8 +9,8 @@ Rpeo https://github.com/okyyds
 */
 
 const $ = new Env("颜究种植园");
-const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
-const notify = $.isNode() ? require('./sendNotify') : '';
+const jdCookieNode = $.isNode() ? require('../jdCookie.js') : '';
+const notify = $.isNode() ? require('../sendNotify') : '';
 let cookiesArr = [], cookie = '', message = '';
 let waternum = 0;
 let exfertilizer = true;
