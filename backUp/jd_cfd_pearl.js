@@ -23,7 +23,7 @@ cron "30 0-23/2 * * *" script-path=https://raw.githubusercontent.com/KingRan/JDJ
 */
 
 const $ = new Env("京喜财富岛合成珍珠");
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
 // const notify = $.isNode() ? require('./sendNotify') : '';
 CryptoScripts();
 $.CryptoJS = $.isNode() ? require("crypto-js") : CryptoJS;

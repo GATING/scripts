@@ -16,7 +16,7 @@ cron "50 * * * *" script-path=https://raw.githubusercontent.com/KingRan/JDJB/mai
 const $ = new Env("财富岛兑换红包");
 CryptoScripts();
 $.CryptoJS = $.isNode() ? require("crypto-js") : CryptoJS;
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
 let UA = `jdpingou;iPhone;5.2.2;14.3;${randomString(
   40
 )};network/wifi;model/iPhone12,1;appBuild/100630;ADID/00000000-0000-0000-0000-000000000000;supportApplePay/1;hasUPPay/0;pushNoticeIsOpen/0;hasOCPay/0;supportBestPay/0;session/1;pap/JA2019_3111789;brand/apple;supportJDSHWK/1;Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148`;
