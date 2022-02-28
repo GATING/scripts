@@ -114,6 +114,7 @@ if ($.isNode() && process.env.WP_APP_TOKEN_ONE) {
         cookie.match(/pt_pin=([^; ]+)(?=;?)/) &&
           cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]
       );
+      $._cookie = cookie;
       $.index = i + 1;
       $.isLogin = true;
       $.nickName = "";
@@ -619,7 +620,10 @@ async function doTenWaterAgain() {
   }
   if (
     `${jdFruitBeanCard}` === "true" &&
-    JSON.stringify($.myCardInfoRes).match("限时翻倍")
+    JSON.stringify($.myCardInfoRes).match("限时翻倍") &&
+    !process.env?.FRUIT_BEAN_CARD_ACCOUNT?.includes(
+      $._cookie?.match(/pt_pin=([^; ]+)(?=;?)/)[1]
+    )
   ) {
     console.log(`\n您设置的是水滴换豆功能,现在为您换豆`);
     if (totalEnergy >= 100 && $.myCardInfoRes.beanCard > 0) {

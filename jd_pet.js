@@ -144,7 +144,7 @@ console.log(`共${cookiesArr.length}个京东账号\n`);
         taskInfoKey = [];
         option = {};
         await GetShareCode();
-        await $.wait(3 * 1000);
+        await $.wait(4 * 1000);
       }
     }
     console.log("\n互助码收集完毕，开始执行日常任务...\n");
@@ -189,8 +189,8 @@ console.log(`共${cookiesArr.length}个京东账号\n`);
       option = {};
       lnrun++;
       await jdPet();
-      if (lnrun == 3) {
-        console.log(`\n【访问接口次数达到3次，休息一分钟.....】\n`);
+      if (lnrun == 5) {
+        console.log(`\n【访问接口次数达到5次，休息一分钟.....】\n`);
         await $.wait(60 * 1000);
         lnrun = 0;
       }
@@ -361,6 +361,7 @@ async function jdPet() {
       await petSport(); //遛弯
       if (llhelp) {
         await slaveHelp(); //助力好友
+        await $.wait(30 * 1000);
       }
       await masterHelpInit(); //获取助力的信息
       await doTask(); //做日常任务
@@ -442,6 +443,7 @@ async function feedPetsAgain() {
     if (foodAmount - 100 >= 10) {
       for (let i = 0; i < parseInt((foodAmount - 100) / 10); i++) {
         const feedPetRes = await request("feedPets");
+        await $.wait(5 * 1000);
         console.log(`投食feedPetRes`);
         if (feedPetRes.resultCode == 0 && feedPetRes.code == 0) {
           console.log("投食成功");
@@ -519,7 +521,13 @@ async function doTask() {
   }
   // 投食10次
   if (feedReachInit && !feedReachInit.finished) {
-    await feedReachInitFun();
+    lnrun++;
+		await feedReachInitFun();
+		if (lnrun == 5) {
+            console.log(`\n【访问接口次数达到5次，休息半分钟.....】\n`);
+            await $.wait(30 * 1000);
+			lnrun = 0;
+		}
   }
 }
 // 好友助力信息
@@ -755,10 +763,11 @@ async function feedReachInitFun() {
   console.log("投食任务开始...");
   let finishedTimes = $.taskInfo.feedReachInit.hadFeedAmount / 10; //已经喂养了几次
   let needFeedTimes = 10 - finishedTimes; //还需要几次
-  let tryTimes = 20; //尝试次数
+  let tryTimes = 10; //尝试次数
   do {
     console.log(`还需要投食${needFeedTimes}次`);
     const response = await request("feedPets");
+    await $.wait(5 * 1000);
     console.log(`本次投食结果: ${JSON.stringify(response)}`);
     if (response.resultCode == 0 && response.code == 0) {
       needFeedTimes--;
@@ -842,7 +851,7 @@ function TotalBean() {
 }
 // 请求
 async function request(function_id, body = {}) {
-  await $.wait(3000); //歇口气儿, 不然会报操作频繁
+  await $.wait(5000); //歇口气儿, 不然会报操作频繁
   return new Promise((resolve, reject) => {
     $.post(taskUrl(function_id, body), (err, resp, data) => {
       try {
