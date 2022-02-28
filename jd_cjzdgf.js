@@ -325,53 +325,66 @@ if (isGetCookie) {
   $[_0x2a05("23")] = 0x0;
   messageTitle += _0x2a05("24") + activityId + "\x0a";
   $[_0x2a05("25")] = [];
-  for (
-    let _0x4f6ad0 = 0x0;
-    _0x4f6ad0 < cookiesArr[_0x2a05("26")];
-    _0x4f6ad0++
-  ) {
-    if (cookiesArr[_0x4f6ad0]) {
-      cookie = cookiesArr[_0x4f6ad0];
-      $[_0x2a05("27")] = decodeURIComponent(
-        cookie[_0x2a05("28")](/pt_pin=(.+?);/) &&
-          cookie[_0x2a05("28")](/pt_pin=(.+?);/)[0x1]
-      );
-      $[_0x2a05("29")] = _0x4f6ad0 + 0x1;
-      $[_0x2a05("2a")] = !![];
-      $[_0x2a05("2b")] = "";
-      console[_0x2a05("13")](
-        _0x2a05("2c") +
-          $[_0x2a05("29")] +
-          "\u3011" +
-          ($[_0x2a05("2b")] || $[_0x2a05("27")]) +
-          _0x2a05("2d")
-      );
-      if (!$[_0x2a05("2a")]) {
-        $[_0x2a05("1e")](
-          $[_0x2a05("1f")],
-          _0x2a05("2e"),
-          _0x2a05("2f") +
-            $[_0x2a05("29")] +
-            "\x20" +
-            ($[_0x2a05("2b")] || $[_0x2a05("27")]) +
-            _0x2a05("30"),
-          { "open-url": _0x2a05("22") }
+  $.retry = true;
+  while (cookiesArr.length > 0 && $.retry) {
+    for (
+      let _0x4f6ad0 = 0x0;
+      _0x4f6ad0 < cookiesArr[_0x2a05("26")];
+      _0x4f6ad0++
+    ) {
+      if (cookiesArr[_0x4f6ad0]) {
+        cookie = cookiesArr[_0x4f6ad0];
+        $[_0x2a05("27")] = decodeURIComponent(
+          cookie[_0x2a05("28")](/pt_pin=(.+?);/) &&
+            cookie[_0x2a05("28")](/pt_pin=(.+?);/)[0x1]
         );
-        if ($[_0x2a05("1")]()) {
-          await notify[_0x2a05("31")](
-            $[_0x2a05("1f")] + _0x2a05("32") + $[_0x2a05("27")],
+        $[_0x2a05("29")] = _0x4f6ad0 + 0x1;
+        $[_0x2a05("2a")] = !![];
+        $[_0x2a05("2b")] = "";
+        console[_0x2a05("13")](
+          _0x2a05("2c") +
+            $[_0x2a05("29")] +
+            "\u3011" +
+            ($[_0x2a05("2b")] || $[_0x2a05("27")]) +
+            _0x2a05("2d")
+        );
+        if (!$[_0x2a05("2a")]) {
+          $[_0x2a05("1e")](
+            $[_0x2a05("1f")],
+            _0x2a05("2e"),
             _0x2a05("2f") +
               $[_0x2a05("29")] +
               "\x20" +
-              $[_0x2a05("27")] +
-              _0x2a05("33")
+              ($[_0x2a05("2b")] || $[_0x2a05("27")]) +
+              _0x2a05("30"),
+            { "open-url": _0x2a05("22") }
           );
+          if ($[_0x2a05("1")]()) {
+            await notify[_0x2a05("31")](
+              $[_0x2a05("1f")] + _0x2a05("32") + $[_0x2a05("27")],
+              _0x2a05("2f") +
+                $[_0x2a05("29")] +
+                "\x20" +
+                $[_0x2a05("27")] +
+                _0x2a05("33")
+            );
+          }
+          continue;
         }
-        continue;
-      }
-      await jrzd();
-      if (!$[_0x2a05("25")] || $[_0x2a05("34")]) {
-        break;
+        await jrzd();
+        if (!$[_0x2a05("25")]) {
+          break;
+        }
+        if ($[_0x2a05("34")]) {
+          console.log(
+            "重新一轮！！！！！！！！！！！！！！！！！！！！！！！！"
+          );
+          $.maxTeam = false;
+          $.retry = true;
+          cookiesArr.splice(0, 1);
+          await $.wait(1000);
+          break;
+        }
       }
     }
   }
