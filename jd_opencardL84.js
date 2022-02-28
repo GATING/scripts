@@ -55,7 +55,7 @@ let activityCookie = "";
     return;
   }
   $.activityId = "dz3eb0e16893aa4f7a91d103a6db0b";
-  authorCodeList = [];
+  authorCodeList = ["ab4e37d0e92943669f105924422797bd"];
   $.shareUuid =
     authorCodeList[Math.floor(Math.random() * authorCodeList.length)];
   console.log(
@@ -198,11 +198,10 @@ async function run() {
       $.shareUuid = $.actorUuid;
       console.log(`后面的号都会助力:${$.shareUuid}`);
     }
-    await $.wait(parseInt(Math.random() * 1000 + 5000, 10));
-    if (flag) await $.wait(parseInt(Math.random() * 1000 + 10000, 10));
+    await $.wait(parseInt(Math.random() * 1000, 10));
+    if (flag) await $.wait(parseInt(Math.random() * 1000, 10));
     if ($.index % 3 == 0) console.log("休息1分钟，别被黑ip了\n可持续发展");
-    if ($.index % 3 == 0)
-      await $.wait(parseInt(Math.random() * 5000 + 60000, 10));
+    if ($.index % 3 == 0) await $.wait(parseInt(Math.random() * 5000, 10));
   } catch (e) {
     console.log(e);
   }
