@@ -9,17 +9,17 @@
 =================================Quantumultx=========================
 [task_local]
 #京东极速版签到提现
-15 6-18/6 * * * jd_js_sign.js, tag=京东极速版签到提现, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jdmc.png, enabled=true
+15 4 * * * jd_js_sign.js, tag=京东极速版签到提现, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jdmc.png, enabled=true
 
-=================================Loon===0x185================================
+=================================Loon===================================
 [Script]
-cron "15 6-18/6 * * *" script-path=jd_js_sign.js,tag=京东极速版签到提现
+cron "15 4 * * * " script-path=jd_js_sign.js,tag=京东极速版签到提现
 
 ===================================Surge================================
-京东极速版签到提现 = type=cron,cronexp="15 6-18/6 * * *",wake-system=1,timeout=3600,script-path=jd_js_sign.js
+京东极速版签到提现 = type=cron,cronexp="15 4 * * * ",wake-system=1,timeout=3600,script-path=jd_js_sign.js
 
 ====================================小火箭=============================
-京东极速版签到提现 = type=cron,script-path=jd_js_sign.js, cronexpr="15 6-18/6 * * *", timeout=3600, enable=true
+京东极速版签到提现 = type=cron,script-path=jd_js_sign.js, cronexpr="15 4 * * * ", timeout=3600, enable=true
 
 */
 var _0xodi = "jsjiami.com.v6",
