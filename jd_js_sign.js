@@ -11,7 +11,7 @@
 #京东极速版签到提现
 15 6-18/6 * * * jd_js_sign.js, tag=京东极速版签到提现, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jdmc.png, enabled=true
 
-=================================Loon===================================
+=================================Loon===0x185================================
 [Script]
 cron "15 6-18/6 * * *" script-path=jd_js_sign.js,tag=京东极速版签到提现
 
@@ -794,7 +794,7 @@ function _0x1854(_0x1b1cba, _0x467fee) {
     _0x97b06b = _0x97b06b ^ 0xd3d6e;
   }
 })(_0x5db1, _0x1854);
-const $ = new Env(_0x1854("0"));
+const $ = new Env("京东极速版签到提现");
 const notify = $[_0x1854("1")]() ? require(_0x1854("2")) : "";
 CryptoScripts();
 $[_0x1854("3")] = $[_0x1854("1")]() ? require(_0x1854("4")) : CryptoJS;
