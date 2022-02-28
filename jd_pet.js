@@ -361,7 +361,7 @@ async function jdPet() {
       await petSport(); //遛弯
       if (llhelp) {
         await slaveHelp(); //助力好友
-        await $.wait(30 * 1000);
+        await $.wait(10 * 1000);
       }
       await masterHelpInit(); //获取助力的信息
       await doTask(); //做日常任务
@@ -523,9 +523,9 @@ async function doTask() {
   if (feedReachInit && !feedReachInit.finished) {
     lnrun++;
 		await feedReachInitFun();
-		if (lnrun == 5) {
-            console.log(`\n【访问接口次数达到5次，休息半分钟.....】\n`);
-            await $.wait(30 * 1000);
+		if (lnrun == 3) {
+      console.log(`\n【访问接口次数达到3次，休息半分钟.....】\n`);
+      await $.wait(30 * 1000);
 			lnrun = 0;
 		}
   }
