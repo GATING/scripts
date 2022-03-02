@@ -327,6 +327,7 @@ if (isGetCookie) {
   $[_0x2a05("25")] = [];
   $.retry = true;
   while (cookiesArr.length > 0 && $.retry) {
+    $.retry = false;
     for (
       let _0x4f6ad0 = 0x0;
       _0x4f6ad0 < cookiesArr[_0x2a05("26")];
