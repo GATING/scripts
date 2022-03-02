@@ -1,20 +1,37 @@
 /*
- * @Author: lxk0301 https://gitee.com/lxk0301
- * @Date: 2020-08-19 16:12:40
- * @Last Modified by: whyour
- * @Last Modified time: 2021-5-1 15:00:54
  * sendNotify 推送通知功能
  * @param text 通知头
  * @param desp 通知体
  * @param params 某些推送通知方式点击弹窗可跳转, 例：{ url: 'https://abc.com' }
  * @param author 作者仓库等信息  例：`本通知 By：https://github.com/whyour/qinglong`
+ 部分变量设置
+## 拆分通知
+export BEANCHANGE_PERSENT="10"
+## 如果通知标题在此变量里面存在(&隔开),则用屏蔽不发送通知
+export NOTIFY_SKIP_LIST="京东CK检测&京东资产变动"
+## 当接收到发送CK失效通知和Ninja 运行通知时候执行子线程任务
+export NOTIFY_CKTASK="jd_CheckCK.js"
+## 如果此变量(&隔开)的关键字在通知内容里面存在,则屏蔽不发送通知.
+export NOTIFY_SKIP_TEXT="忘了种植&异常"
+## 屏蔽任务脚本的ck失效通知
+export NOTIFY_NOCKFALSE="true"
+## 服务器空数据等错误不触发通知
+export CKNOWARNERROR="true"
+## 屏蔽青龙登陆成功通知，登陆失败不屏蔽
+export NOTIFY_NOLOGINSUCCESS="true"
+## 通知底部显示
+export NOTIFY_AUTHOR="来源于："
+## 增加NOTIFY_AUTHOR_BLANK 环境变量，控制不显示底部信息
+export NOTIFY_AUTHOR_BLANK="true"
+## 增加NOTIFY_AUTOCHECKCK为true才开启通知脚本内置的自动禁用过期ck
+export NOTIFY_AUTOCHECKCK=“true”
  */
 //详细说明参考 https://github.com/ccwav/QLScript2.
 const querystring = require("querystring");
 const exec = require("child_process").exec;
 const $ = new Env();
 const timeout = 15000; //超时时间(单位毫秒)
-console.log("加载sendNotify，当前版本: 20220217");
+console.log("加载sendNotify，当前版本: 20220302");
 // =======================================go-cqhttp通知设置区域===========================================
 //gobot_url 填写请求地址http://127.0.0.1/send_private_msg
 //gobot_token 填写在go-cqhttp文件设置的访问密钥
@@ -171,12 +188,11 @@ async function sendNotify(
   text,
   desp,
   params = {},
-  author = "\n\n本通知 By ccwav Mod",
+  author = "\n\n本通知 By Gating",
   strsummary = ""
 ) {
   console.log(`开始发送通知...`);
 
-  //NOTIFY_FILTERBYFILE代码来自Ca11back.
   if (process.env.NOTIFY_FILTERBYFILE) {
     var no_notify = process.env.NOTIFY_FILTERBYFILE.split("&");
     if (module.parent.filename) {
@@ -194,7 +210,6 @@ async function sendNotify(
       }
     }
   }
-
   try {
     //Reset 变量
     UseGroupNotify = 1;
@@ -1464,7 +1479,7 @@ async function sendNotify(
         }
 
         if (allCode) {
-          desp += "\n" + "\n" + "ccwav格式化后的互助码:" + "\n" + allCode;
+          desp += "\n" + "\n" + "格式化后的互助码:" + "\n" + allCode;
         }
       }
     }
@@ -1547,10 +1562,12 @@ async function sendNotify(
             try {
               //额外处理1，nickName包含星号
               $.nickName = $.nickName.replace(new RegExp(`[*]`, "gm"), "[*]");
+
               text = text.replace(
                 new RegExp(`${$.UserName}|${$.nickName}`, "gm"),
                 $.Remark
               );
+
               if (
                 text == "京东资产变动" ||
                 text == "京东资产变动#2" ||
@@ -1567,7 +1584,6 @@ async function sendNotify(
                   $.Remark += Tempinfo;
                 }
               }
-
               desp = desp.replace(
                 new RegExp(`${$.UserName}|${$.nickName}`, "gm"),
                 $.Remark
@@ -1719,7 +1735,7 @@ function getQLinfo(strCK, intcreated, strTimestamp, strRemark) {
       strCK.match(/pt_pin=([^; ]+)(?=;?)/)[1]
   );
   var strReturn = "";
-  if (strCheckCK.substring(0, 4) == "AAJh") {
+  if (strCheckCK.substring(0, 3) == "AAJ") {
     var DateCreated = new Date(intcreated);
     var DateTimestamp = new Date(strTimestamp);
     var DateToday = new Date();
@@ -1755,6 +1771,7 @@ function getQLinfo(strCK, intcreated, strTimestamp, strRemark) {
         "\n【登录信息】总挂机" + UseDay + "天(有效期约剩" + LogoutDay + "天)";
     }
   }
+
   return strReturn;
 }
 

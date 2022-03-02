@@ -16,9 +16,9 @@ cron "58 59 6,9,14,17,20 * * *" script-path=jd_speedcoupon.js,tag=极速版抢�
 const $ = new Env("抢极速版全品卷5-2");
 const moment = require("moment");
 //进容器安装依赖： npm install -g moment
-const notify = $.isNode() ? require("./sendNotify") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
 //Node.js用户请在jdCookie.js处填写京东ck;
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
 let jdNotify = true; //是否关闭通知，false打开通知推送，true关闭通知推送
 const randomCount = $.isNode() ? 30 : 5;
 //IOS等用户直接用NobyDa的jd cookie
@@ -124,7 +124,7 @@ function taskUrl(function_id, body = {}) {
       "User-Agent": $.isNode()
         ? process.env.JD_USER_AGENT
           ? process.env.JD_USER_AGENT
-          : require("./USER_AGENTS").USER_AGENT
+          : require("../USER_AGENTS").USER_AGENT
         : $.getdata("JDUA")
         ? $.getdata("JDUA")
         : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
@@ -148,7 +148,7 @@ function TotalBean() {
         "User-Agent": $.isNode()
           ? process.env.JD_USER_AGENT
             ? process.env.JD_USER_AGENT
-            : require("./USER_AGENTS").USER_AGENT
+            : require("../USER_AGENTS").USER_AGENT
           : $.getdata("JDUA")
           ? $.getdata("JDUA")
           : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
