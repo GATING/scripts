@@ -1,21 +1,6 @@
 /*
 10 10 * * * jd_plusReward.js
 TG https://t.me/okyydsnb
-
-=====================================Quantumult X=================================
-[task_local]
-10 10 * * * https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_plantBean.js, tag=种豆得豆, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jdzd.png, enabled=true
-
-=====================================Loon================================
-[Script]
-cron "10 10 * * *" script-path=https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_plantBean.js,tag=逛plus，抽京豆
-
-======================================Surge==========================
-逛plus，抽京豆 = type=cron,cronexp="10 10 * * *",wake-system=1,timeout=3600,script-path=https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_plantBean.js
-
-====================================小火箭=============================
-逛plus，抽京豆 = type=cron,script-path=https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_plantBean.js, cronexpr="10 10 * * *", timeout=3600, enable=true
-
 */
 const $ = new Env("逛plus，抽京豆");
 const notify = $.isNode() ? require("./sendNotify") : "";
@@ -107,18 +92,24 @@ async function main() {
   for (let i of id.assignmentList) {
     if (i.assignmentName !== "积分抽奖赢好礼") {
       console.log(`做${i.assignmentName}任务`);
-      for (let j of i.ext.shoppingActivity) {
-        b = await task("doInteractiveAssignment", {
-          encryptProjectId: `${encryptProjectId}`,
-          encryptAssignmentId: `${i.encryptAssignmentId}`,
-          itemId: `${j.advId}`,
-          sourceCode: "aceaceqingzhan",
-        });
-        console.log(b.msg);
-        if (b.msg == "该用户不符合资质校验条件") {
-          return;
+      if (i.userVerificationInfo) {
+        for (let j of i.ext.shoppingActivity) {
+          b = await task("doInteractiveAssignment", {
+            encryptProjectId: `${encryptProjectId}`,
+            encryptAssignmentId: `${i.encryptAssignmentId}`,
+            itemId: `${j.advId}`,
+            sourceCode: "aceaceqingzhan",
+          });
+          console.log(b.msg);
+          if (b.msg == "该用户不符合资质校验条件") {
+            return;
+          }
         }
+      } else {
+        console.log("账号返回数据为空，请到活动页面查看是否黑号");
+        return;
       }
+
       await $.wait(2000);
     } else if (i.assignmentName == "积分抽奖赢好礼") {
       drawId = i.encryptAssignmentId;
@@ -136,7 +127,7 @@ async function main() {
     if (c.msg == "兑换积分不足") {
       console.log("兑换积分不足");
       return;
-    } else {
+    } else if (c.msg == "success") {
       if (c.rewardsInfo.successRewards) {
         for (let k in c.rewardsInfo.successRewards) {
           let data = c.rewardsInfo.successRewards[k];
@@ -145,6 +136,9 @@ async function main() {
           }
         }
       }
+    } else {
+      console.log("账号异常，请到活动页面查看是否黑号");
+      return;
     }
     await $.wait(2000);
   }
