@@ -8,7 +8,7 @@ TG https://t.me/duckjobs
 */
 const $ = new Env("头文子J");
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
-const notify = $.isNode() ? require("../sendNotify") : "";
+const notify = $.isNode() ? require("./sendNotify") : "";
 let cookiesArr = [],
   cookie = "";
 actId = "1760007";
