@@ -103,6 +103,10 @@ async function jdsign() {
     ); //京东图书
     await $.wait(2000);
     await getInfo(
+      "https://prodev.m.jd.com/mall/active/hPJiMgUQmc34bamrApLUBRUy82W/index.html"
+    ); //3.31结束
+    await $.wait(2000);
+    await getInfo(
       "https://pro.m.jd.com/mall/active/412SRRXnKE1Q4Y6uJRWVT6XhyseG/index.html"
     ); // 京东服装
     //     await getInfo("https://pro.m.jd.com/mall/active/ZrH7gGAcEkY2gH8wXqyAPoQgk6t/index.html");//箱包签到
