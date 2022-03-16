@@ -626,19 +626,23 @@ async function doTenWaterAgain() {
     )
   ) {
     console.log(`\n您设置的是水滴换豆功能,现在为您换豆`);
-    if (totalEnergy >= 100 && $.myCardInfoRes.beanCard > 0) {
-      //使用水滴换豆卡
-      await userMyCardForFarm("beanCard");
-      console.log(`使用水滴换豆卡结果:${JSON.stringify($.userMyCardRes)}`);
-      if ($.userMyCardRes.code === "0") {
-        message += `【水滴换豆卡】获得${$.userMyCardRes.beanCount}个京豆\n`;
-        return;
+    for (let lncount = 0; lncount < $.myCardInfoRes.beanCard; lncount++) {
+      if (totalEnergy >= 150 && $.myCardInfoRes.beanCard > 0) {
+        //使用水滴换豆卡
+        await userMyCardForFarm("beanCard");
+        console.log(`使用水滴换豆卡结果:${JSON.stringify($.userMyCardRes)}`);
+        if ($.userMyCardRes.code === "0") {
+          totalEnergy = totalEnergy - 100;
+          message += `【水滴换豆卡】获得${$.userMyCardRes.beanCount}个京豆\n`;
+        }
+      } else {
+        console.log(
+          `您目前水滴:${totalEnergy}g,水滴换豆卡${$.myCardInfoRes.beanCard}张,暂不满足水滴换豆的条件,为您继续浇水`
+        );
+        break;
       }
-    } else {
-      console.log(
-        `您目前水滴:${totalEnergy}g,水滴换豆卡${$.myCardInfoRes.beanCard}张,暂不满足水滴换豆的条件,为您继续浇水`
-      );
     }
+    if ($.myCardInfoRes.beanCard > 0) return;
   }
   // if (totalEnergy > 100 && $.myCardInfoRes.fastCard > 0) {
   //   //使用快速浇水卡
