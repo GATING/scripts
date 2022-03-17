@@ -120,29 +120,29 @@ function openCardActivity(activityId, activityUrl, pin, num, againUserIndex) {
       $.card = [];
 
       await getCk();
-      await $.wait(1000);
+      await $.wait(2000);
       await getToken();
-      await $.wait(1000);
+      await $.wait(2000);
       if ($.Token == "") {
         console.log("获取[token]失败！");
         return;
       }
       await getSimpleActInfoVo();
-      await $.wait(1000);
+      await $.wait(2000);
       if ($.userId) {
-        await $.wait(1000);
+        await $.wait(2000);
         if ($.Token) await getPin();
         console.log("pin:" + $.Pin);
 
-        await $.wait(1000);
+        await $.wait(2000);
         await accessLog();
         if (prefix !== "cjhydz") {
-          await $.wait(1000);
+          await $.wait(2000);
           await getActMemberInfo();
         }
-        await $.wait(1000);
+        await $.wait(2000);
         await getUserInfo();
-        await $.wait(1000);
+        await $.wait(2000);
         await getOpenCardAllStatuesNew();
 
         if ($.index === 1) {
@@ -151,18 +151,18 @@ function openCardActivity(activityId, activityUrl, pin, num, againUserIndex) {
           $.hisInviterImg = $.attrTouXiang;
         }
 
-        await $.wait(1000);
+        await $.wait(2000);
         await joinTeam();
 
         if ($.card.length > 0) {
           let i = 0;
           do {
             await joinShop($.card[i]);
-            await $.wait(1000);
+            await $.wait(2000);
             i++;
           } while (i < $.card.length);
         }
-        await $.wait(1000);
+        await $.wait(2000);
         await getOpenCardAllStatuesNew();
         if ($.maxTeam) {
           console.log("队伍已满员");
@@ -513,7 +513,9 @@ function openCardActivity(activityId, activityUrl, pin, num, againUserIndex) {
                       data.errorMessage.indexOf("店铺会员") > -1 &&
                       count != 3
                     ) {
+                      await $.wait(2000)
                       await joinShop();
+                      await $.wait(2000)
                       await joinTeam(3);
                     } else if (data.errorMessage.indexOf("队伍已经满员") > -1) {
                       $.maxTeam = true;
@@ -521,6 +523,7 @@ function openCardActivity(activityId, activityUrl, pin, num, againUserIndex) {
                       data.errorMessage.indexOf("奖品与您擦肩而过") > -1 &&
                       count == 0
                     ) {
+                      await $.wait(2000)
                       await joinTeam(1);
                     } else {
                       console.log("异常7：" + JSON.stringify(data));
