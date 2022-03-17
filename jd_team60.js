@@ -24,9 +24,9 @@ function openCardActivity(activityId, activityUrl, pin, num, againUserIndex) {
       messageTitle = "",
       activityCookie = "";
 
-    if (process.env.jd_zdjr_activityId)
+    if (process.env.jd_cjhy_activityId60)
       activityId = process.env.jd_cjhy_activityId60;
-    if (process.env.jd_zdjr_activityUrl)
+    if (process.env.jd_cjhy_activityUrl60)
       activityUrl = process.env.jd_cjhy_activityUrl60;
     Object.keys(jdCookieNode).forEach((item) =>
       cookiesArr.push(jdCookieNode[item])
@@ -1133,7 +1133,7 @@ function Env(t, e) {
   await openCardActivity(
     "7051ebbb5d6f44a4a081ab5b738ee470",
     "https://cjhydz-isv.isvjcloud.com",
-    "qq674964222",
+    process.env.jd_cjhy_activity60Pin,
     160,
     []
   );
