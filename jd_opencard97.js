@@ -386,8 +386,8 @@ async function run() {
       $.shareUuid = $.actorUuid;
       console.log(`后面的号都会助力:${$.shareUuid}`);
     }
-    await $.wait(parseInt(Math.random() * 1000 + 5000, 10));
-    if (flag) await $.wait(parseInt(Math.random() * 1000 + 10000, 10));
+    await $.wait(parseInt(Math.random() * 1000, 10));
+    if (flag) await $.wait(parseInt(Math.random() * 1000, 10));
     if (guaopenwait) {
       if ($.index != cookiesArr.length) {
         console.log(`等待${guaopenwait}秒`);
@@ -395,8 +395,7 @@ async function run() {
       }
     } else {
       if ($.index % 3 == 0) console.log("休息1分钟，别被黑ip了\n可持续发展");
-      if ($.index % 3 == 0)
-        await $.wait(parseInt(Math.random() * 5000 + 60000, 10));
+      if ($.index % 3 == 0) await $.wait(parseInt(Math.random() * 5000, 10));
     }
   } catch (e) {
     console.log(e);
