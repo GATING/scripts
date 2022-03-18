@@ -51,6 +51,17 @@ let roundList = [];
 let awardState = ""; //上期活动的京豆是否收取
 let randomCount = $.isNode() ? 20 : 5;
 let num;
+let NowHour = new Date().getHours();
+let llhelp = true;
+// 提醒：如果使用了export CC_NOHELPAFTER8="true" 控制早上9点后时段跳过不必要的互助，那么可能要改成false重新跑一次种豆，不然可能没有助力哦
+if ($.isNode() && process.env.CC_NOHELPAFTER8) {
+  if (process.env.CC_NOHELPAFTER8 == "true") {
+    if (NowHour > 8) {
+      llhelp = false;
+      console.log(`现在是9点后时段，不启用互助....`);
+    }
+  }
+}
 $.newShareCode = [];
 !(async () => {
   await requireConfig();
@@ -101,17 +112,19 @@ $.newShareCode = [];
       await showMsg();
     }
   }
-  for (let j = 0; j < cookiesArr.length; j++) {
-    if (cookiesArr[j]) {
-      cookie = cookiesArr[j];
-      $.UserName = decodeURIComponent(
-        cookie.match(/pt_pin=([^; ]+)(?=;?)/) &&
-          cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]
-      );
-      $.index = j + 1;
-      //await shareCodesFormat();
-      await doHelp();
-      await $.wait(5 * 1000);
+  if (llhelp) {
+    for (let j = 0; j < cookiesArr.length; j++) {
+      if (cookiesArr[j]) {
+        cookie = cookiesArr[j];
+        $.UserName = decodeURIComponent(
+          cookie.match(/pt_pin=([^; ]+)(?=;?)/) &&
+            cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]
+        );
+        $.index = j + 1;
+        //await shareCodesFormat();
+        await doHelp();
+        await $.wait(5 * 1000);
+      }
     }
   }
   if ($.isNode() && allMessage) {
