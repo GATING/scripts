@@ -89,7 +89,7 @@ if ($.isNode()) {
         $.secretPin
       )}&shopid=${$.activityShopId}&sid=&un_area=`;
       await member();
-      await $.wait(1000);
+      await $.wait(5000);
       if ($.bean > 0) {
         message += `\n【京东账号${$.index}】${
           $.nickName || $.UserName
