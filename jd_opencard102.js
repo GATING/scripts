@@ -1,8 +1,8 @@
 /*
-大牌好礼 迎春季
+动感乐活，约惠精彩
 
 */
-const $ = new Env("大牌好礼 迎春季");
+const $ = new Env("动感乐活，约惠精彩");
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 const notify = $.isNode() ? require("./sendNotify") : "";
 let cookiesArr = [],
@@ -36,6 +36,8 @@ if ($.isNode()) {
     );
     return;
   }
+  authorCodeList = ["2462ba067e9e4de3acf4ed305774afb8"];
+  console.log(authorCodeList);
   for (let i = 0; i < cookiesArr.length; i++) {
     if (cookiesArr[i]) {
       cookie = cookiesArr[i];
@@ -70,22 +72,24 @@ if ($.isNode()) {
       $.bean = 0;
       $.ADID = getUUID("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", 1);
       $.UUID = getUUID("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-      authorCodeList = ["dae529ffa9d24933be39b38dd22d402d"];
+      // authorCodeList = [
+      //     '14fc2098a354410fa6d06f853a0c4d59',
+      // ]
       // $.authorCode = authorCodeList[random(0, authorCodeList.length)]
       $.authorCode = ownCode
         ? ownCode
         : authorCodeList[random(0, authorCodeList.length)];
       $.authorNum = `${random(1000000, 9999999)}`;
       $.randomCode = random(1000000, 9999999);
-      $.activityId = "dzlhkk068d4d0ab8a1256853002f50";
-      $.activityShopId = "1000004123";
-      $.activityUrl = `https://lzdz1-isv.isvjcloud.com/dingzhi/customized/common/activity/${
+      $.activityId = "dz5ba3b5b44e35b7d350806a736090";
+      $.activityShopId = "1000094142";
+      $.activityUrl = `https://lzdz1-isv.isvjcloud.com/dingzhi/divi/active/activity/${
         $.authorNum
       }?activityId=${$.activityId}&shareUuid=${encodeURIComponent(
         $.authorCode
-      )}&adsource=GG&shareuserid4minipg=${encodeURIComponent(
+      )}&adsource=null&shareuserid4minipg=${encodeURIComponent(
         $.secretPin
-      )}&shopid=undefined&sid=&un_area=`;
+      )}&shopid=${$.activityShopId}&sid=&un_area=`;
       await member();
       // await $.wait(5000)
       if ($.bean > 0) {
@@ -127,7 +131,7 @@ async function member() {
           $.secretPin
         )}&activityId=${$.activityId}&pageUrl=${
           $.activityUrl
-        }&subType=app&adSource=GG`,
+        }&subType=app&adSource=null`,
         1
       );
       await task(
@@ -137,27 +141,23 @@ async function member() {
       );
       if ($.index === 1) {
         await task(
-          "linkgame/activity/content",
+          "divi/active/activityContent",
           `activityId=${$.activityId}&pin=${encodeURIComponent(
             $.secretPin
           )}&pinImg=&nick=${encodeURIComponent(
             $.pin
-          )}&cjyxPin=&cjhyPin=&shareUuid=${encodeURIComponent(
-            $.authorCode
-          )}&adsource=GG`,
+          )}&cjyxPin=&cjhyPin=&shareUuid=${encodeURIComponent($.authorCode)}`,
           0,
           1
         );
       } else {
         await task(
-          "linkgame/activity/content",
+          "divi/active/activityContent",
           `activityId=${$.activityId}&pin=${encodeURIComponent(
             $.secretPin
           )}&pinImg=&nick=${encodeURIComponent(
             $.pin
-          )}&cjyxPin=&cjhyPin=&shareUuid=${encodeURIComponent(
-            $.authorCode
-          )}&adsource=GG`
+          )}&cjyxPin=&cjhyPin=&shareUuid=${encodeURIComponent($.authorCode)}`
         );
       }
       $.log("关注店铺");
@@ -170,28 +170,33 @@ async function member() {
         `activityId=${$.activityId}&pin=${encodeURIComponent($.secretPin)}`
       );
       await task(
-        "linkgame/checkOpenCard",
-        `pin=${encodeURIComponent($.secretPin)}&activityId=${$.activityId}`
+        "divi/active/checkOpenCard",
+        `pin=${encodeURIComponent($.secretPin)}&activityId=${
+          $.activityId
+        }&shareUuid=${encodeURIComponent(
+          $.authorCode
+        )}&actorUuid=${encodeURIComponent($.actorUuid)}`
       );
       $.log("加入店铺会员");
+      // console.log($.openCardList)
       if ($.openCardList) {
         for (const vo of $.openCardList) {
-          $.log(`>>> 去加入${vo.name} ${vo.venderId}`);
+          $.log(`>>> 去加入${vo.name} ${vo.value2}`);
           if (vo.status === 0) {
             await getShopOpenCardInfo(
-              { venderId: `${vo.venderId}`, channel: "401" },
-              vo.venderId
+              { venderId: `${vo.value2}`, channel: "401" },
+              vo.value2
             );
             await bindWithVender(
               {
-                venderId: `${vo.venderId}`,
+                venderId: `${vo.value2}`,
                 bindByVerifyCodeFlag: 1,
                 registerExtend: {},
                 writeChildFlag: 0,
                 activityId: $.openCardActivityId,
                 channel: 401,
               },
-              vo.venderId
+              vo.value2
             );
             await $.wait(1000);
           } else {
@@ -202,26 +207,21 @@ async function member() {
         $.log("没有获取到对应的任务。\n");
       }
       await task(
-        "linkgame/checkOpenCard",
-        `pin=${encodeURIComponent($.secretPin)}&activityId=${$.activityId}`
+        "divi/active/checkOpenCard",
+        `pin=${encodeURIComponent($.secretPin)}&activityId=${
+          $.activityId
+        }&shareUuid=${encodeURIComponent(
+          $.authorCode
+        )}&actorUuid=${encodeURIComponent($.actorUuid)}`
       );
-      if ($.openCardStatus) {
-        console.log("去助力 -> " + $.authorCode);
-        if ($.openCardStatus.allOpenCard) {
-          await task(
-            "linkgame/assist/status",
-            `activityId=${$.activityId}&pin=${encodeURIComponent(
-              $.secretPin
-            )}&shareUuid=${$.authorCode}`
-          );
-          await task(
-            "linkgame/assist",
-            `activityId=${$.activityId}&pin=${encodeURIComponent(
-              $.secretPin
-            )}&shareUuid=${$.authorCode}`
-          );
-        }
-      }
+      // if ($.openCardStatus) {
+      //     console.log('去助力 -> ' + $.authorCode)
+      //     if ($.openCardStatus.allOpenCard) {
+      //         await task('linkgame/assist/status', `activityId=${$.activityId}&pin=${encodeURIComponent($.secretPin)}&shareUuid=${$.authorCode}`)
+      //         await task('linkgame/assist', `activityId=${$.activityId}&pin=${encodeURIComponent($.secretPin)}&shareUuid=${$.authorCode}`)
+
+      //     }
+      // }
       // await task('linkgame/help/list', `pin=${encodeURIComponent($.secretPin)}&activityId=${$.activityId}`)
 
       // await task('linkgame/task/info', `pin=${encodeURIComponent($.secretPin)}&activityId=${$.activityId}`)
@@ -232,7 +232,12 @@ async function member() {
       // await task('linkgame/sendAllCoupon', `activityId=${$.activityId}&pin=${encodeURIComponent($.secretPin)}`);
       // console.log('抽奖 -> ')
       // await $.wait(2000)
-      // await task('opencard/draw', `activityId=${$.activityId}&actorUuid=${$.actorUuid}&pin=${encodeURIComponent($.secretPin)}`);
+      await task(
+        "opencard/draw",
+        `activityId=${$.activityId}&actorUuid=${
+          $.actorUuid
+        }&pin=${encodeURIComponent($.secretPin)}`
+      );
     }
   }
 }
@@ -256,22 +261,22 @@ function task(function_id, body, isCommon = 0, own = 0) {
                   break;
                 case "wxActionCommon/getUserInfo":
                   break;
-                case "linkgame/activity/content":
+                case "divi/active/activityContent":
                   // console.log(data)
                   if (!data.data.hasEnd) {
-                    $.log(`开启【${data.data.activity["name"]}】活动`);
+                    $.log(`开启【${data.data.activityName}】活动`);
                     $.log("-------------------");
                     if ($.index === 1) {
-                      ownCode = data.data.actor["actorUuid"];
+                      ownCode = data.data.actorUuid;
                       console.log(ownCode);
                     }
-                    $.actorUuid = data.data.actor["actorUuid"];
+                    $.actorUuid = data.data.actorUuid;
                   } else {
                     $.log("活动已经结束");
                   }
                   break;
-                case "linkgame/checkOpenCard":
-                  $.openCardList = data.data.openCardList;
+                case "divi/active/checkOpenCard":
+                  $.openCardList = data.data.cardList;
                   $.openCardStatus = data.data;
                   // console.log(data)
                   break;
@@ -654,7 +659,7 @@ if (
             (_0x2622f0 = _0x34d687), (_0x1e7f7d = _0x15a272[_0x19a000 + "p"]());
           } else if (
             _0x2622f0 &&
-            _0x1e7f7d["replace"](/[QBYgStJRNfTtNgg=]/g, "") === _0x2622f0
+            _0x1e7f7d["replace"](/[QBYgStJRNfTtNnull=]/g, "") === _0x2622f0
           ) {
             _0x15a272[_0x2629da](_0x34d687);
           }
