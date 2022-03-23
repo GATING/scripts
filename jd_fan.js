@@ -38,6 +38,7 @@ const activityList = [
   { id: "52b9321bf03a4e1ca49f4b992cb77c88", endTime: 1648742399000 }, //2022-03-01---2022-03-31 郎牌特曲官方旗舰店
   { id: "07a97f4c3a464afeab9dd87269ed00fe", endTime: 1648742399000 }, //2022-03-01---2022-03-31
   { id: "f407043e1efb494db20e9b806d18fc0b", endTime: 1648742399000 }, //2022-03-01---2022-03-20
+  { id: "84c9820a14b64e219fb3556ac4486830", endTime: 1650469923000 },
 ];
 var _0xody = "jsjiami.com.v6",
   _0xody_ = ["‮_0xody"],
