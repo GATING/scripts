@@ -6,16 +6,16 @@
  */
 
 import axios from "axios";
-import { logs } from "./utils/jinli_log";
+import { logs } from "../utils/jinli_log";
 import {
   getRandomNumberByRange,
   o2s,
   randomString,
   requireConfig,
   wait,
-} from "./TS_USER_AGENTS";
+} from "../TS_USER_AGENTS";
 
-import { Env } from "./magic";
+import { Env } from "../magic";
 
 const $ = new Env("京东-锦鲤红包");
 let cookie: string = "",
