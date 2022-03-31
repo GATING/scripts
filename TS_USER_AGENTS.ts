@@ -125,6 +125,7 @@ async function getFarmShareCode(cookie: string) {
   else return "";
 }
 
+
 function requireConfig() {
   let cookiesArr: string[] = [];
   return new Promise((resolve) => {
@@ -290,4 +291,5 @@ export {
   decrypt,
   getJxToken,
   h5st,
+  getshareCodeHW,
 };
