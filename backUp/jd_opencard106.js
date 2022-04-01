@@ -2,8 +2,8 @@
 宝妈省钱有计，邀您一起领京豆
 */
 const $ = new Env("宝妈省钱有计，邀您一起领京豆");
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
-const notify = $.isNode() ? require("./sendNotify") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
 let cookiesArr = [],
   cookie = "",
   message = "";
@@ -488,7 +488,7 @@ function getFirstLZCK() {
           "user-agent": $.isNode()
             ? process.env.JD_USER_AGENT
               ? process.env.JD_USER_AGENT
-              : require("./USER_AGENTS").USER_AGENT
+              : require("../USER_AGENTS").USER_AGENT
             : $.getdata("JDUA")
             ? $.getdata("JDUA")
             : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
