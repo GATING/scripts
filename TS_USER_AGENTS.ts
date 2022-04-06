@@ -1,9 +1,9 @@
 import axios from "axios";
-import { format } from "date-fns";
-import * as dotenv from "dotenv";
 import { Md5 } from "ts-md5";
+import * as dotenv from "dotenv";
+import { existsSync, readFileSync } from "fs";
+import { sendNotify } from "./sendNotify";
 
-const CryptoJS = require("crypto-js");
 dotenv.config();
 
 let fingerprint: string | number,
@@ -61,28 +61,12 @@ function getRandomNumberByRange(start: number, end: number) {
   return Math.floor(Math.random() * (end - start) + start);
 }
 
-export function randomString(e: number, word?: number) {
-  e = e || 32;
-  let t =
-      word === 26 ? "012345678abcdefghijklmnopqrstuvwxyz" : "0123456789abcdef",
-    a = t.length,
-    n = "";
-  for (let i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
-  return n;
-}
-
-export function o2s(arr: object, title: string = "") {
-  title
-    ? console.log(title, JSON.stringify(arr))
-    : console.log(JSON.stringify(arr));
-}
-
 let USER_AGENT = USER_AGENTS[getRandomNumberByRange(0, USER_AGENTS.length)];
 
 async function getBeanShareCode(cookie: string) {
-  let { data } = await axios.post(
+  let { data }: any = await axios.post(
     "https://api.m.jd.com/client.action",
-    `functionId=plantBeanIndex&body=${escape(
+    `functionId=plantBeanIndex&body=${encodeURIComponent(
       JSON.stringify({
         version: "9.0.0.1",
         monitor_source: "plant_app_plant_index",
@@ -105,9 +89,9 @@ async function getBeanShareCode(cookie: string) {
 }
 
 async function getFarmShareCode(cookie: string) {
-  let { data } = await axios.post(
+  let { data }: any = await axios.post(
     "https://api.m.jd.com/client.action?functionId=initForFarm",
-    `body=${escape(
+    `body=${encodeURIComponent(
       JSON.stringify({ version: 4 })
     )}&appid=wh5&clientVersion=9.1.0`,
     {
@@ -125,19 +109,58 @@ async function getFarmShareCode(cookie: string) {
   else return "";
 }
 
-function requireConfig() {
+async function requireConfig(check: boolean = false): Promise<string[]> {
   let cookiesArr: string[] = [];
-  return new Promise((resolve) => {
-    console.log("开始获取配置文件\n");
-    const jdCookieNode = require("./jdCookie.js");
-    Object.keys(jdCookieNode).forEach((item) => {
-      if (jdCookieNode[item]) {
-        cookiesArr.push(jdCookieNode[item]);
+  const jdCookieNode = require("./jdCookie.js");
+  let keys: string[] = Object.keys(jdCookieNode);
+  for (let i = 0; i < keys.length; i++) {
+    let cookie = jdCookieNode[keys[i]];
+    if (!check) {
+      cookiesArr.push(cookie);
+    } else {
+      if (await checkCookie(cookie)) {
+        cookiesArr.push(cookie);
+      } else {
+        let username = decodeURIComponent(
+          jdCookieNode[keys[i]].match(/pt_pin=([^;]*)/)![1]
+        );
+        console.log("Cookie失效", username);
+        await sendNotify("Cookie失效", "【京东账号】" + username);
       }
-    });
-    console.log(`共${cookiesArr.length}个京东账号\n`);
-    resolve(cookiesArr);
-  });
+    }
+  }
+  console.log(`共${cookiesArr.length}个京东账号\n`);
+  return cookiesArr;
+}
+
+async function checkCookie(cookie) {
+  await wait(1000);
+  try {
+    let { data }: any = await axios.get(
+      `https://api.m.jd.com/client.action?functionId=GetJDUserInfoUnion&appid=jd-cphdeveloper-m&body=${encodeURIComponent(
+        JSON.stringify({
+          orgFlag: "JD_PinGou_New",
+          callSource: "mainorder",
+          channel: 4,
+          isHomewhite: 0,
+          sceneval: 2,
+        })
+      )}&loginType=2&_=${Date.now()}&sceneval=2&g_login_type=1&callback=GetJDUserInfoUnion&g_ty=ls`,
+      {
+        headers: {
+          authority: "api.m.jd.com",
+          "user-agent":
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1",
+          referer: "https://home.m.jd.com/",
+          cookie: cookie,
+        },
+      }
+    );
+    data = JSON.parse(data.match(/GetJDUserInfoUnion\((.*)\)/)[1]);
+    return data.retcode === "0";
+  } catch (e) {
+    return false;
+  }
 }
 
 function wait(timeout: number) {
@@ -146,10 +169,10 @@ function wait(timeout: number) {
   });
 }
 
-async function requestAlgo(appId = 10032) {
+async function requestAlgo(appId: number = 10032) {
   fingerprint = generateFp();
   return new Promise<void>(async (resolve) => {
-    let { data } = await axios.post(
+    let { data }: any = await axios.post(
       "https://cactus.jd.com/request_algo?g_ty=ajax",
       {
         version: "1.0",
@@ -178,7 +201,6 @@ async function requestAlgo(appId = 10032) {
     );
     if (data["status"] === 200) {
       token = data.data.result.tk;
-      console.log("token:", token);
       let enCryptMethodJDString = data.data.result.algo;
       if (enCryptMethodJDString)
         enCryptMethodJD = new Function(`return ${enCryptMethodJDString}`)();
@@ -198,60 +220,7 @@ function generateFp() {
   return (i + Date.now()).slice(0, 16);
 }
 
-function getQueryString(url: string, name: string) {
-  let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
-  let r = url.split("?")[1].match(reg);
-  if (r != null) return unescape(r[2]);
-  return "";
-}
-
-function decrypt(stk: string, url: string, appId: number) {
-  const timestamp = format(new Date(), "yyyyMMddhhmmssSSS");
-  let hash1: string;
-  if (fingerprint && token && enCryptMethodJD) {
-    hash1 = enCryptMethodJD(
-      token,
-      fingerprint.toString(),
-      timestamp.toString(),
-      appId.toString(),
-      CryptoJS
-    ).toString(CryptoJS.enc.Hex);
-  } else {
-    const random = "5gkjB6SpmC9s";
-    token = `tk01wcdf61cb3a8nYUtHcmhSUFFCfddDPRvKvYaMjHkxo6Aj7dhzO+GXGFa9nPXfcgT+mULoF1b1YIS1ghvSlbwhE0Xc`;
-    fingerprint = 9686767825751161;
-    const str = `${token}${fingerprint}${timestamp}${appId}${random}`;
-    hash1 = CryptoJS.SHA512(str, token).toString(CryptoJS.enc.Hex);
-  }
-  let st: string = "";
-  stk.split(",").map((item, index) => {
-    st += `${item}:${getQueryString(url, item)}${
-      index === stk.split(",").length - 1 ? "" : "&"
-    }`;
-  });
-  const hash2 = CryptoJS.HmacSHA256(st, hash1.toString()).toString(
-    CryptoJS.enc.Hex
-  );
-  return encodeURIComponent(
-    [
-      "".concat(timestamp.toString()),
-      "".concat(fingerprint.toString()),
-      "".concat(appId.toString()),
-      "".concat(token),
-      "".concat(hash2),
-    ].join(";")
-  );
-}
-
-function h5st(url: string, stk: string, params: object, appId: number = 10032) {
-  for (const [key, val] of Object.entries(params)) {
-    url += `&${key}=${val}`;
-  }
-  url += "&h5st=" + decrypt(stk, url, appId);
-  return url;
-}
-
-function getJxToken(cookie: string) {
+function getJxToken(cookie: string, phoneId: string = "") {
   function generateStr(input: number) {
     let src = "abcdefghijklmnopqrstuvwxyz1234567890";
     let res = "";
@@ -261,7 +230,7 @@ function getJxToken(cookie: string) {
     return res;
   }
 
-  let phoneId = generateStr(40);
+  if (!phoneId) phoneId = generateStr(40);
   let timestamp = Date.now().toString();
   let nickname = cookie.match(/pt_pin=([^;]*)/)![1];
   let jstoken = Md5.hashStr(
@@ -278,6 +247,118 @@ function getJxToken(cookie: string) {
   };
 }
 
+function randomString(e: number, word?: number) {
+  e = e || 32;
+  let t =
+      word === 26 ? "012345678abcdefghijklmnopqrstuvwxyz" : "0123456789abcdef",
+    a = t.length,
+    n = "";
+  for (let i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
+  return n;
+}
+
+function o2s(arr: object, title: string = "") {
+  title
+    ? console.log(title, JSON.stringify(arr))
+    : console.log(JSON.stringify(arr));
+}
+
+function randomNumString(e: number) {
+  e = e || 32;
+  let t = "0123456789",
+    a = t.length,
+    n = "";
+  for (let i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
+  return n;
+}
+
+function randomWord(n: number = 1) {
+  let t = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    a = t.length;
+  let rnd: string = "";
+  for (let i = 0; i < n; i++) {
+    rnd += t.charAt(Math.floor(Math.random() * a));
+  }
+  return rnd;
+}
+
+function obj2str(obj: object) {
+  return JSON.stringify(obj);
+}
+
+async function getDevice() {
+  let { data } = await axios.get(
+    "https://betahub.cn/api/apple/devices/iPhone",
+    {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+      },
+    }
+  );
+  data = data[getRandomNumberByRange(0, 16)];
+  return data.identifier;
+}
+
+async function getVersion(device: string) {
+  let { data } = await axios.get(
+    `https://betahub.cn/api/apple/firmwares/${device}`,
+    {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+      },
+    }
+  );
+  data = data[getRandomNumberByRange(0, data.length)];
+  return data.firmware_info.version;
+}
+
+async function jdpingou() {
+  let device: string, version: string;
+  device = await getDevice();
+  version = await getVersion(device);
+  return `jdpingou;iPhone;5.19.0;${version};${randomString(
+    40
+  )};network/wifi;model/${device};appBuild/100833;ADID/;supportApplePay/1;hasUPPay/0;pushNoticeIsOpen/0;hasOCPay/0;supportBestPay/0;session/${getRandomNumberByRange(
+    10,
+    90
+  )};pap/JA2019_3111789;brand/apple;supportJDSHWK/1;Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148`;
+}
+
+function get(url: string, prarms?: string, headers?: any) {
+  return axios
+    .get(url, {
+      params: prarms,
+      headers: headers,
+    })
+    .then((res) => {
+      if (typeof res.data === "string" && res.data.match(/^jsonpCBK/)) {
+        return JSON.parse(res.data.match(/jsonpCBK.?\(([\w\W]*)\);/)[1]);
+      } else {
+        return res.data;
+      }
+    })
+    .catch((err) => {
+      console.log(err?.response?.status, err?.response?.statusText);
+    });
+}
+
+function post(
+  url: string,
+  prarms?: string | object,
+  headers?: any
+): Promise<any> {
+  return axios
+    .post(url, prarms, {
+      headers: headers,
+    })
+    .then((res) => res.data)
+    .catch((err) => {
+      console.log(err?.response?.status, err?.response?.statusText);
+    });
+}
+
 export default USER_AGENT;
 export {
   TotalBean,
@@ -287,7 +368,13 @@ export {
   wait,
   getRandomNumberByRange,
   requestAlgo,
-  decrypt,
   getJxToken,
-  h5st,
+  randomString,
+  o2s,
+  randomNumString,
+  randomWord,
+  obj2str,
+  jdpingou,
+  get,
+  post,
 };
