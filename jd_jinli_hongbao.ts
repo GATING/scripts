@@ -26,6 +26,11 @@ let min: number[] = [0.02, 0.12, 0.3, 0.6, 0.7, 0.8, 1, 2],
   log: string = "",
   logIndex: number = 10;
 
+let jdPandaToken = "";
+jdPandaToken = process.env.PandaToken
+  ? process.env.PandaToken
+  : `${jdPandaToken}`;
+
 !(async () => {
   let cookiesArr: string[] = await requireConfig(false);
   for (let [index, value] of cookiesArr.entries()) {
@@ -224,9 +229,32 @@ async function api(fn: string, body: object, retry: number = 0) {
   if (data.rtn_code === 403 && retry < 3) {
     console.log("retry...");
     await wait(1000);
-    log = logs[getRandomNumberByRange(0, logs.length - 1)];
-    body["random"] = log.match(/"random":"(\d+)"/)[1];
-    body["log"] = log.match(/"log":"(.*)"/)[1];
+    if (jdPandaToken) {
+      try {
+        const {
+          data: { data },
+        } = await axios.get("https://api.jds.codes/jd/log", {
+          headers: {
+            Accept: "*/*",
+            "accept-encoding": "gzip, deflate, br",
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + jdPandaToken,
+          },
+        });
+        log = JSON.stringify(data.log);
+        body["random"] = data.random;
+        body["log"] = data.log;
+      } catch (error) {
+        log = logs[getRandomNumberByRange(0, logs.length - 1)];
+        body["random"] = log.match(/"random":"(\d+)"/)[1];
+        body["log"] = log.match(/"log":"(.*)"/)[1];
+      }
+    } else {
+      log = logs[getRandomNumberByRange(0, logs.length - 1)];
+      body["random"] = log.match(/"random":"(\d+)"/)[1];
+      body["log"] = log.match(/"log":"(.*)"/)[1];
+    }
+
     await wait(5000);
     await api(fn, body, ++retry);
   }
