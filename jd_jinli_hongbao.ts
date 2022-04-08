@@ -15,10 +15,6 @@ import {
   wait,
 } from "./TS_USER_AGENTS";
 
-import { Env } from "./magic";
-
-new Env("京东-锦鲤红包");
-
 let cookie: string = "",
   res: any = "",
   UserName: string,
@@ -165,8 +161,6 @@ let min: number[] = [0.02, 0.12, 0.3, 0.6, 0.7, 0.8, 1, 2],
          }
        }
        await wait(1000)
- 
- 
        // 打开任务红包
        res = await api('taskHomePage', {})
        await wait(1000)
