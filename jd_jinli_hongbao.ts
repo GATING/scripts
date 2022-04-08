@@ -42,7 +42,26 @@ jdPandaToken = process.env.PandaToken
         UA = `jdltapp;iPhone;3.1.0;${Math.ceil(
           Math.random() * 4 + 10
         )}.${Math.ceil(Math.random() * 4)};${randomString(40)}`;
-        log = logs[getRandomNumberByRange(0, logs.length - 1)];
+
+        if (jdPandaToken) {
+          try {
+            const {
+              data: { data },
+            } = await axios.get("https://api.jds.codes/jd/log", {
+              headers: {
+                Accept: "*/*",
+                "accept-encoding": "gzip, deflate, br",
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + jdPandaToken,
+              },
+            });
+            log = JSON.stringify(data.log);
+          } catch (error) {
+            log = logs[getRandomNumberByRange(0, logs.length - 1)];
+          }
+        } else {
+          log = logs[getRandomNumberByRange(0, logs.length - 1)];
+        }
         let random = log.match(/"random":"(\d+)"/)[1],
           log1 = log.match(/"log":"(.*)"/)[1];
         res = await api("h5launch", {
