@@ -28,6 +28,7 @@ let cookiesArr = [],
   cookie = "";
 const JD_API_HOST = "https://api.m.jd.com/client.action";
 let appIdArr = [
+  "1EFBTxa6H",
   "1EFdRwqyF",
   "1EFZWxKqP",
   "1FFVQyqw",
@@ -36,6 +37,7 @@ let appIdArr = [
   "1E1xZy6s",
 ];
 let appNameArr = [
+  "森林历险记",
   "春尚",
   "新品来袭",
   "1111点心动",
