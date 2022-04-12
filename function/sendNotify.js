@@ -31,7 +31,7 @@ const querystring = require("querystring");
 const exec = require("child_process").exec;
 const $ = new Env();
 const timeout = 15000; //超时时间(单位毫秒)
-console.log("加载sendNotify，当前版本: 20220302");
+console.log("加载sendNotify，当前版本: 20220327");
 // =======================================go-cqhttp通知设置区域===========================================
 //gobot_url 填写请求地址http://127.0.0.1/send_private_msg
 //gobot_token 填写在go-cqhttp文件设置的访问密钥
@@ -145,7 +145,17 @@ let Notify_NoLoginSuccess = "false";
 let UseGroupNotify = 1;
 const { getEnvs, DisableCk, getEnvByPtPin } = require("./ql");
 const fs = require("fs");
-let strCKFile = "/ql/scripts/CKName_cache.json";
+let isnewql = fs.existsSync("/ql/data/config/auth.json");
+let strCKFile = "";
+let strUidFile = "";
+if (isnewql) {
+  strCKFile = "/ql/data/scripts/CKName_cache.json";
+  strUidFile = "/ql/data/scripts/CK_WxPusherUid.json";
+} else {
+  strCKFile = "/ql/scripts/CKName_cache.json";
+  strUidFile = "/ql/scripts/CK_WxPusherUid.json";
+}
+
 let Fileexists = fs.existsSync(strCKFile);
 let TempCK = [];
 if (Fileexists) {
@@ -156,7 +166,7 @@ if (Fileexists) {
     TempCK = JSON.parse(TempCK);
   }
 }
-let strUidFile = "/ql/scripts/CK_WxPusherUid.json";
+
 let UidFileexists = fs.existsSync(strUidFile);
 let TempCKUid = [];
 if (UidFileexists) {
@@ -188,11 +198,12 @@ async function sendNotify(
   text,
   desp,
   params = {},
-  author = "\n\n本通知 By Gating",
+  author = "\n\n本通知 By ccwav Mod",
   strsummary = ""
 ) {
   console.log(`开始发送通知...`);
 
+  //NOTIFY_FILTERBYFILE代码来自Ca11back.
   if (process.env.NOTIFY_FILTERBYFILE) {
     var no_notify = process.env.NOTIFY_FILTERBYFILE.split("&");
     if (module.parent.filename) {
@@ -210,6 +221,7 @@ async function sendNotify(
       }
     }
   }
+
   try {
     //Reset 变量
     UseGroupNotify = 1;
@@ -1479,7 +1491,7 @@ async function sendNotify(
         }
 
         if (allCode) {
-          desp += "\n" + "\n" + "格式化后的互助码:" + "\n" + allCode;
+          desp += "\n" + "\n" + "ccwav格式化后的互助码:" + "\n" + allCode;
         }
       }
     }
@@ -1562,28 +1574,36 @@ async function sendNotify(
             try {
               //额外处理1，nickName包含星号
               $.nickName = $.nickName.replace(new RegExp(`[*]`, "gm"), "[*]");
-
               text = text.replace(
                 new RegExp(`${$.UserName}|${$.nickName}`, "gm"),
                 $.Remark
               );
-
               if (
                 text == "京东资产变动" ||
                 text == "京东资产变动#2" ||
                 text == "京东资产变动#3" ||
                 text == "京东资产变动#4"
               ) {
-                var Tempinfo = getQLinfo(
-                  cookie,
-                  envs[i].created,
-                  envs[i].timestamp,
-                  envs[i].remarks
-                );
+                var Tempinfo = "";
+                if (envs[i].created)
+                  Tempinfo = getQLinfo(
+                    cookie,
+                    envs[i].created,
+                    envs[i].timestamp,
+                    envs[i].remarks
+                  );
+                else
+                  Tempinfo = getQLinfo(
+                    cookie,
+                    envs[i].createdAt,
+                    envs[i].timestamp,
+                    envs[i].remarks
+                  );
                 if (Tempinfo) {
                   $.Remark += Tempinfo;
                 }
               }
+
               desp = desp.replace(
                 new RegExp(`${$.UserName}|${$.nickName}`, "gm"),
                 $.Remark
@@ -1771,7 +1791,6 @@ function getQLinfo(strCK, intcreated, strTimestamp, strRemark) {
         "\n【登录信息】总挂机" + UseDay + "天(有效期约剩" + LogoutDay + "天)";
     }
   }
-
   return strReturn;
 }
 
@@ -1856,12 +1875,22 @@ async function sendNotifybyWxPucher(
               //额外处理1，nickName包含星号
               $.nickName = $.nickName.replace(new RegExp(`[*]`, "gm"), "[*]");
 
-              var Tempinfo = getQLinfo(
-                cookie,
-                tempEnv.created,
-                tempEnv.timestamp,
-                tempEnv.remarks
-              );
+              var Tempinfo = "";
+              if (tempEnv.created)
+                Tempinfo = getQLinfo(
+                  cookie,
+                  tempEnv.created,
+                  tempEnv.timestamp,
+                  tempEnv.remarks
+                );
+              else
+                Tempinfo = getQLinfo(
+                  cookie,
+                  tempEnv.createdAt,
+                  tempEnv.timestamp,
+                  tempEnv.remarks
+                );
+
               if (Tempinfo) {
                 Tempinfo = $.nickName + Tempinfo;
                 desp = desp.replace(
@@ -2151,9 +2180,13 @@ function tgBotNotify(text, desp) {
     if (TG_BOT_TOKEN && TG_USER_ID) {
       const options = {
         url: `https://${TG_API_HOST}/bot${TG_BOT_TOKEN}/sendMessage`,
-        body: `chat_id=${TG_USER_ID}&text=${text}\n\n${desp}&disable_web_page_preview=true`,
+        json: {
+          chat_id: `${TG_USER_ID}`,
+          text: `${text}\n\n${desp}`,
+          disable_web_page_preview: true,
+        },
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
         timeout,
       };
@@ -2168,9 +2201,7 @@ function tgBotNotify(text, desp) {
             },
           }),
         };
-        Object.assign(options, {
-          agent,
-        });
+        Object.assign(options, { agent });
       }
       $.post(options, (err, resp, data) => {
         try {
@@ -2180,7 +2211,7 @@ function tgBotNotify(text, desp) {
           } else {
             data = JSON.parse(data);
             if (data.ok) {
-              console.log("Telegram发送通知消息成功🎉。\n");
+              console.log("Telegram发送通知消息成功�。\n");
             } else if (data.error_code === 400) {
               console.log(
                 "请主动给bot发送一条消息并检查接收用户ID是否正确。\n"
