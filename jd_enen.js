@@ -19,6 +19,7 @@
  */
 
 if (process.env.ENEN !== "true") {
+  console.log(`请添加export ENEN="true" 执行该脚本`);
   return;
 }
 
