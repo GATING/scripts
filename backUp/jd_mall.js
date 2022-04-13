@@ -4,7 +4,7 @@
 0 0 * * * jd_mall.js
 */
 const $ = new Env("逛会场任务");
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
 let cookiesArr = [], cookie;
 let actURL = ''
 if ($.isNode()) {
@@ -266,7 +266,7 @@ async function getInfo1(cookie) {
 }
 
 const navigator = {
-  userAgent: $.isNode() ? require("./USER_AGENTS").USER_AGENT : $.UA,
+  userAgent: $.isNode() ? require("../USER_AGENTS").USER_AGENT : $.UA,
   plugins: { length: 0 },
   language: "zh-CN",
 };

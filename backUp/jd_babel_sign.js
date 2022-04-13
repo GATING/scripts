@@ -9,9 +9,9 @@ TG频道：https://t.me/sheeplost
 cron 33 1,12 * * * jd_babel_sign.js, tag=通天塔签到共建, img-url=https://raw.githubusercontent.com/Orz-3/mini/master/Color/jd.png, enabled=true
 */
 const $ = new Env("通天塔签到共建");
-const notify = $.isNode() ? require("./sendNotify") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
 //Node.js用户请在jdCookie.js处填写京东ck;
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
 //IOS等用户直接用NobyDa的jd cookie
 let cookiesArr = [],
   cookie = "";
