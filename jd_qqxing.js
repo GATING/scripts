@@ -107,7 +107,7 @@ $.shareuuid = "";
       if ($.cando) {
         await getUid($.shareuuid);
         await getinfo();
-        taskList = [...$.taskList, ...$.taskList2];
+        taskList = [...($.taskList || []), ...($.taskList2 || [])];
         for (j = 0; j < taskList.length; j++) {
           task = taskList[j];
           console.log(task.taskname);
