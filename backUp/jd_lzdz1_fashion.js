@@ -4,8 +4,8 @@ https://lzdz1-isv.isvjcloud.com/dingzhi/fashion/union/activity/13145?activityId=
 
 */
 const $ = new Env("诠“饰”你的每一面");
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
-const notify = $.isNode() ? require("./sendNotify") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
 let cookiesArr = [],
   cookie = "",
   message = "";

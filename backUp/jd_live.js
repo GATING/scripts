@@ -18,9 +18,9 @@ cron "50 12-14 * * *" script-path=https://raw.githubusercontent.com/KingRan/JDJB
 京东直播 = type=cron,script-path=https://raw.githubusercontent.com/KingRan/JDJB/main/jd_live.js, cronexpr="50 12-14 * * *", timeout=3600, enable=true
  */
 const $ = new Env("京东直播");
-const notify = $.isNode() ? require("./sendNotify") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
 //Node.js用户请在jdCookie.js处填写京东ck;
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
 let jdNotify = true; //是否关闭通知，false打开通知推送，true关闭通知推送
 //IOS等用户直接用NobyDa的jd cookie
 let cookiesArr = [],
@@ -418,7 +418,7 @@ function taskUrl(function_id, body = {}) {
       "User-Agent": $.isNode()
         ? process.env.JD_USER_AGENT
           ? process.env.JD_USER_AGENT
-          : require("./USER_AGENTS").USER_AGENT
+          : require("../USER_AGENTS").USER_AGENT
         : $.getdata("JDUA")
         ? $.getdata("JDUA")
         : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
@@ -452,7 +452,7 @@ function TotalBean() {
         "User-Agent": $.isNode()
           ? process.env.JD_USER_AGENT
             ? process.env.JD_USER_AGENT
-            : require("./USER_AGENTS").USER_AGENT
+            : require("../USER_AGENTS").USER_AGENT
           : $.getdata("JDUA")
           ? $.getdata("JDUA")
           : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
