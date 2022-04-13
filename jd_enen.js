@@ -8,7 +8,7 @@
  10 10 10 10 *" jd_logout.js, tag=嗯, img-url=https://raw.githubusercontent.com/JDHelloWorld/jd_scripts/main/icon/jd_logout.png, enabled=true
  =========================Loon=============================
  [Script]
- cron "10 10 10 10 30" script-path=jd_logout.js,tag=嗯
+ cron "10 10 10 10 *" script-path=jd_logout.js,tag=嗯
 
  =========================Surge============================
  嗯 = type=cron,cronexp="10 10 10 10 *",wake-system=1,timeout=3600,script-path=jd_logout.js
