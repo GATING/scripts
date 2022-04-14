@@ -15,7 +15,7 @@ const jsname = "京东幸福小店";
 const logDebug = 0;
 
 const notifyFlag = 1; //0为关闭通知，1为打开通知,默认为1
-const notify = $.isNode() ? require("./sendNotify") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
 let notifyStr = "";
 
 let httpResult; //global buffer
