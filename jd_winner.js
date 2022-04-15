@@ -26,6 +26,7 @@ const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 let cookiesArr = [],
   cookie = "",
   message = "",
+  rewardValue = 0,
   linkId = "u_2EYfsxu0skdtZ6gbRjBQ",
   fflLinkId = "WMDf1PTHmh8MYBpD97sieQ";
 const money = process.env.BIGWINNER_MONEY || 0.3;
@@ -96,10 +97,16 @@ async function main() {
       await gambleOpenReward(); //打开红包
       await $.wait(3000);
       if ($.canOpenRed) {
-        while (!$.canApCashWithDraw && $.changeReward) {
-          await openRedReward();
-          await $.wait(2000);
+        if (rewardValue < money) {
+          while (!$.canApCashWithDraw && $.changeReward) {
+            await openRedReward();
+            await $.wait(2000);
+          }
+        } else {
+          console.log(`不需要翻倍直接提现吧`);
+          $.canApCashWithDraw = true;
         }
+
         if ($.canApCashWithDraw) {
           //提现
           await openRedReward("gambleObtainReward", $.rewardData.rewardType);
@@ -212,6 +219,7 @@ function gambleOpenReward() {
           if (data) {
             data = JSON.parse(data);
             if (data["code"] === 0) {
+              rewardValue = data.data.rewardValue;
               console.log(
                 `翻翻乐打开红包 成功，获得：${data.data.rewardValue}元红包\n`
               );
