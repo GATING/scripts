@@ -268,7 +268,7 @@ async function run() {
       ) {
         // allMessage += `【京东账号${$.index}】${$.nickName || $.UserName}\n`
         await takePostRequest("集卡状态");
-        if ([1, 2, 5].includes($.cardButtonStatus) == true) {
+        if ([2, 3, 5].includes($.cardButtonStatus) == true) {
           await takePostRequest("瓜分奖励");
         }
       }
