@@ -172,7 +172,7 @@ let nowTime =
     return;
   }
   $.activityId = "dzuniongame2022c8e0904b0509d0";
-  $.shareUuid = "";
+  $.shareUuid = "aa229634693a40e8990f082a10b60e46";
   console.log(
     `入口:\nhttps://lzdz1-isv.isvjcloud.com/dingzhi/customized/common/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`
   );
@@ -390,7 +390,7 @@ async function run() {
       $.shareUuid = $.actorUuid;
       console.log(`后面的号都会助力:${$.shareUuid}`);
     }
-    await $.wait(parseInt(Math.random() * 1000 , 10));
+    await $.wait(parseInt(Math.random() * 1000, 10));
     if (flag) await $.wait(parseInt(Math.random() * 1000, 10));
     if (guaopenwait) {
       if ($.index != cookiesArr.length) {
