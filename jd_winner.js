@@ -80,7 +80,7 @@ message = "";
       $.prize = 0;
       $.Hb = 0;
       $.drawresult = "";
-      $.linkid = "WMDf1PTHmh8MYBpD97sieQ";
+      $.linkid = "u_2EYfsxu0skdtZ6gbRjBQ";
       $.message = `【京东账号${$.index}】${$.UserName}\n`;
       console.log(
         `\n******开始【京东账号${$.index}】${
