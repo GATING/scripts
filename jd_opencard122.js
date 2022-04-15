@@ -267,7 +267,10 @@ async function run() {
         nowTime > new Date(activeEndTime).getTime()
       ) {
         // allMessage += `【京东账号${$.index}】${$.nickName || $.UserName}\n`
-        await takePostRequest("瓜分奖励");
+        await takePostRequest("集卡状态");
+        if ([1, 2, 5].includes($.cardButtonStatus) == true) {
+          await takePostRequest("瓜分奖励");
+        }
       }
     } else {
       await takePostRequest("drawContent");
