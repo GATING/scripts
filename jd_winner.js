@@ -25,8 +25,8 @@ const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 const money = $.isNode()
   ? process.env.Openmoney
     ? process.env.Openmoney
-    : 0.3
-  : 0.3;
+    : 0.04
+  : 0.04;
 const randomCount = $.isNode() ? 20 : 5;
 const notify = $.isNode() ? require("./sendNotify") : "";
 let merge = {};
@@ -76,6 +76,7 @@ message = "";
       $.isLogin = true;
       $.canDraw = true;
       $.canOpen = true;
+      $.llAPIError = false;
       $.cash = 0;
       $.prize = 0;
       $.Hb = 0;
@@ -115,9 +116,9 @@ message = "";
       } else {
         console.log("时间已到,开始开红包");
         await open("gambleOpenReward");
-        while ($.canOpen && $.canDraw) {
+        while ($.canOpen && $.canDraw && $.llAPIError) {
           await open("gambleChangeReward");
-          await $.wait(500);
+          await $.wait(3000);
         }
         if ($.canDraw) {
           console.log("金额已可提现,开始提现...");
@@ -248,6 +249,7 @@ function open(functionid, type) {
         if (err) {
           console.log(`${JSON.stringify(err)}`);
           console.log(`${$.name} API请求失败，请检查网路重试`);
+          $.llAPIError = true;
         } else {
           data = JSON.parse(data);
           if (data.code === 0 && data.data) {
