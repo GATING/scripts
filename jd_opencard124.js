@@ -122,7 +122,7 @@ let activityCookie = "";
   }
   $.activityId = "dz934e1f764aa2accb14bd217c55ca";
 
-  authorCodeList = [""];
+  authorCodeList = ["3ebdd990bf9b41e0af36cbb8508f8ef3"];
   $.shareUuid = authorCodeList[random(0, authorCodeList.length)];
   console.log(
     `入口:\nhttps://lzdz1-isv.isvjcloud.com/dingzhi/april/manGod/1776018?activityId=${$.activityId}&shareUuid=${$.shareUuid}`
