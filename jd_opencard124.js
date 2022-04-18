@@ -123,7 +123,7 @@ let activityCookie = "";
   $.activityId = "dz934e1f764aa2accb14bd217c55ca";
 
   authorCodeList = [""];
-  $.shareUuid = authorCodeList[0];
+  $.shareUuid = authorCodeList[random(0, authorCodeList.length)];
   console.log(
     `入口:\nhttps://lzdz1-isv.isvjcloud.com/dingzhi/april/manGod/1776018?activityId=${$.activityId}&shareUuid=${$.shareUuid}`
   );
