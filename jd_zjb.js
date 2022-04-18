@@ -19,7 +19,7 @@ const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 let cookiesArr = [],
   cookie = "",
   message;
-let InviterPin = "";
+let InviterPin = "CN9n1STBF9frnyfr8K19Qg==";
 
 if ($.isNode() && process.env.InviterPin) {
   InviterPin = process.env.InviterPin;

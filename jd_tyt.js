@@ -1,29 +1,36 @@
 /*
-注意：助力码每天会变，旧的不可用。
-助力逻辑：优先助力互助码变量，默认助力前三个可助力的账号，需要修改助力人数修改代码57行的数字即可
-入口-极速版-推推赚大钱  5元无门槛卷 大概需要50人助力
+分享到QQ查看邀请码 packetId就是
+#自定义变量
+export tytpacketId=""
  [task_local]
-#快速推一推
-0 1 * * * jd_tyt.js, tag=推一推, img-url=https://raw.githubusercontent.com/Orz-3/mini/master/Color/jd.png, enabled=true
+#推一推助力码
+0 0 * * * jd_tyt.js, tag=推一推, img-url=https://raw.githubusercontent.com/Orz-3/mini/master/Color/jd.png, enabled=true
+注意：助力码每天会变，旧的不可用。
+助力逻辑：优先助力互助码变量
+入口-极速版-推推赚大钱  5元无门槛卷 大概需要50人助力
 */
-
-const $ = new Env("极速版-推推赚大钱"); //助力前三个可助力的账号
+const $ = new Env("推推赚大钱-极速");
 const notify = $.isNode() ? require("./sendNotify") : "";
 //Node.js用户请在jdCookie.js处填写京东ck;
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
-const JD_API_HOST = "https://api.m.jd.com";
+const ua = `jdltapp;iPhone;3.1.0;${Math.ceil(
+  Math.random() * 4 + 10
+)}.${Math.ceil(Math.random() * 4)};${randomString(40)}`;
+var status = 0;
+
 //IOS等用户直接用NobyDa的jd cookie
 let cookiesArr = [],
   cookie = "",
   message;
-let status = "";
-let inviteCodes = [];
+let tytpacketId = "84b09b08fa064da7a3d069c5bcd27a31-cXE2NzQ5NjQyMjIy";
+if (process.env.tytpacketId) {
+  tytpacketId = process.env.tytpacketId;
+}
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item]);
   });
-  if (process.env.JD_DEBUG && process.env.JD_DEBUG === "false")
-    console.log = () => {};
+  //     if (process.env.JD_DEBUG && process.env.JD_DEBUG === 'false') console.log = () => {};
 } else {
   cookiesArr = [
     $.getdata("CookieJD"),
@@ -31,6 +38,7 @@ if ($.isNode()) {
     ...jsonParse($.getdata("CookiesJD") || "[]").map((item) => item.cookie),
   ].filter((item) => !!item);
 }
+const JD_API_HOST = "https://api.m.jd.com/client.action";
 
 !(async () => {
   if (!cookiesArr[0]) {
@@ -38,11 +46,14 @@ if ($.isNode()) {
       $.name,
       "【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取",
       "https://bean.m.jd.com/bean/signIndex.action",
-      { "open-url": "https://bean.m.jd.com/bean/signIndex.action" }
+      {
+        "open-url": "https://bean.m.jd.com/bean/signIndex.action",
+      }
     );
     return;
   }
-  for (let i = 0; i < cookiesArr.length; i++) {
+  console.log("推一推开始");
+  for (let i = cookiesArr.length - 1; i > 0; i--) {
     if (cookiesArr[i]) {
       cookie = cookiesArr[i];
       $.UserName = decodeURIComponent(
@@ -66,7 +77,9 @@ if ($.isNode()) {
           `京东账号${$.index} ${
             $.nickName || $.UserName
           }\n请重新登录获取\nhttps://bean.m.jd.com/bean/signIndex.action`,
-          { "open-url": "https://bean.m.jd.com/bean/signIndex.action" }
+          {
+            "open-url": "https://bean.m.jd.com/bean/signIndex.action",
+          }
         );
 
         if ($.isNode()) {
@@ -77,47 +90,14 @@ if ($.isNode()) {
         }
         continue;
       }
-    }
-    console.log("\n入口→极速版→赚金币→推推赚大钱\n");
-    await info();
-    await coinDozerBackFlow();
-    await getCoinDozerInfo();
-    console.log("\n注意助力前三个可助力的账号\n");
-    if (inviteCodes.length >= 3) {
-      break;
+      if (status == 1) {
+        break;
+      }
+      await tythelp();
+      await $.wait(15000);
     }
   }
-  console.log("\n#######开始助力前三个可助力的账号#######\n");
-  cookiesArr.sort(function () {
-    return 0.5 - Math.random();
-  });
-  for (let i = 0; i < cookiesArr.length; i++) {
-    cookie = cookiesArr[i];
-    $.UserName = decodeURIComponent(
-      cookie.match(/pt_pin=([^; ]+)(?=;?)/) &&
-        cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]
-    );
-    if (!cookie) continue;
-    for (let j in inviteCodes) {
-      $.ok = false;
-      if (inviteCodes[j]["ok"]) continue;
-      if ($.UserName === inviteCodes[j]["user"]) continue;
-      await helpCoinDozer(inviteCodes[j]["packetId"]);
-      console.log(
-        `\n【${$.UserName}】去助力【${inviteCodes[j]["user"]}】邀请码：${inviteCodes[j]["packetId"]}`
-      );
-      if ($.ok) {
-        inviteCodes[j]["ok"] = true;
-        continue;
-      }
-      await $.wait(10000);
-      await help(inviteCodes[j]["packetId"]);
-      if ($.ok) {
-        inviteCodes[j]["ok"] = true;
-        continue;
-      }
-    }
-  }
+  console.log("推一推结束");
 })()
   .catch((e) => {
     $.log("", `❌ ${$.name}, 失败! 原因: ${e}!`, "");
@@ -125,217 +105,56 @@ if ($.isNode()) {
   .finally(() => {
     $.done();
   });
-function info() {
-  return new Promise((resolve) => {
-    const nm = {
-      url: `${JD_API_HOST}`,
-      body: `functionId=initiateCoinDozer&body={"actId":"49f40d2f40b3470e8d6c39aa4866c7ff","channel":"coin_dozer","antiToken":"","referer":"-1","frontendInitStatus":"s"}&appid=megatron&client=ios&clientVersion=14.3&t=1636014459632&networkType=4g&eid=&fp=-1&frontendInitStatus=s&uuid=8888&osVersion=14.3&d_brand=&d_model=&agent=-1&pageClickKey=-1&screen=400*700&platform=3&lang=zh_CN`,
+
+function tythelp() {
+  return new Promise(async (resolve) => {
+    let options = {
+      url: `https://api.m.jd.com/?t=1623066557140`,
+
+      body: `functionId=helpCoinDozer&appid=station-soa-h5&client=H5&clientVersion=1.0.0&t=1623120183787&body={"actId":"49f40d2f40b3470e8d6c39aa4866c7ff","channel":"coin_dozer","antiToken":"","referer":"-1","frontendInitStatus":"s","packetId":"${tytpacketId}","helperStatus":"0"}&_ste=1&_stk=appid,body,client,clientVersion,functionId,t&h5st=20210608104303790;8489907903583162;10005;tk01w89681aa9a8nZDdIanIyWnVuWFLK4gnqY+05WKcPY3NWU2dcfa73B7PBM7ufJEN0U+4MyHW5N2mT/RNMq72ycJxH;7e6b956f1a8a71b269a0038bbb4abd24bcfb834a88910818cf1bdfc55b7b96e5`,
       headers: {
-        Cookie: cookie,
         Origin: "https://pushgold.jd.com",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+        Host: "api.m.jd.com",
+        Accept: "application/json, text/plain, */*",
+        "User-Agent": ua,
+        Cookie: cookie,
       },
     };
-    $.post(nm, async (err, resp, data) => {
+
+    $.post(options, async (err, resp, data) => {
       try {
-        if (err) {
-          console.log(`${JSON.stringify(err)}`);
-          console.log(`${$.name} API请求失败，请检查网路重试`);
+        data = JSON.parse(data);
+
+        if (data.code == 0) {
+          console.log("帮砍：" + data.data.amount);
+        } else if (data.msg.indexOf("完成") != -1) {
+          console.log("已完成砍价");
+          status = 1;
         } else {
-          if (safeGet(data)) {
-            data = JSON.parse(data);
-            if (data.success == true) {
-              console.log("邀请码：" + data.data.packetId);
-              console.log("初始推出：" + data.data.amount);
-              if (data.data && data.data.packetId) {
-                inviteCodes.push({
-                  user: $.UserName,
-                  packetId: data.data.packetId,
-                  ok: false,
-                });
-              }
-            } else if (data.success == false) {
-              console.log(data.msg);
-            }
-          }
-        }
-      } catch (e) {
-        $.logErr(e, resp);
-      } finally {
-        resolve(data);
-      }
-    });
-  });
-}
-function coinDozerBackFlow() {
-  return new Promise((resolve) => {
-    const nm = {
-      url: `${JD_API_HOST}`,
-      body: `functionId=coinDozerBackFlow&body={"actId":"49f40d2f40b3470e8d6c39aa4866c7ff","channel":"coin_dozer","antiToken":"","referer":"-1","frontendInitStatus":"s"}&appid=megatron&client=ios&clientVersion=14.3&t=1636015617899&networkType=4g&eid=&fp=-1&frontendInitStatus=s&uuid=8888&osVersion=14.3&d_brand=&d_model=&agent=-1&pageClickKey=-1&screen=400*700&platform=3&lang=zh_CN`,
-      headers: {
-        Cookie: cookie,
-        Origin: "https://pushgold.jd.com",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
-      },
-    };
-    $.post(nm, async (err, resp, data) => {
-      try {
-        if (err) {
-          console.log(`${JSON.stringify(err)}`);
-          console.log(`${$.name} API请求失败，请检查网路重试`);
-        } else {
-          if (safeGet(data)) {
-            data = JSON.parse(data);
-            if (data.success == true) {
-              console.log("浏览任务完成再推一次");
-            }
-          } else if (data.success == false) {
+          if (data.msg !== "need verify") {
             console.log(data.msg);
           }
+          console.log(data.msg);
         }
       } catch (e) {
         $.logErr(e, resp);
       } finally {
-        resolve(data);
+        resolve();
       }
     });
   });
 }
 
-function helpCoinDozer(packetId) {
-  return new Promise((resolve) => {
-    const nm = {
-      url: `${JD_API_HOST}`,
-      body: `functionId=helpCoinDozer&appid=station-soa-h5&client=H5&clientVersion=1.0.0&t=1636015855103&body={"actId":"49f40d2f40b3470e8d6c39aa4866c7ff","channel":"coin_dozer","antiToken":"","referer":"-1","frontendInitStatus":"s","packetId":"${packetId}"}&_ste=1&_stk=appid,body,client,clientVersion,functionId,t&h5st=20211104165055104;9806356985655163;10005;tk01wd1ed1d5f30nBDriGzaeVZZ9vuiX+cBzRLExSEzpfTriRD0nxU6BbRIOcSQvnfh74uInjSeb6i+VHpnHrBJdVwzs;017f330f7a84896d31a8d6017a1504dc16be8001273aaea9a04a8d04aad033d9`,
-      headers: {
-        Cookie: cookie,
-        Origin: "https://pushgold.jd.com",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
-      },
-    };
-    $.post(nm, async (err, resp, data) => {
-      try {
-        if (err) {
-          console.log(`${JSON.stringify(err)}`);
-          console.log(`${$.name} API请求失败，请检查网路重试`);
-        } else {
-          if (safeGet(data)) {
-            data = JSON.parse(data);
-            if (data.success == true) {
-              console.log("推出：" + data.data.amount);
-              console.log("已经推出：" + data.data.dismantledAmount);
-            }
-          } else if (data.success == false) {
-            if (data.msg.indexOf("已完成砍价") != -1) {
-              $.ok = true;
-            }
-          }
-        }
-      } catch (e) {
-        $.logErr(e, resp);
-      } finally {
-        resolve(data);
-      }
-    });
-  });
-}
-function help(packetId) {
-  return new Promise((resolve) => {
-    const nm = {
-      url: `${JD_API_HOST}`,
-      body: `functionId=helpCoinDozer&appid=station-soa-h5&client=H5&clientVersion=1.0.0&t=1623120183787&body={"actId":"49f40d2f40b3470e8d6c39aa4866c7ff","channel":"coin_dozer","antiToken":"","referer":"-1","frontendInitStatus":"s","packetId":"${packetId}","helperStatus":"0"}&_ste=1&_stk=appid,body,client,clientVersion,functionId,t&h5st=20210608104303790;8489907903583162;10005;tk01w89681aa9a8nZDdIanIyWnVuWFLK4gnqY+05WKcPY3NWU2dcfa73B7PBM7ufJEN0U+4MyHW5N2mT/RNMq72ycJxH;7e6b956f1a8a71b269a0038bbb4abd24bcfb834a88910818cf1bdfc55b7b96e5`,
-      headers: {
-        Cookie: cookie,
-        Origin: "https://pushgold.jd.com",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
-      },
-    };
-    $.post(nm, async (err, resp, data) => {
-      try {
-        if (err) {
-          console.log(`${JSON.stringify(err)}`);
-          console.log(`${$.name} API请求失败，请检查网路重试`);
-        } else {
-          if (safeGet(data)) {
-            data = JSON.parse(data);
-            if (data.success == true) {
-              console.log("帮砍：" + data.data.amount);
-            }
-          } else if (data.msg.indexOf("完成") != -1) {
-            status = 1;
-          }
-          if (data.success == false) {
-            if (data.msg.indexOf("完成") != -1) {
-              $.ok = true;
-            }
-          }
-        }
-      } catch (e) {
-        $.logErr(e, resp);
-      } finally {
-        resolve(data);
-      }
-    });
-  });
+function randomString(e) {
+  e = e || 32;
+  let t = "abcdefhijkmnprstwxyz2345678",
+    a = t.length,
+    n = "";
+  for (i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
+  return n;
 }
 
-function getCoinDozerInfo() {
-  return new Promise((resolve) => {
-    const nm = {
-      url: `${JD_API_HOST}`,
-      body: `functionId=getCoinDozerInfo&body={"actId":"49f40d2f40b3470e8d6c39aa4866c7ff","channel":"coin_dozer","antiToken":"","referer":"-1","frontendInitStatus":"s"}&appid=megatron&client=ios&clientVersion=14.3&t=1636015858295&networkType=4g&eid=&fp=-1&frontendInitStatus=s&uuid=8888&osVersion=14.3&d_brand=&d_model=&agent=-1&pageClickKey=-1&screen=400*700&platform=3&lang=zh_CN`,
-      headers: {
-        Cookie: cookie,
-        Origin: "https://pushgold.jd.com",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
-      },
-    };
-    $.post(nm, async (err, resp, data) => {
-      try {
-        if (err) {
-          console.log(`${JSON.stringify(err)}`);
-          console.log(`${$.name} API请求失败，请检查网路重试`);
-        } else {
-          if (safeGet(data)) {
-            data = JSON.parse(data);
-            if (
-              data.success == true &&
-              data?.data?.sponsorActivityInfo?.packetId
-            ) {
-              console.log(
-                "用户：" + data.data.sponsorActivityInfo.initiatorNickname
-              );
-              console.log("邀请码：" + data.data.sponsorActivityInfo.packetId);
-              console.log(
-                "推出：" + data.data.sponsorActivityInfo.dismantledAmount
-              );
-              if (data.data && data.data.sponsorActivityInfo.packetId) {
-                inviteCodes.push({
-                  user: $.UserName,
-                  packetId: data.data.sponsorActivityInfo.packetId,
-                  ok: false,
-                });
-              }
-            } else if (data.success == false) {
-              console.log(data.msg);
-            }
-          }
-        }
-      } catch (e) {
-        $.logErr(e, resp);
-      } finally {
-        resolve(data);
-      }
-    });
-  });
-}
-
-function TotalBean() {
+async function TotalBean() {
   return new Promise(async (resolve) => {
     const options = {
       url: `https://wq.jd.com/user/info/QueryJDUserInfo?sceneval=2`,
@@ -386,17 +205,7 @@ function TotalBean() {
     });
   });
 }
-function safeGet(data) {
-  try {
-    if (typeof JSON.parse(data) == "object") {
-      return true;
-    }
-  } catch (e) {
-    console.log(e);
-    console.log(`京东服务器访问数据为空，请检查自身设备网络情况`);
-    return false;
-  }
-}
+
 function jsonParse(str) {
   if (typeof str == "string") {
     try {
@@ -412,7 +221,7 @@ function jsonParse(str) {
     }
   }
 }
-
+// prettier-ignore
 function Env(t, e) {
   "undefined" != typeof process &&
     JSON.stringify(process.env).indexOf("GITHUB") > -1 &&
