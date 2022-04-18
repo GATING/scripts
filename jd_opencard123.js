@@ -159,7 +159,7 @@ let activityCookie = "";
     return;
   }
   $.activityId = "dzlhkk081f1bc4bacd11ec99b60200";
-  $.shareUuid = "";
+  $.shareUuid = "4d2d0aacda034e9fbaca56c1a98aab8b";
   console.log(
     `入口:\nhttps://lzdz1-isv.isvjcloud.com/dingzhi/customized/common/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`
   );
