@@ -27,6 +27,15 @@ let jdNotify = true; //是否关闭通知，false打开通知推送，true关闭
 let cookiesArr = [],
   cookie = "",
   message;
+
+let jdPandaToken = "";
+jdPandaToken = $.isNode()
+  ? process.env.PandaToken
+    ? process.env.PandaToken
+    : `${jdPandaToken}`
+  : $.getdata("PandaToken")
+  ? $.getdata("PandaToken")
+  : `${jdPandaToken}`;
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item]);
@@ -208,40 +217,82 @@ async function ccSign(functionId, body) {
   });
 }
 function getSign(functionId, body) {
-  return new Promise(async (resolve) => {
-    let data = {
-      functionId,
-      body: JSON.stringify(body),
-      client: "android",
-      clientVersion: "10.3.2",
-    };
-    let HostArr = ["jdsign.cf", "signer.nz.lu"];
-    let Host = HostArr[Math.floor(Math.random() * HostArr.length)];
-    let options = {
-      url: `https://cdn.nz.lu/ddo`,
+  var strsign = "";
+  let data = {
+    fn: functionId,
+    body: body,
+  };
+  return new Promise((resolve) => {
+    let url = {
+      url: "https://api.jds.codes/jd/sign",
       body: JSON.stringify(data),
+      followRedirect: false,
       headers: {
-        Host,
-        "User-Agent":
-          "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/87.0.4280.88",
+        Accept: "*/*",
+        "accept-encoding": "gzip, deflate, br",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + jdPandaToken,
       },
-      timeout: 30 * 1000,
+      timeout: 30000,
     };
-    $.post(options, (err, resp, data) => {
+    $.post(url, async (err, resp, data) => {
       try {
-        if (err) {
-          console.log(`${JSON.stringify(err)}`);
-          console.log(`${$.name} getSign API请求失败，请检查网路重试`);
+        data = JSON.parse(data);
+
+        if (data && data.code == 200) {
+          lnrequesttimes = data.request_times;
+          console.log(
+            "连接Panda服务成功，当前Token使用次数为" + lnrequesttimes
+          );
+          if (data.data.sign) strsign = data.data.sign || "";
+          if (strsign != "") resolve(strsign);
+          else console.log("签名获取失败,可能Token使用次数上限或被封.");
         } else {
+          console.log("签名获取失败.");
         }
       } catch (e) {
         $.logErr(e, resp);
       } finally {
-        resolve(data);
+        resolve(strsign);
       }
     });
   });
 }
+// function getSign(functionId, body) {
+//   return new Promise(async (resolve) => {
+//     let data = {
+//       functionId,
+//       body: JSON.stringify(body),
+//       client: "android",
+//       clientVersion: "10.3.2",
+//     };
+//     let HostArr = ["jdsign.cf", "signer.nz.lu"];
+//     let Host = HostArr[Math.floor(Math.random() * HostArr.length)];
+//     let options = {
+//       url: `https://cdn.nz.lu/ddo`,
+//       body: JSON.stringify(data),
+//       headers: {
+//         Host,
+//         "User-Agent":
+//           "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/87.0.4280.88",
+//       },
+//       timeout: 30 * 1000,
+//     };
+//     $.post(options, (err, resp, data) => {
+//       try {
+//         if (err) {
+//           console.log(`${JSON.stringify(err)}`);
+//           console.log(`${$.name} getSign API请求失败，请检查网路重试`);
+//         } else {
+//         }
+//       } catch (e) {
+//         $.logErr(e, resp);
+//       } finally {
+//         resolve(data);
+//       }
+//     });
+//   });
+// }
 function getsecretPin(pin) {
   return new Promise(async (resolve) => {
     let data = {
