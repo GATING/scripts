@@ -107,8 +107,8 @@ async function jdsign() {
     ); //3.31结束
     await $.wait(2000);
     await getInfo(
-      "https://pro.m.jd.com/mall/active/412SRRXnKE1Q4Y6uJRWVT6XhyseG/index.html"
-    ); // 京东服装
+      "https://pro.m.jd.com/mall/active/2FzVtkSfUtvU8YoiTeALkJ68PxAs/index.html"
+    ); // 医疗馆 12.31结束
     await getInfo(
       "https://prodev.m.jd.com/mall/active/2FzVtkSfUtvU8YoiTeALkJ68PxAs/index.html"
     ); //医疗馆 12.31结束
@@ -161,7 +161,7 @@ async function doInteractiveAssignment(encryptProjectId, AssignmentId) {
       taskUrl("doInteractiveAssignment", {
         encryptProjectId: encryptProjectId,
         encryptAssignmentId: AssignmentId,
-        sourceCode: "aceaceqingzhan",
+        sourceCode: "acetttsign",
         itemId: "1",
         actionType: "",
         completionFlag: "true",

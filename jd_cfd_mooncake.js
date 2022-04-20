@@ -1,6 +1,6 @@
 /*
-京喜财富岛合成珍珠互助
-cron 20 0 * * * jd_cfd_mooncake.js
+京喜财富岛合成月饼
+cron 5 * * * * jd_cfd_mooncake.js
 更新时间：2021-9-11
 活动入口：京喜APP-我的-京喜财富岛
 
@@ -8,18 +8,18 @@ cron 20 0 * * * jd_cfd_mooncake.js
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 ============Quantumultx===============
 [task_local]
-#京喜财富岛合成珍珠互助
-20 0 * * * https://raw.githubusercontent.com/KingRan/JDJB/main/jd_cfd_mooncake.js, tag=京喜财富岛合成珍珠互助, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jxcfd.png, enabled=true
+#京喜财富岛合成月饼
+5 * * * * https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_cfd_mooncake.js, tag=京喜财富岛合成月饼, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jxcfd.png, enabled=true
 
 ================Loon==============
 [Script]
-cron "20 0 * * *" script-path=https://raw.githubusercontent.com/KingRan/JDJB/main/jd_cfd_mooncake.js,tag=京喜财富岛合成珍珠互助
+cron "5 * * * *" script-path=https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_cfd_mooncake.js,tag=京喜财富岛合成月饼
 
 ===============Surge=================
-京喜财富岛合成珍珠互助 = type=cron,cronexp="20 0 * * *",wake-system=1,timeout=3600,script-path=https://raw.githubusercontent.com/KingRan/JDJB/main/jd_cfd_mooncake.js
+京喜财富岛合成月饼 = type=cron,cronexp="5 * * * *",wake-system=1,timeout=3600,script-path=https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_cfd_mooncake.js
 
 ============小火箭=========
-京喜财富岛合成珍珠互助 = type=cron,script-path=https://raw.githubusercontent.com/KingRan/JDJB/main/jd_cfd_mooncake.js, cronexpr="20 0 * * *", timeout=3600, enable=true
+京喜财富岛合成月饼 = type=cron,script-path=https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_cfd_mooncake.js, cronexpr="5 * * * *", timeout=3600, enable=true
  */
 !(function (t, r) {
   "object" == typeof exports
@@ -3038,7 +3038,7 @@ cron "20 0 * * *" script-path=https://raw.githubusercontent.com/KingRan/JDJB/mai
     t
   );
 });
-const $ = new Env("京喜财富岛合成珍珠互助");
+const $ = new Env("京喜财富岛合成月饼");
 const JD_API_HOST = "https://m.jingxi.com/";
 const notify = $.isNode() ? require("./sendNotify") : "";
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
@@ -3053,8 +3053,9 @@ let cookiesArr = [],
   token = "";
 let UA,
   UAInfo = {};
+let nowTimes;
 const randomCount = $.isNode() ? 20 : 3;
-$.appId = "92a36";
+$.appId = 10032;
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item]);
@@ -3139,8 +3140,8 @@ if ($.isNode()) {
       await $.wait(2000);
     }
   }
-  let res = [];
-  $.strMyShareIds = [...(res || [])];
+  let res = null;
+  $.strMyShareIds = [...((res && res.shareId) || [])];
   await shareCodesFormat();
   for (let i = 0; i < cookiesArr.length; i++) {
     cookie = cookiesArr[i];
@@ -3174,6 +3175,11 @@ if ($.isNode()) {
 
 async function cfd() {
   try {
+    nowTimes = new Date(
+      new Date().getTime() +
+        new Date().getTimezoneOffset() * 60 * 1000 +
+        8 * 60 * 60 * 1000
+    );
     let beginInfo = await getUserInfo();
     if (beginInfo.LeadInfo.dwLeadType === 2) {
       console.log(`还未开通活动，尝试初始化`);
@@ -3187,28 +3193,33 @@ async function cfd() {
         return;
       }
     }
-
     if (!beginInfo.MarkList.daily_task_win) {
       await setMark();
     }
     //抽奖
-    //await $.wait(2000)
-    //await composePearlState(4)
+    await $.wait(2000);
+    await composePearlState(4);
 
     //助力奖励
-    //await $.wait(2000)
-    //await composePearlState(2)
+    await $.wait(2000);
+    await composePearlState(2);
 
     //合成月饼
-    //let count = $.isNode() ? (process.env.JD_CFD_RUNNUM ? process.env.JD_CFD_RUNNUM * 1 : Math.floor((Math.random() * 2)) + 3) : ($.getdata('JD_CFD_RUNNUM') ? $.getdata('JD_CFD_RUNNUM') * 1 : Math.floor((Math.random() * 2)) + 3);
-    //console.log(`\n合成月饼`)
-    //console.log(`合成月饼运行次数为：${count}\n`)
-    //let num = 0
-    //do {
-    //await $.wait(2000)
-    //await composePearlState(3)
-    //num++
-    //} while (!$.stop && num < count)
+    let count = $.isNode()
+      ? process.env.JD_CFD_RUNNUM
+        ? process.env.JD_CFD_RUNNUM * 1
+        : Math.floor(Math.random() * 2) + 3
+      : $.getdata("JD_CFD_RUNNUM")
+      ? $.getdata("JD_CFD_RUNNUM") * 1
+      : Math.floor(Math.random() * 2) + 3;
+    console.log(`\n合成月饼`);
+    console.log(`合成月饼运行次数为：${count}\n`);
+    let num = 0;
+    do {
+      await $.wait(2000);
+      await composePearlState(3);
+      num++;
+    } while (!$.stop && num < count);
   } catch (e) {
     $.logErr(e);
   }
@@ -3239,6 +3250,7 @@ function setMark() {
     );
   });
 }
+
 // 合成月饼
 async function composePearlState(type) {
   return new Promise(async (resolve) => {
@@ -3647,8 +3659,8 @@ function getUserInfo(showInvite = true) {
       async (err, resp, data) => {
         try {
           if (err) {
-            //console.log(`${JSON.stringify(err)}`)
-            //console.log(`${$.name} QueryUserInfo API请求失败，请检查网路重试`)
+            console.log(`${JSON.stringify(err)}`);
+            console.log(`${$.name} QueryUserInfo API请求失败，请检查网路重试`);
           } else {
             data = JSON.parse(
               data
@@ -3753,7 +3765,7 @@ function biz(contents) {
     let option = {
       url: `https://m.jingxi.com/webmonitor/collect/biz.json?contents=${contents}&t=${Math.random()}&sceneval=2`,
       headers: {
-        Cookie: cookie,
+        Cookie: cookie + "cid=4",
         Accept: "*/*",
         Connection: "keep-alive",
         Referer:
@@ -3795,11 +3807,10 @@ function taskUrl(function_path, body = "", dwEnv = 7) {
       "User-Agent": UA,
       "Accept-Language": "zh-CN,zh-Hans;q=0.9",
       Referer: "https://st.jingxi.com/",
-      Cookie: cookie,
+      Cookie: cookie + "cid=4",
     },
   };
 }
-
 function getStk(url) {
   let arr = url.split("&").map((x) => x.replace(/.*\?/, "").replace(/=.*/, ""));
   return encodeURIComponent(
@@ -3809,7 +3820,6 @@ function getStk(url) {
       .join(",")
   );
 }
-
 function randomString(e) {
   e = e || 32;
   let t = "0123456789abcdef",
@@ -3851,11 +3861,13 @@ function readShareCode() {
     $.get({ url: ``, timeout: 10000 }, (err, resp, data) => {
       try {
         if (err) {
-          //console.log(JSON.stringify(err))
-          //console.log(`${$.name} readShareCode API请求失败，请检查网路重试`)
+          console.log(JSON.stringify(err));
+          console.log(`${$.name} readShareCode API请求失败，请检查网路重试`);
         } else {
           if (data) {
-            //console.log(`\n随机取${randomCount}个码放到您固定的互助码后面(不影响已有固定互助)`)
+            console.log(
+              `\n随机取${randomCount}个码放到您固定的互助码后面(不影响已有固定互助)`
+            );
             data = JSON.parse(data);
           }
         }
@@ -3873,12 +3885,6 @@ function readShareCode() {
 function shareCodesFormat() {
   return new Promise(async (resolve) => {
     $.newShareCodes = [];
-    // const readShareCodeRes = await readShareCode();
-    // if (readShareCodeRes && readShareCodeRes.code === 200) {
-    //   $.newShareCodes = [...new Set([...$.shareCodes, ...$.strMyShareIds, ...(readShareCodeRes.data || [])])];
-    // } else {
-    //   $.newShareCodes = [...new Set([...$.shareCodes, ...$.strMyShareIds])];
-    // }
     $.newShareCodes = [...new Set([...$.shareCodes, ...$.strMyShareIds])];
     console.log(`您将要助力的好友${JSON.stringify($.newShareCodes)}`);
     resolve();
@@ -3896,7 +3902,7 @@ function TotalBean() {
           "ScriptableWidgetExtension/185 CFNetwork/1312 Darwin/21.0.0",
         "Accept-Language": "zh-CN,zh-Hans;q=0.9",
         "Accept-Encoding": "gzip, deflate, br",
-        Cookie: cookie,
+        Cookie: cookie + "cid=4",
       },
     };
     $.get(options, (err, resp, data) => {
@@ -3945,8 +3951,8 @@ function jsonParse(str) {
   }
 }
 /*
-  修改时间戳转换函数，京喜工厂原版修改
-   */
+修改时间戳转换函数，京喜工厂原版修改
+ */
 Date.prototype.Format = function (fmt) {
   var e,
     n = this,
@@ -4003,7 +4009,7 @@ async function requestAlgo() {
       "Accept-Language": "zh-CN,zh;q=0.9,zh-TW;q=0.8,en;q=0.7",
     },
     body: JSON.stringify({
-      version: "3.1",
+      version: "1.0",
       fp: $.fingerprint,
       appId: $.appId.toString(),
       timestamp: Date.now(),
@@ -4011,7 +4017,7 @@ async function requestAlgo() {
       expandParams: "",
     }),
   };
-  return new Promise(async (resolve) => {
+  new Promise(async (resolve) => {
     $.post(options, (err, resp, data) => {
       try {
         if (err) {
@@ -4086,8 +4092,6 @@ function decrypt(time, stk, type, url) {
         "".concat($.appId.toString()),
         "".concat($.token),
         "".concat(hash2),
-        "".concat("3.0"),
-        "".concat(time),
       ].join(";")
     );
   } else {
