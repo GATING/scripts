@@ -3647,8 +3647,8 @@ function getUserInfo(showInvite = true) {
       async (err, resp, data) => {
         try {
           if (err) {
-            //console.log(`${JSON.stringify(err)}`)
-            //console.log(`${$.name} QueryUserInfo API请求失败，请检查网路重试`)
+            console.log(`${JSON.stringify(err)}`);
+            console.log(`${$.name} QueryUserInfo API请求失败，请检查网路重试`);
           } else {
             data = JSON.parse(
               data
@@ -3663,7 +3663,6 @@ function getUserInfo(showInvite = true) {
               dwLandLvl,
               LeadInfo = {},
               Business = {},
-              MarkList = {},
             } = data;
             if (showInvite) {
               console.log(`获取用户信息：${sErrMsg}\n${$.showLog ? data : ""}`);
@@ -3685,14 +3684,12 @@ function getUserInfo(showInvite = true) {
               strMyShareId,
               dwLandLvl,
               LeadInfo,
-              MarkList,
             };
             resolve({
               ddwRichBalance,
               ddwCoinBalance,
               strMyShareId,
               LeadInfo,
-              MarkList,
             });
           }
         } catch (e) {
