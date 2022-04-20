@@ -3048,7 +3048,8 @@ let cookiesArr = [],
   token = "",
   UA,
   UAInfo = {};
-$.appId = 10032;
+$.appId = "92a36";
+$.hot = {};
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item]);
@@ -3087,10 +3088,9 @@ if ($.isNode()) {
   $.CryptoJS = $.isNode() ? require("crypto-js") : CryptoJS;
   await requestAlgo();
   await $.wait(1000);
-  console.log("\n");
   do {
     count++;
-    console.log(`============开始第${count}次挂机=============`);
+    console.log(`\n============开始第${count}次挂机=============`);
     for (let i = 0; i < cookiesArr.length; i++) {
       if (cookiesArr[i]) {
         cookie = cookiesArr[i];
@@ -3114,10 +3114,15 @@ if ($.isNode()) {
             Math.random * 98 + 1
           };pap/JA2019_3111789;brand/apple;supportJDSHWK/1;Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148`;
           UAInfo[$.UserName] = UA;
+          $.hot[$.UserName] = false;
         } else {
           UA = UAInfo[$.UserName];
         }
         // token = await getJxToken()
+        if ($.hot[$.UserName]) {
+          console.log(`操作过于频繁，跳过运行`);
+          continue;
+        }
         await cfd();
         let time = process.env.CFD_LOOP_SLEEPTIME
           ? process.env.CFD_LOOP_SLEEPTIME * 1 > 1000
@@ -3127,7 +3132,7 @@ if ($.isNode()) {
         await $.wait(time);
       }
     }
-  } while (count < (process.env.CFD_LOOP_LIMIT || 10) * 1);
+  } while (count < (process.env.CFD_LOOP_LIMIT || 1) * 1);
 })()
   .catch((e) => $.logErr(e))
   .finally(() => $.done());
@@ -3223,15 +3228,20 @@ async function queryshell() {
             data.replace(/\n/g, "").match(new RegExp(/jsonpCBK.?\((.*);*\)/))[1]
           );
           $.canpick = true;
-          for (let key of Object.keys(data.Data.NormShell)) {
-            let vo = data.Data.NormShell[key];
-            for (let j = 0; j < vo.dwNum && $.canpick; j++) {
-              await pickshell(`dwType=${vo.dwType}`);
-              await $.wait(3000);
+          if (data.iRet === 0) {
+            for (let key of Object.keys(data.Data.NormShell)) {
+              let vo = data.Data.NormShell[key];
+              for (let j = 0; j < vo.dwNum && $.canpick; j++) {
+                await pickshell(`dwType=${vo.dwType}`);
+                await $.wait(3000);
+              }
+              if (!$.canpick) break;
             }
-            if (!$.canpick) break;
+            console.log("");
+          } else {
+            console.log(data.sErrMsg);
+            $.hot[$.UserName] = true;
           }
-          console.log("");
         }
       } catch (e) {
         $.logErr(e, resp);
@@ -3416,7 +3426,7 @@ async function requestAlgo() {
       "Accept-Language": "zh-CN,zh;q=0.9,zh-TW;q=0.8,en;q=0.7",
     },
     body: JSON.stringify({
-      version: "3.1",
+      version: "3.0",
       fp: $.fingerprint,
       appId: $.appId.toString(),
       timestamp: Date.now(),
@@ -3441,13 +3451,13 @@ async function requestAlgo() {
                 $.enCryptMethodJD = new Function(
                   `return ${enCryptMethodJDString}`
                 )();
-              console.log(`获取签名参数成功！`);
-              console.log(`fp: ${$.fingerprint}`);
-              console.log(`token: ${$.token}`);
-              console.log(`enCryptMethodJD: ${enCryptMethodJDString}`);
+              // console.log(`获取签名参数成功！`)
+              // console.log(`fp: ${$.fingerprint}`)
+              // console.log(`token: ${$.token}`)
+              // console.log(`enCryptMethodJD: ${enCryptMethodJDString}`)
             } else {
-              console.log(`fp: ${$.fingerprint}`);
-              console.log("request_algo 签名参数API请求失败:");
+              // console.log(`fp: ${$.fingerprint}`)
+              console.log("request_algo 签名参数API请求失败");
             }
           } else {
             console.log(`京东服务器返回空数据`);
@@ -3499,6 +3509,8 @@ function decrypt(time, stk, type, url) {
         "".concat($.appId.toString()),
         "".concat($.token),
         "".concat(hash2),
+        "".concat("3.0"),
+        "".concat(time),
       ].join(";")
     );
   } else {
