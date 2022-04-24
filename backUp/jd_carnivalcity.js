@@ -15,8 +15,8 @@ cron "0 0-18/6 * * *" script-path=https://raw.githubusercontent.com/222222/sync/
 */
 
 const $ = new Env("京东手机狂欢城");
-const notify = $.isNode() ? require("./sendNotify") : "";
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
 let cookiesArr = [],
   cookie = "",
   message = "",
@@ -751,7 +751,7 @@ function taskUrl(body = {}) {
       "User-Agent": $.isNode()
         ? process.env.JD_USER_AGENT
           ? process.env.JD_USER_AGENT
-          : require("./USER_AGENTS").USER_AGENT
+          : require("../USER_AGENTS").USER_AGENT
         : $.getdata("JDUA")
         ? $.getdata("JDUA")
         : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
@@ -871,7 +871,7 @@ function taskPostUrl(a, t = {}) {
       "User-Agent": $.isNode()
         ? process.env.JD_USER_AGENT
           ? process.env.JD_USER_AGENT
-          : require("./USER_AGENTS").USER_AGENT
+          : require("../USER_AGENTS").USER_AGENT
         : $.getdata("JDUA")
         ? $.getdata("JDUA")
         : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
@@ -1386,7 +1386,7 @@ function getFarmShareCode(cookie) {
           "User-Agent": $.isNode()
             ? process.env.JD_USER_AGENT
               ? process.env.JD_USER_AGENT
-              : require("./USER_AGENTS").USER_AGENT
+              : require("../USER_AGENTS").USER_AGENT
             : $.getdata("JDUA")
             ? $.getdata("JDUA")
             : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
@@ -1419,7 +1419,7 @@ function getBeanShareCode(cookie) {
           "User-Agent": $.isNode()
             ? process.env.JD_USER_AGENT
               ? process.env.JD_USER_AGENT
-              : require("./USER_AGENTS").USER_AGENT
+              : require("../USER_AGENTS").USER_AGENT
             : $.getdata("JDUA")
             ? $.getdata("JDUA")
             : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
