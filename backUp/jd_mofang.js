@@ -19,9 +19,9 @@ cron "30 3,20 * * *" script-path=jd_xmf.js, tag=京东小魔方
 京东小魔方 = type=cron,script-path=jd_xmf.js, cronexpr="30 3,20 * * *", timeout=3600, enable=true
  */
 const $ = new Env("京东小魔方");
-const notify = $.isNode() ? require("./sendNotify") : "";
+const notify = $.isNode() ? require("../sendNotify") : "";
 //Node.js用户请在jdCookie.js处填写京东ck;
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
+const jdCookieNode = $.isNode() ? require("../jdCookie.js") : "";
 //IOS等用户直接用NobyDa的jd cookie
 let cookiesArr = [],
   cookie = "";
