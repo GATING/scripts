@@ -67,7 +67,9 @@ if ($.isNode()) {
       $.bean = 0;
       $.ADID = getUUID("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", 1);
       $.UUID = getUUID("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-      authorCodeList = [""];
+      authorCodeList = [
+        "d7pE4ULn20x8D52CaPchyrRPXMHHf+DrNmMVfT8S5hq3SjYMAACrbEHZQ40J5yPY",
+      ];
       $.appkey = "51B59BB805903DA4CE513D29EC448375";
       $.userId = "10299171";
       $.actId = "a2615a286d974982b45f_220420";
