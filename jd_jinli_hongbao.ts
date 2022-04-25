@@ -246,6 +246,6 @@ async function getLog() {
     return data;
   } else {
     console.log("没有log 使用本地log");
-    return getRandomNumberByRange(0, logs.length - 1);
+    return logs[getRandomNumberByRange(0, logs.length - 1)];
   }
 }
