@@ -1,13 +1,27 @@
 /*
-我的新家 超级配
+家装
+cron "6 12 * * *" jd_opencard_xj4.js
 */
-const $ = new Env("我的新家 超级配");
+let guaopencard_addSku = "true";
+let guaopencard = "true";
+let guaopenwait = "2";
+
+const $ = new Env("新家4");
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 const notify = $.isNode() ? require("./sendNotify") : "";
+let cleanCart = "";
+if ($.isNode()) {
+  try {
+    const fs = require("fs");
+    if (fs.existsSync("./utils/cleancart_activity.js")) {
+      cleanCart = require("./utils/cleancart_activity");
+    }
+  } catch (e) {}
+}
+//IOS等用户直接用NobyDa的jd cookie
+
 let cookiesArr = [],
-  cookie = "",
-  message = "";
-let ownCode = null;
+  cookie = "";
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item]);
@@ -15,1538 +29,870 @@ if ($.isNode()) {
   if (process.env.JD_DEBUG && process.env.JD_DEBUG === "false")
     console.log = () => {};
 } else {
-  let cookiesData = $.getdata("CookiesJD") || "[]";
-  cookiesData = JSON.parse(cookiesData);
-  cookiesArr = cookiesData.map((item) => item.cookie);
-  cookiesArr.reverse();
-  cookiesArr.push(...[$.getdata("CookieJD2"), $.getdata("CookieJD")]);
-  cookiesArr.reverse();
-  cookiesArr = cookiesArr.filter((item) => !!item);
+  cookiesArr = [
+    $.getdata("CookieJD"),
+    $.getdata("CookieJD2"),
+    ...jsonParse($.getdata("CookiesJD") || "[]").map((item) => item.cookie),
+  ].filter((item) => !!item);
 }
+
+guaopencard_addSku = $.isNode()
+  ? process.env.guaopencard_addSku112
+    ? process.env.guaopencard_addSku112
+    : `${guaopencard_addSku}`
+  : $.getdata("guaopencard_addSku112")
+  ? $.getdata("guaopencard_addSku112")
+  : `${guaopencard_addSku}`;
+guaopencard_addSku = $.isNode()
+  ? process.env.guaopencard_addSku_All
+    ? process.env.guaopencard_addSku_All
+    : `${guaopencard_addSku}`
+  : $.getdata("guaopencard_addSku_All")
+  ? $.getdata("guaopencard_addSku_All")
+  : `${guaopencard_addSku}`;
+guaopencard = $.isNode()
+  ? process.env.guaopencard112
+    ? process.env.guaopencard112
+    : `${guaopencard}`
+  : $.getdata("guaopencard112")
+  ? $.getdata("guaopencard112")
+  : `${guaopencard}`;
+guaopencard = $.isNode()
+  ? process.env.guaopencard_All
+    ? process.env.guaopencard_All
+    : `${guaopencard}`
+  : $.getdata("guaopencard_All")
+  ? $.getdata("guaopencard_All")
+  : `${guaopencard}`;
+allMessage = "";
+message = "";
+$.hotFlag = false;
+$.outFlag = false;
+$.activityEnd = false;
+let lz_jdpin_token_cookie = "";
+let activityCookie = "";
 !(async () => {
+  if ($.isNode()) {
+    if (guaopencard + "" != "true") {
+      console.log('如需执行脚本请设置环境变量[guaopencard112]为"true"');
+    }
+    if (guaopencard + "" != "true") {
+      return;
+    }
+  }
   if (!cookiesArr[0]) {
     $.msg(
       $.name,
-      "【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取",
-      "https://bean.m.jd.com/bean/signIndex.action",
-      { "open-url": "https://bean.m.jd.com/bean/signIndex.action" }
+      "【提示】请先获取cookie\n直接使用NobyDa的京东签到获取",
+      "https://bean.m.jd.com/",
+      {
+        "open-url": "https://bean.m.jd.com/",
+      }
     );
     return;
   }
+  $.activityId = "dz5000640649efb279e6a76a111238";
+  let authorCodeList = ["fe81938efa00478f897efbc2e2dc4073"];
 
-  // authorCodeList = await getAuthorCodeList('https://gitee.com/fatelight/dongge/raw/master/dongge/lzdz1_dapai.json')
-  // if(authorCodeList === '404: Not Found'){
-  //     authorCodeList = [
-  //         'd259bceb218e40af9490693e8f48a370',
-  //     ]
-  // }
+  $.shareUuid = authorCodeList[random(0, authorCodeList.length)];
 
+  console.log(
+    `入口:\nhttps://lzdz1-isv.isvjcloud.com/dingzhi/dz/openCard/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`
+  );
   for (let i = 0; i < cookiesArr.length; i++) {
-    if (cookiesArr[i]) {
-      cookie = cookiesArr[i];
-      originCookie = cookiesArr[i];
-      newCookie = "";
+    cookie = cookiesArr[i];
+    if (cookie) {
       $.UserName = decodeURIComponent(
-        cookie.match(/pt_pin=(.+?);/) && cookie.match(/pt_pin=(.+?);/)[1]
+        cookie.match(/pt_pin=([^; ]+)(?=;?)/) &&
+          cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]
       );
       $.index = i + 1;
-      $.isLogin = true;
+      message = "";
+      $.bean = 0;
+      $.hotFlag = false;
       $.nickName = "";
-      await checkCookie();
       console.log(
-        `\n******开始【京东账号${$.index}】${
+        `\n\n******开始【京东账号${$.index}】${
           $.nickName || $.UserName
         }*********\n`
       );
-      if (!$.isLogin) {
-        $.msg(
-          $.name,
-          `【提示】cookie已失效`,
-          `京东账号${$.index} ${
-            $.nickName || $.UserName
-          }\n请重新登录获取\nhttps://bean.m.jd.com/bean/signIndex.action`,
-          { "open-url": "https://bean.m.jd.com/bean/signIndex.action" }
-        );
-        if ($.isNode()) {
-          // await notify.sendNotify(`${$.name}cookie已失效 - ${$.UserName}`, `京东账号${$.index} ${$.UserName}\n请重新登录获取cookie`);
-        }
-        continue;
-      }
-      $.bean = 0;
-      $.ADID = getUUID("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", 1);
-      $.UUID = getUUID("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-      authorCodeList = ["fe81938efa00478f897efbc2e2dc4073"];
-      // $.authorCode = authorCodeList[random(0, authorCodeList.length)]
-      $.authorCode = ownCode
-        ? ownCode
-        : authorCodeList[random(0, authorCodeList.length)];
-      $.authorNum = `${random(1000000, 9999999)}`;
-      $.randomCode = random(1000000, 9999999);
-      $.activityId = "dz5000640649efb279e6a76a111238";
-      $.activityShopId = "1000003005";
-      $.activityUrl = `https://lzdz1-isv.isvjd.com/dingzhi/dz/openCard/activity/${
-        $.authorNum
-      }?activityId=${$.activityId}&shareUuid=${encodeURIComponent(
-        $.authorCode
-      )}&adsource=null&shareuserid4minipg=null&shopid=${
-        $.activityShopId
-      }&lng=00.000000&lat=00.000000&sid=&un_area=`;
-      await marry();
-      await $.wait(1000);
-      if ($.bean > 0) {
-        message += `\n【京东账号${$.index}】${
-          $.nickName || $.UserName
-        } \n       └ 获得 ${$.bean} 京豆。`;
-      }
+      await getUA();
+      await run();
+      if (i == 0 && !$.actorUuid) break;
+      if ($.outFlag || $.activityEnd) break;
     }
   }
-  // if (message !== '') {
-  //     if ($.isNode()) {
-  //         await notify.sendNotify($.name, message, '', `\n`);
-  //     } else {
-  //         $.msg($.name, '有点儿收获', message);
-  //     }
-  // }
+  if ($.outFlag) {
+    let msg = "此ip已被限制，请过10分钟后再执行脚本";
+    $.msg($.name, ``, `${msg}`);
+    if ($.isNode()) await notify.sendNotify(`${$.name}`, `${msg}`);
+  }
 })()
-  .catch((e) => {
-    $.log("", `❌ ${$.name}, 失败! 原因: ${e}!`, "");
-  })
-  .finally(() => {
-    $.done();
-  });
+  .catch((e) => $.logErr(e))
+  .finally(() => $.done());
 
-async function marry() {
-  $.log("那就开始吧。");
-  $.token = null;
-  $.secretPin = null;
-  $.openCardActivityId = null;
-  await getFirstLZCK();
-  await getToken();
-  if ($.token) {
-    await getMyPing();
-    if ($.secretPin) {
-      console.log("去助力 -> " + $.authorCode);
-      await task(
-        "common/accessLogWithAD",
-        `venderId=${$.activityShopId}&code=99&pin=${encodeURIComponent(
-          $.secretPin
-        )}&activityId=${$.activityId}&pageUrl=${
-          $.activityUrl
-        }&subType=app&adSource=null`,
-        1
-      );
-      await task(
-        "wxActionCommon/getUserInfo",
-        `pin=${encodeURIComponent($.secretPin)}`,
-        1
-      );
-      if ($.index === 1) {
-        await task(
-          "dz/openCard/activityContent",
-          `activityId=${$.activityId}&pin=${encodeURIComponent(
-            $.secretPin
-          )}&pinImg=&nick=${encodeURIComponent(
-            $.pin
-          )}&cjyxPin=&cjhyPin=&shareUuid=${encodeURIComponent($.authorCode)}`,
-          0,
-          1
-        );
-      } else {
-        await task(
-          "dz/openCard/activityContent",
-          `activityId=${$.activityId}&pin=${encodeURIComponent(
-            $.secretPin
-          )}&pinImg=&nick=${encodeURIComponent(
-            $.pin
-          )}&cjyxPin=&cjhyPin=&shareUuid=${encodeURIComponent($.authorCode)}`
-        );
-      }
-      await task(
-        "dz/openCard/checkOpenCard",
-        `activityId=${$.activityId}&actorUuid=${$.actorUuid}&shareUuid=${
-          $.authorCode
-        }&pin=${encodeURIComponent($.secretPin)}`
-      );
-      $.log("->关注店铺");
-      if ($.shopTask) {
-        if (!$.shopTask.allStatus) {
-          await task(
-            "dz/openCard/followShop",
-            `activityId=${$.activityId}&pin=${encodeURIComponent(
-              $.secretPin
-            )}&actorUuid=${encodeURIComponent(
-              $.actorUuid
-            )}&taskType=23&taskValue=1000002520`
-          );
-        } else {
-          $.log("    >>>已经关注过了\n");
-          await $.wait(2000);
-          // return
-        }
-      } else {
-        $.log("没有获取到对应的任务。\n");
-      }
-      $.log("->->->> 加入店铺会员");
-      if ($.openCardStatus) {
-        t1TaskList = [];
-        $.openCardStatus.cardList1.filter((x) => {
-          if (x.status === 0) {
-            t1TaskList.push(x);
-          }
-        });
-        t2TaskList = [];
-        $.openCardStatus.cardList2.filter((x) => {
-          if (x.status === 0) {
-            t2TaskList.push(x);
-          }
-        });
-        if (t1TaskList.length < 1) {
-          console.log("    >>>已经完成入会任务");
-        } else {
-          for (const vo of t1TaskList) {
-            $.log(`    >>>去加入${vo.name}`);
-            await getShopOpenCardInfo(
-              { venderId: `${vo.value}`, channel: "401" },
-              vo.value
-            );
-            await bindWithVender(
-              {
-                venderId: `${vo.value}`,
-                bindByVerifyCodeFlag: 1,
-                registerExtend: {},
-                writeChildFlag: 0,
-                activityId: $.openCardActivityId,
-                channel: 401,
-              },
-              vo.value
-            );
-            await $.wait(500);
-          }
-          for (const vo of t2TaskList) {
-            $.log(`    >>>${vo.name}`);
-            await getShopOpenCardInfo({
-              venderId: `${vo.value}`,
-              channel: "401",
-            });
-            await bindWithVender(
-              {
-                venderId: `${vo.value}`,
-                bindByVerifyCodeFlag: 1,
-                registerExtend: {},
-                writeChildFlag: 0,
-                activityId: $.openCardActivityId,
-                channel: 401,
-              },
-              vo.value
-            );
-            await $.wait(500);
-          }
-        }
-
-        await task(
-          "taskact/openCardcommon/drawContent",
-          `activityId=${$.activityId}&pin=${encodeURIComponent($.secretPin)}`
-        );
-        await $.wait(1000);
-        await task(
-          "dz/openCard/checkOpenCard",
-          `activityId=${$.activityId}&actorUuid=${$.actorUuid}&shareUuid=${
-            $.authorCode
-          }&pin=${encodeURIComponent($.secretPin)}`
-        );
-        // await $.wait(2000)
-        // await task("dz/openCard/startDraw", `activityId=${$.activityId}&actorUuid=${$.actorUuid}&type=1&pin=${encodeURIComponent($.secretPin)}`)
-        // await $.wait(2000)
-        // await task("dz/openCard/startDraw", `activityId=${$.activityId}&actorUuid=${$.actorUuid}&type=2&pin=${encodeURIComponent($.secretPin)}`)
-      } else {
-        $.log("没有获取到对应的任务。\n");
-      }
-      $.log("->->->> 加购物车");
-      await task(
-        "dz/openCard/saveTask",
-        `activityId=${$.activityId}&pin=${encodeURIComponent(
-          $.secretPin
-        )}&actorUuid=${$.actorUuid}&type=2&taskValue=10036669682406`
-      );
+async function run() {
+  try {
+    $.hasEnd = true;
+    $.endTime = 0;
+    lz_jdpin_token_cookie = "";
+    $.Token = "";
+    $.Pin = "";
+    let flag = false;
+    await takePostRequest("isvObfuscator");
+    if ($.Token == "") {
+      console.log("获取[token]失败！");
+      return;
     }
+    await getCk();
+    if (activityCookie == "") {
+      console.log(`获取cookie失败`);
+      return;
+    }
+    if ($.activityEnd === true) {
+      console.log("活动结束");
+      return;
+    }
+    if ($.outFlag) {
+      console.log("此ip已被限制，请过10分钟后再执行脚本\n");
+      return;
+    }
+    await takePostRequest("getSimpleActInfoVo");
+    await takePostRequest("getMyPing");
+    if (!$.Pin) {
+      console.log("获取[Pin]失败！");
+      return;
+    }
+    await takePostRequest("accessLogWithAD");
+    await takePostRequest("getUserInfo");
+    await takePostRequest("activityContent");
+    if ($.hotFlag) return;
+    if (!$.actorUuid) {
+      console.log("获取不到[actorUuid]退出执行，请重新执行");
+      return;
+    }
+    if ($.hasEnd === true || Date.now() > $.endTime) {
+      $.activityEnd = true;
+      console.log("活动结束");
+      return;
+    }
+    await takePostRequest("drawContent");
+    await $.wait(1000);
+    $.openList = [];
+    $.allOpenCard = false;
+    await takePostRequest("checkOpenCard");
+    if ($.allOpenCard == false) {
+      console.log("开卡任务");
+      for (o of $.openList) {
+        $.openCard = false;
+        if (o.status == 0) {
+          flag = true;
+          $.joinVenderId = o.value;
+          await $.wait(1500);
+          await joinShop();
+          await $.wait(1500);
+          await takePostRequest("drawContent");
+          await takePostRequest("checkOpenCard");
+          await $.wait(1500);
+        }
+      }
+      await takePostRequest("activityContent");
+    } else {
+      console.log("已全部开卡");
+    }
+    if ($.openCardScore1 == 1 && !$.outFlag) {
+      $.startDraw = 1;
+      flag = true;
+      await takePostRequest("startDraw");
+      await $.wait(1500);
+    }
+    if ($.openCardScore2 == 1 && !$.outFlag) {
+      $.startDraw = 2;
+      flag = true;
+      await takePostRequest("startDraw");
+      await $.wait(1500);
+    }
+
+    $.log("关注: " + $.followShop);
+    if (!$.followShop && !$.outFlag) {
+      flag = true;
+      await takePostRequest("followShop");
+      await $.wait(parseInt(Math.random() * 1000 + 5000, 10));
+    }
+
+    $.log("加购: " + $.addSku);
+    if (!$.addSku && !$.outFlag) {
+      if (guaopencard_addSku + "" == "true") {
+        flag = true;
+        let goodsArr = [];
+        if (cleanCart) {
+          goodsArr = await cleanCart.clean(
+            cookie,
+            "https://jd.smiek.tk/jdcleancatr_21102717",
+            ""
+          );
+          await $.wait(2000);
+        }
+        await takePostRequest("addSku");
+        await $.wait(2000);
+        if (cleanCart && goodsArr !== false) {
+          // await $.wait(parseInt(Math.random() * 1000 + 4000, 10))
+          await cleanCart.clean(
+            cookie,
+            "https://jd.smiek.tk/jdcleancatr_21102717",
+            goodsArr || []
+          );
+        }
+      } else {
+        console.log('如需加购请设置环境变量[guaopencard_addSku112]为"true"');
+      }
+    }
+    /* $.runFalag = true
+        $.log("浏览店铺: " + $.toShop)
+        if(!$.toShop && !$.outFlag){
+          flag = true
+          for(let v of $.toShopList || []){
+            if($.runFalag == false) break
+            if(v.value && v.status === 0){
+              $.toShopValue = v.value
+              await takePostRequest('toShop');
+              await $.wait(parseInt(Math.random() * 2000 + 2000, 10))
+            }
+          }
+        }
+        $.runFalag = true
+        $.log("浏览商品: " + $.visitSku)
+        if(!$.visitSku && !$.outFlag){
+          flag = true
+          for(let v of $.visitSkuList || []){
+            if($.runFalag == false) break
+            if(v.value && v.status === 0){
+              $.visitSkuValue = v.value
+              await takePostRequest('visitSku');
+              await $.wait(parseInt(Math.random() * 2000 + 2000, 10))
+            }
+          }
+        } */
+    if (flag) {
+      await takePostRequest("activityContent");
+    }
+    await $.wait(1500);
+    await takePostRequest("getDrawRecordHasCoupon");
+    await takePostRequest("getShareRecord");
+    if ($.outFlag) {
+      console.log("此ip已被限制，请过10分钟后再执行脚本\n");
+      return;
+    }
+    console.log($.actorUuid);
+    console.log(`当前助力:${$.shareUuid}`);
+    if ($.index == 1) {
+      $.shareUuid = $.actorUuid;
+      console.log(`后面的号都会助力:${$.shareUuid}`);
+    }
+    await $.wait(1500);
+  } catch (e) {
+    console.log(e);
   }
 }
-
-function task(function_id, body, isCommon = 0, own = 0) {
-  return new Promise((resolve) => {
-    $.post(taskUrl(function_id, body, isCommon), async (err, resp, data) => {
+async function takePostRequest(type) {
+  if ($.outFlag) return;
+  let url = "https://lzdz1-isv.isvjcloud.com";
+  let body = ``;
+  let method = "POST";
+  let admJson = "";
+  switch (type) {
+    case "isvObfuscator":
+      url = `https://api.m.jd.com/client.action?functionId=isvObfuscator`;
+      body = `body=%7B%22url%22%3A%22https%3A//lzdz1-isv.isvjcloud.com%22%2C%22id%22%3A%22%22%7D&uuid=0846724fe8d803b8e84ebd14b3ba7fac6df80e7a&client=apple&clientVersion=10.1.4&st=1634616247215&sv=120&sign=91a16ae2feb0bd0e1ea48d99e7953c58`;
+      break;
+    case "getSimpleActInfoVo":
+      url = `${url}/dz/common/getSimpleActInfoVo`;
+      body = `activityId=${$.activityId}`;
+      break;
+    case "getMyPing":
+      url = `${url}/customer/getMyPing`;
+      body = `userId=${$.shopId || $.venderId || ""}&token=${
+        $.Token
+      }&fromType=APP`;
+      break;
+    case "accessLogWithAD":
+      url = `${url}/common/accessLogWithAD`;
+      let pageurl = `${url}/drawCenter/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`;
+      body = `venderId=${
+        $.shopId || $.venderId || ""
+      }&code=99&pin=${encodeURIComponent($.Pin)}&activityId=${
+        $.activityId
+      }&pageUrl=${encodeURIComponent(pageurl)}&subType=app&adSource=`;
+      break;
+    case "getUserInfo":
+      url = `${url}/wxActionCommon/getUserInfo`;
+      body = `pin=${encodeURIComponent($.Pin)}`;
+      break;
+    case "activityContent":
+      url = `${url}/dingzhi/dz/openCard/activityContent`;
+      body = `activityId=${$.activityId}&pin=${encodeURIComponent(
+        $.Pin
+      )}&pinImg=${encodeURIComponent($.attrTouXiang)}&nick=${encodeURIComponent(
+        $.nickname
+      )}&cjyxPin=&cjhyPin=&shareUuid=${$.shareUuid}`;
+      break;
+    case "drawContent":
+      url = `${url}/dingzhi/taskact/openCardcommon/drawContent`;
+      body = `activityId=${$.activityId}&pin=${encodeURIComponent($.Pin)}`;
+      break;
+    case "checkOpenCard":
+      url = `${url}/dingzhi/dz/openCard/checkOpenCard`;
+      body = `activityId=${$.activityId}&pin=${encodeURIComponent(
+        $.Pin
+      )}&actorUuid=${$.actorUuid}&shareUuid=${$.shareUuid}`;
+      break;
+    case "startDraw":
+      url = `${url}/dingzhi/dz/openCard/startDraw`;
+      body = `activityId=${$.activityId}&actorUuid=${
+        $.actorUuid
+      }&pin=${encodeURIComponent($.Pin)}${
+        ($.startDraw && "&type=" + $.startDraw) || ""
+      }`;
+      break;
+    case "followShop":
+      url = `${url}/dingzhi/dz/openCard/followShop`;
+      // url = `${url}/dingzhi/dz/openCard/saveTask`;
+      body = `activityId=${$.activityId}&pin=${encodeURIComponent(
+        $.Pin
+      )}&actorUuid=${$.actorUuid}&shareUuid=${
+        $.shareUuid
+      }&taskType=23&taskValue=${$.followShopValue}`;
+      break;
+    case "viewVideo":
+    case "visitSku":
+    case "toShop":
+    case "addSku":
+      url = `${url}/dingzhi/dz/openCard/saveTask`;
+      let taskType = "";
+      let taskValue = "";
+      if (type == "viewVideo") {
+        taskType = 31;
+        taskValue = 31;
+      } else if (type == "visitSku") {
+        taskType = 5;
+        taskValue = $.visitSkuValue || 5;
+      } else if (type == "toShop") {
+        taskType = 14;
+        taskValue = $.toShopValue || 14;
+      } else if (type == "addSku") {
+        taskType = 2;
+        taskValue = $.addSkuValue || 2;
+      }
+      body = `activityId=${$.activityId}&pin=${encodeURIComponent(
+        $.Pin
+      )}&actorUuid=${$.actorUuid}&taskType=${taskType}&taskValue=${taskValue}`;
+      break;
+    case "getDrawRecordHasCoupon":
+      url = `${url}/dingzhi/taskact/openCardcommon/getDrawRecordHasCoupon`;
+      body = `activityId=${$.activityId}&pin=${encodeURIComponent(
+        $.Pin
+      )}&actorUuid=${$.actorUuid}`;
+      break;
+    case "getShareRecord":
+      url = `${url}/dingzhi/taskact/openCardcommon/getShareRecord`;
+      body = `activityId=${$.activityId}&pin=${encodeURIComponent(
+        $.Pin
+      )}&actorUuid=${$.actorUuid}`;
+      break;
+    default:
+      console.log(`错误${type}`);
+  }
+  let myRequest = getPostRequest(url, body, method);
+  // console.log(myRequest)
+  return new Promise(async (resolve) => {
+    $.post(myRequest, (err, resp, data) => {
       try {
+        setActivityCookie(resp);
         if (err) {
-          $.log(err);
-        } else {
-          if (data) {
-            data = JSON.parse(data);
-            if (data.result) {
-              switch (function_id) {
-                case "wxActionCommon/getUserInfo":
-                  break;
-                case "dz/openCard/activityContent":
-                  if (!data.data.hasEnd) {
-                    $.log(`开启【${data.data.activityName}】活动`);
-                    $.log("-------------------");
-                    if ($.index === 1) {
-                      ownCode = data.data.actorUuid;
-                      console.log(ownCode);
-                    }
-                    $.actorUuid = data.data.actorUuid;
-                    $.skuTask = data.data.addSku;
-                    $.shopTask = data.data.followShop;
-                  } else {
-                    $.log("活动已经结束");
-                  }
-                  break;
-                case "dz/openCard/checkOpenCard":
-                  $.openCardStatus = data.data;
-                  break;
-                case "dz/openCard/saveTask":
-                  console.log(data.data.addBeanNum);
-                  break;
-                case "dz/openCard/saveTask":
-                  if (data.data) {
-                    if (data.data.addBeanNum) {
-                      $.bean += data.data.addBeanNum;
-                      $.log(`==>获得【${data.data.addBeanNum}】京豆\n`);
-                    }
-                  }
-                  break;
-                case "dz/openCard/startDraw":
-                  if (data.data.drawOk) {
-                    switch (data.data.drawInfo.type) {
-                      case 6:
-                        $.bean += data.data.drawInfo.beanNum;
-                        $.log(`==>获得【${data.data.drawInfo.beanNum}】京豆\n`);
-                        break;
-                      default:
-                        if ($.isNode()) {
-                          await notify.sendNotify(
-                            "中奖了",
-                            `中奖信息：${JSON.stringify(
-                              data.data.drawInfo
-                            )}\n活动链接：${$.activityUrl}`
-                          );
-                        } else {
-                          $.msg(
-                            "中奖了",
-                            `获得${data.data.drawInfo.name}`,
-                            `中奖信息：${JSON.stringify(
-                              data.data.drawInfo
-                            )}\n活动链接：${$.activityUrl}`
-                          );
-                        }
-                        break;
-                    }
-                  }
-                  break;
-                case "crm/pageVisit/insertCrmPageVisit":
-                  $.log("==> 上报成功");
-
-                case "dz/openCard/followShop":
-                  if (data.data) {
-                    if (data.data.addBeanNum) {
-                      $.bean += data.data.addBeanNum;
-                      $.log(`==>获得【${data.data.addBeanNum}】京豆\n`);
-                    }
-                  }
-                  break;
-
-                  break;
-                default:
-                  $.log(JSON.stringify(data));
-                  break;
-              }
-            } else {
-              $.log(JSON.stringify(data));
+          if (resp && typeof resp.statusCode != "undefined") {
+            if (resp.statusCode == 493) {
+              console.log("此ip已被限制，请过10分钟后再执行脚本\n");
+              $.outFlag = true;
             }
-          } else {
-            // $.log("京东没有返回数据")
           }
+          console.log(`${$.toStr(err, err)}`);
+          console.log(`${type} API请求失败，请检查网路重试`);
+        } else {
+          dealReturn(type, data);
         }
-      } catch (error) {
-        $.log(error);
+      } catch (e) {
+        // console.log(data);
+        console.log(e, resp);
       } finally {
         resolve();
       }
     });
   });
 }
-function taskUrl(function_id, body, isCommon) {
+
+async function dealReturn(type, data) {
+  let res = "";
+  try {
+    if (type != "accessLogWithAD" || type != "drawContent") {
+      if (data) {
+        res = JSON.parse(data);
+      }
+    }
+  } catch (e) {
+    console.log(`${type} 执行任务异常`);
+    console.log(data);
+    $.runFalag = false;
+  }
+  try {
+    switch (type) {
+      case "isvObfuscator":
+        if (typeof res == "object") {
+          if (res.errcode == 0) {
+            if (typeof res.token != "undefined") $.Token = res.token;
+          } else if (res.message) {
+            console.log(`isvObfuscator ${res.message || ""}`);
+          } else {
+            console.log(data);
+          }
+        } else {
+          console.log(data);
+        }
+        break;
+      case "getSimpleActInfoVo":
+        if (typeof res == "object") {
+          if (res.result && res.result === true) {
+            if (typeof res.data.shopId != "undefined")
+              $.shopId = res.data.shopId;
+            if (typeof res.data.venderId != "undefined")
+              $.venderId = res.data.venderId;
+          } else if (res.errorMessage) {
+            console.log(`${type} ${res.errorMessage || ""}`);
+          } else {
+            console.log(`${type} ${data}`);
+          }
+        } else {
+          console.log(`${type} ${data}`);
+        }
+        break;
+      case "getMyPing":
+        if (typeof res == "object") {
+          if (res.result && res.result === true) {
+            if (res.data && typeof res.data.secretPin != "undefined")
+              $.Pin = res.data.secretPin;
+            if (res.data && typeof res.data.nickname != "undefined")
+              $.nickname = res.data.nickname;
+          } else if (res.errorMessage) {
+            console.log(`${type} ${res.errorMessage || ""}`);
+          } else {
+            console.log(`${type} ${data}`);
+          }
+        } else {
+          console.log(`${type} ${data}`);
+        }
+        break;
+      case "getUserInfo":
+        if (typeof res == "object") {
+          if (res.result && res.result === true) {
+            if (res.data && typeof res.data.yunMidImageUrl != "undefined")
+              $.attrTouXiang =
+                res.data.yunMidImageUrl ||
+                "https://img10.360buyimg.com/imgzone/jfs/t1/7020/27/13511/6142/5c5138d8E4df2e764/5a1216a3a5043c5d.png";
+          } else if (res.errorMessage) {
+            console.log(`${type} ${res.errorMessage || ""}`);
+          } else {
+            console.log(`${type} ${data}`);
+          }
+        } else {
+          console.log(`${type} ${data}`);
+        }
+        break;
+      case "activityContent":
+        if (typeof res == "object") {
+          if (res.result && res.result === true) {
+            $.endTime = res.data.endTime || 0;
+            $.hasEnd = res.data.hasEnd || false;
+            $.actorUuid = res.data.actorUuid || "";
+            $.followShop = res.data.followShop.allStatus || false;
+            $.addSku = res.data.addSku.allStatus || false;
+            if (
+              res.data.followShop &&
+              res.data.followShop.settings &&
+              res.data.followShop.settings[0]
+            ) {
+              $.followShopValue = res.data.followShop.settings[0].value || 1;
+            }
+            if (
+              res.data.addSku &&
+              res.data.addSku.settings &&
+              res.data.addSku.settings[0]
+            ) {
+              $.addSkuValue = res.data.addSku.settings[0].value || 2;
+            }
+            $.toShop = res.data.toShop.allStatus || false;
+            $.toShopList = res.data.toShop.settings || [];
+          } else if (res.errorMessage) {
+            console.log(`${type} ${res.errorMessage || ""}`);
+          } else {
+            console.log(`${type} ${data}`);
+          }
+        } else {
+          console.log(`${type} ${data}`);
+        }
+        break;
+      case "checkOpenCard":
+        if (typeof res == "object") {
+          if (res.result && res.result === true) {
+            let cardList1 = res.data.cardList1 || [];
+            let cardList2 = res.data.cardList2 || [];
+            let cardList = res.data.cardList || [];
+            $.openList = [...cardList, ...cardList1, ...cardList2];
+            $.allOpenCard = res.data.allOpenCard || false;
+            $.openCardScore1 = res.data.score1 || 0;
+            $.openCardScore2 = res.data.score2 || 0;
+            $.drawScore = res.data.drawScore || 0;
+          } else if (res.errorMessage) {
+            console.log(`${type} ${res.errorMessage || ""}`);
+          } else {
+            console.log(`${type} ${data}`);
+          }
+        } else {
+          console.log(`${type} ${data}`);
+        }
+        break;
+      case "startDraw":
+      case "followShop":
+      case "viewVideo":
+      case "visitSku":
+      case "toShop":
+      case "addSku":
+        if (typeof res == "object") {
+          if (res.result && res.result === true) {
+            if (typeof res.data == "object") {
+              let msg = "";
+              let title = "抽奖";
+              if (res.data.addBeanNum && res.data.sendStatus) {
+                msg = `${res.data.addBeanNum}京豆`;
+              }
+              if (type == "followShop") {
+                title = "关注";
+                if (res.data.beanNumMember && res.data.assistSendStatus) {
+                  msg += ` 额外获得:${res.data.beanNumMember}京豆`;
+                }
+              } else if (type == "addSku") {
+                title = "加购";
+              } else if (type == "viewVideo") {
+                title = "热门文章";
+              } else if (type == "toShop") {
+                title = "浏览店铺";
+              } else if (type == "visitSku") {
+                title = "浏览商品";
+              } else {
+                msg =
+                  (res.data.drawOk == true &&
+                    ((res.data.drawInfoType == 6 && res.data.name) || "")) ||
+                  "空气�";
+              }
+              if (!msg) {
+                msg = "空气�";
+              }
+              console.log(`${title}获得:${msg || data}`);
+            } else {
+              console.log(`${type} ${data}`);
+            }
+          } else if (res.errorMessage) {
+            $.runFalag = false;
+            console.log(`${type} ${res.errorMessage || ""}`);
+          } else {
+            console.log(`${type} ${data}`);
+          }
+        } else {
+          console.log(`${type} ${data}`);
+        }
+        break;
+      case "getDrawRecordHasCoupon":
+        if (typeof res == "object") {
+          if (res.result && res.result === true) {
+            console.log(`我的奖品：`);
+            let num = 0;
+            let value = 0;
+            for (let i in res.data) {
+              let item = res.data[i];
+              if (item.value == "邀请好友") num++;
+              if (item.value == "邀请好友")
+                value = item.infoName.replace("京豆", "");
+              if (item.value != "邀请好友")
+                console.log(
+                  `${(item.infoType != 10 && item.value + ":") || ""}${
+                    item.infoName
+                  }`
+                );
+            }
+            if (num > 0)
+              console.log(
+                `邀请好友(${num}):${num * parseInt(value, 10) || 30}京豆`
+              );
+          } else if (res.errorMessage) {
+            console.log(`${type} ${res.errorMessage || ""}`);
+          } else {
+            console.log(`${type} ${data}`);
+          }
+        } else {
+          console.log(`${type} ${data}`);
+        }
+        break;
+      case "getShareRecord":
+        if (typeof res == "object") {
+          if (res.result && res.result === true && res.data) {
+            $.ShareCount = res.data.length;
+            $.log(`=========== 你邀请了:${res.data.length}个`);
+          } else if (res.errorMessage) {
+            console.log(`${type} ${res.errorMessage || ""}`);
+          } else {
+            console.log(`${type} ${data}`);
+          }
+        } else {
+          console.log(`${type} ${data}`);
+        }
+        break;
+      case "accessLogWithAD":
+      case "drawContent":
+        break;
+      default:
+        console.log(`${type}-> ${data}`);
+    }
+    if (typeof res == "object") {
+      if (res.errorMessage) {
+        if (res.errorMessage.indexOf("火爆") > -1) {
+          $.hotFlag = true;
+        }
+      }
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+function getPostRequest(url, body, method = "POST") {
+  let headers = {
+    Accept: "application/json",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "zh-cn",
+    Connection: "keep-alive",
+    "Content-Type": "application/x-www-form-urlencoded",
+    Cookie: cookie,
+    "User-Agent": $.UA,
+    "X-Requested-With": "XMLHttpRequest",
+  };
+  if (url.indexOf("https://lzdz1-isv.isvjcloud.com") > -1) {
+    headers[
+      "Referer"
+    ] = `https://lzdz1-isv.isvjcloud.com/dingzhi/dz/openCard/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`;
+    headers["Cookie"] = `${
+      (lz_jdpin_token_cookie && lz_jdpin_token_cookie) || ""
+    }${($.Pin && "AUTH_C_USER=" + $.Pin + ";") || ""}${activityCookie}`;
+  }
+  // console.log(headers)
+  // console.log(headers.Cookie)
   return {
-    url: isCommon
-      ? `https://lzdz1-isv.isvjd.com/${function_id}`
-      : `https://lzdz1-isv.isvjd.com/dingzhi/${function_id}`,
-    headers: {
-      Host: "lzdz1-isv.isvjd.com",
-      Accept: "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-      "Accept-Language": "zh-cn",
-      "Accept-Encoding": "gzip, deflate, br",
-      "Content-Type": "application/x-www-form-urlencoded",
-      Origin: "https://lzdz1-isv.isvjd.com",
-      "User-Agent": `jdapp;iPhone;9.5.4;13.6;${$.UUID};network/wifi;ADID/${$.ADID};model/iPhone10,3;addressid/0;appBuild/167668;jdSupportDarkMode/0;Mozilla/5.0 (iPhone; CPU iPhone OS 13_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1`,
-      Connection: "keep-alive",
-      Referer: $.activityUrl,
-      Cookie: cookie,
-    },
+    url: url,
+    method: method,
+    headers: headers,
     body: body,
+    timeout: 30000,
   };
 }
-function getAuthorCodeList(url) {
+
+function getCk() {
   return new Promise((resolve) => {
-    const options = {
-      url: `${url}?${new Date()}`,
-      timeout: 10000,
+    let get = {
+      url: `https://lzdz1-isv.isvjcloud.com/dingzhi/dz/openCard/activity?activityId=${$.activityId}&shareUuid=${$.shareUuid}`,
+      followRedirect: false,
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/87.0.4280.88",
+        "User-Agent": $.UA,
+      },
+      timeout: 30000,
+    };
+    $.get(get, async (err, resp, data) => {
+      try {
+        if (err) {
+          if (resp && typeof resp.statusCode != "undefined") {
+            if (resp.statusCode == 493) {
+              console.log("此ip已被限制，请过10分钟后再执行脚本\n");
+              $.outFlag = true;
+            }
+          }
+          console.log(`${$.toStr(err)}`);
+          console.log(`${$.name} cookie API请求失败，请检查网路重试`);
+        } else {
+          let end =
+            (data.match(/(活动已经结束)/) && data.match(/(活动已经结束)/)[1]) ||
+            "";
+          if (end) {
+            $.activityEnd = true;
+            console.log("活动已结束");
+          }
+          setActivityCookie(resp);
+        }
+      } catch (e) {
+        $.logErr(e, resp);
+      } finally {
+        resolve();
+      }
+    });
+  });
+}
+function setActivityCookie(resp) {
+  let LZ_TOKEN_KEY = "";
+  let LZ_TOKEN_VALUE = "";
+  let lz_jdpin_token = "";
+  let setcookies =
+    (resp &&
+      resp["headers"] &&
+      (resp["headers"]["set-cookie"] || resp["headers"]["Set-Cookie"] || "")) ||
+    "";
+  let setcookie = "";
+  if (setcookies) {
+    if (typeof setcookies != "object") {
+      setcookie = setcookies.split(",");
+    } else setcookie = setcookies;
+    for (let ck of setcookie) {
+      let name = ck.split(";")[0].trim();
+      if (name.split("=")[1]) {
+        // console.log(name.replace(/ /g,''))
+        if (name.indexOf("LZ_TOKEN_KEY=") > -1)
+          LZ_TOKEN_KEY = name.replace(/ /g, "") + ";";
+        if (name.indexOf("LZ_TOKEN_VALUE=") > -1)
+          LZ_TOKEN_VALUE = name.replace(/ /g, "") + ";";
+        if (name.indexOf("lz_jdpin_token=") > -1)
+          lz_jdpin_token = "" + name.replace(/ /g, "") + ";";
+      }
+    }
+  }
+  if (LZ_TOKEN_KEY && LZ_TOKEN_VALUE)
+    activityCookie = `${LZ_TOKEN_KEY} ${LZ_TOKEN_VALUE}`;
+  if (lz_jdpin_token) lz_jdpin_token_cookie = lz_jdpin_token;
+}
+
+async function getUA() {
+  $.UA = `jdapp;iPhone;10.1.4;13.1.2;${randomString(
+    40
+  )};network/wifi;model/iPhone8,1;addressid/2308460611;appBuild/167814;jdSupportDarkMode/0;Mozilla/5.0 (iPhone; CPU iPhone OS 13_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1`;
+}
+function randomString(e) {
+  e = e || 32;
+  let t = "abcdef0123456789",
+    a = t.length,
+    n = "";
+  for (i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
+  return n;
+}
+
+function joinShop() {
+  if (!$.joinVenderId) return;
+  return new Promise(async (resolve) => {
+    $.shopactivityId = "";
+    await $.wait(1000);
+    await getshopactivityId();
+    let activityId = ``;
+    if ($.shopactivityId) activityId = `,"activityId":${$.shopactivityId}`;
+    const options = {
+      url: `https://api.m.jd.com/client.action?appid=jd_shop_member&functionId=bindWithVender&body={"venderId":"${$.joinVenderId}","shopId":"${$.joinVenderId}","bindByVerifyCodeFlag":1,"registerExtend":{},"writeChildFlag":0${activityId},"channel":401}&client=H5&clientVersion=9.2.0&uuid=88888&h5st=20220412161446823%3Befea09f75b5acfd83c352cdb809b7594%3B169f1%3Btk02w9ce51bd318ndiYw36wpEfBVSkLJcSyXn6MG4Sc5Sh2PaQ9JEKfn8qRRVOQ%2FMouFent%2FQJM5geNQC3hZkdrn%2BvEW%3Bd97f8078c6601a9327234e8838c46a40ab341618d140f84da025a91169f883ca%3B3.0%3B1649751286823`,
+      headers: {
+        "Content-Type": "text/plain; Charset=UTF-8",
+        Origin: "https://api.m.jd.com",
+        Host: "api.m.jd.com",
+        accept: "*/*",
+        "User-Agent": $.UA,
+        "content-type": "application/x-www-form-urlencoded",
+        Cookie: cookie,
       },
     };
     $.get(options, async (err, resp, data) => {
       try {
-        if (err) {
-          $.log(err);
+        // console.log(data)
+        let res = $.toObj(data);
+        if (typeof res == "object") {
+          if (res.success === true) {
+            console.log(res.message);
+            if (res.result && res.result.giftInfo) {
+              for (let i of res.result.giftInfo.giftList) {
+                console.log(
+                  `入会获得:${i.discountString}${i.prizeName}${i.secondLineDesc}`
+                );
+              }
+            }
+          } else if (typeof res == "object" && res.message) {
+            console.log(`${res.message || ""}`);
+          } else {
+            console.log(data);
+          }
         } else {
-          if (data) data = JSON.parse(data);
+          console.log(data);
         }
       } catch (e) {
         $.logErr(e, resp);
-        data = null;
-      } finally {
-        resolve(data);
-      }
-    });
-  });
-}
-function getMyPing() {
-  let opt = {
-    url: `https://lzdz1-isv.isvjd.com/customer/getMyPing`,
-    headers: {
-      Host: "lzdz1-isv.isvjd.com",
-      Accept: "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-      "Accept-Language": "zh-cn",
-      "Accept-Encoding": "gzip, deflate, br",
-      "Content-Type": "application/x-www-form-urlencoded",
-      Origin: "https://lzdz1-isv.isvjd.com",
-      "User-Agent": `jdapp;iPhone;9.5.4;13.6;${$.UUID};network/wifi;ADID/${$.ADID};model/iPhone10,3;addressid/0;appBuild/167668;jdSupportDarkMode/0;Mozilla/5.0 (iPhone; CPU iPhone OS 13_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1`,
-      Connection: "keep-alive",
-      Referer: $.activityUrl,
-      Cookie: cookie,
-    },
-    body: `userId=${$.activityShopId}&token=${$.token}&fromType=APP&riskType=1`,
-  };
-  return new Promise((resolve) => {
-    $.post(opt, (err, resp, data) => {
-      try {
-        if (err) {
-          $.log(err);
-        } else {
-          if (resp["headers"]["set-cookie"]) {
-            cookie = `${originCookie}`;
-            if ($.isNode()) {
-              for (let sk of resp["headers"]["set-cookie"]) {
-                cookie = `${cookie}${sk.split(";")[0]};`;
-              }
-            } else {
-              for (let ck of resp["headers"]["Set-Cookie"].split(",")) {
-                cookie = `${cookie}${ck.split(";")[0]};`;
-              }
-            }
-          }
-          if (resp["headers"]["Set-Cookie"]) {
-            cookie = `${originCookie}`;
-            if ($.isNode()) {
-              for (let sk of resp["headers"]["set-cookie"]) {
-                cookie = `${cookie}${sk.split(";")[0]};`;
-              }
-            } else {
-              for (let ck of resp["headers"]["Set-Cookie"].split(",")) {
-                cookie = `${cookie}${ck.split(";")[0]};`;
-              }
-            }
-          }
-          if (data) {
-            data = JSON.parse(data);
-            if (data.result) {
-              $.log(`你好：${data.data.nickname}`);
-              $.pin = data.data.nickname;
-              $.secretPin = data.data.secretPin;
-              cookie = `${cookie};AUTH_C_USER=${data.data.secretPin}`;
-            } else {
-              $.log(data.errorMessage);
-            }
-          } else {
-            // $.log("京东返回了空数据")
-          }
-        }
-      } catch (error) {
-        $.log(error);
       } finally {
         resolve();
       }
     });
   });
 }
-function getFirstLZCK() {
+function getshopactivityId() {
   return new Promise((resolve) => {
-    $.get({ url: $.activityUrl }, (err, resp, data) => {
+    const options = {
+      url: `https://api.m.jd.com/client.action?appid=jd_shop_member&functionId=getShopOpenCardInfo&body=%7B%22venderId%22%3A%22${$.joinVenderId}%22%2C%22channel%22%3A401%7D&client=H5&clientVersion=9.2.0&uuid=88888&h5st=20220412161446823%3Befea09f75b5acfd83c352cdb809b7594%3B169f1%3Btk02w9ce51bd318ndiYw36wpEfBVSkLJcSyXn6MG4Sc5Sh2PaQ9JEKfn8qRRVOQ%2FMouFent%2FQJM5geNQC3hZkdrn%2BvEW%3Bd97f8078c6601a9327234e8838c46a40ab341618d140f84da025a91169f883ca%3B3.0%3B1649751286823`,
+      headers: {
+        "Content-Type": "text/plain; Charset=UTF-8",
+        Origin: "https://api.m.jd.com",
+        Host: "api.m.jd.com",
+        accept: "*/*",
+        "User-Agent": $.UA,
+        "content-type": "application/x-www-form-urlencoded",
+        Cookie: cookie,
+      },
+    };
+    $.get(options, async (err, resp, data) => {
       try {
-        if (err) {
-          console.log(err);
-        } else {
-          if (resp["headers"]["set-cookie"]) {
-            cookie = `${originCookie}`;
-            if ($.isNode()) {
-              for (let sk of resp["headers"]["set-cookie"]) {
-                cookie = `${cookie}${sk.split(";")[0]};`;
-              }
-            } else {
-              for (let ck of resp["headers"]["Set-Cookie"].split(",")) {
-                cookie = `${cookie}${ck.split(";")[0]};`;
-              }
-            }
-          }
-          if (resp["headers"]["Set-Cookie"]) {
-            cookie = `${originCookie}`;
-            if ($.isNode()) {
-              for (let sk of resp["headers"]["set-cookie"]) {
-                cookie = `${cookie}${sk.split(";")[0]};`;
-              }
-            } else {
-              for (let ck of resp["headers"]["Set-Cookie"].split(",")) {
-                cookie = `${cookie}${ck.split(";")[0]};`;
-              }
-            }
-          }
+        let res = $.toObj(data);
+        if (res.success == true) {
+          // console.log($.toStr(res.result))
+          console.log(
+            `入会:${res.result.shopMemberCardInfo.venderCardName || ""}`
+          );
+          $.shopactivityId =
+            (res.result.interestsRuleList &&
+              res.result.interestsRuleList[0] &&
+              res.result.interestsRuleList[0].interestsInfo &&
+              res.result.interestsRuleList[0].interestsInfo.activityId) ||
+            "";
         }
-      } catch (error) {
-        console.log(error);
+      } catch (e) {
+        $.logErr(e, resp);
       } finally {
         resolve();
       }
     });
   });
 }
-function getToken() {
-  let opt = {
-    url: `https://api.m.jd.com/client.action?functionId=isvObfuscator`,
-    headers: {
-      Host: "api.m.jd.com",
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "*/*",
-      Connection: "keep-alive",
-      Cookie: cookie,
-      "User-Agent": "JD4iPhone/167650 (iPhone; iOS 13.7; Scale/3.00)",
-      "Accept-Language": "zh-Hans-CN;q=1",
-      "Accept-Encoding": "gzip, deflate, br",
-    },
-    body: `body=%7B%22url%22%3A%20%22https%3A//lzkj-isv.isvjcloud.com%22%2C%20%22id%22%3A%20%22%22%7D&uuid=hjudwgohxzVu96krv&client=apple&clientVersion=9.4.0&st=1620476162000&sv=111&sign=f9d1b7e3b943b6a136d54fe4f892af05`,
-  };
-  return new Promise((resolve) => {
-    $.post(opt, (err, resp, data) => {
-      try {
-        if (err) {
-          $.log(err);
-        } else {
-          if (data) {
-            data = JSON.parse(data);
-            if (data.code === "0") {
-              $.token = data.token;
-            }
-          } else {
-            $.log("京东返回了空数据");
-          }
-        }
-      } catch (error) {
-        $.log(error);
-      } finally {
-        resolve();
-      }
-    });
-  });
-}
+
 function random(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
-function getUUID(
-  format = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  UpperCase = 0
-) {
-  return format.replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
-      v = c == "x" ? r : (r & 0x3) | 0x8;
-    if (UpperCase) {
-      uuid = v.toString(36).toUpperCase();
-    } else {
-      uuid = v.toString(36);
-    }
-    return uuid;
-  });
-}
-function checkCookie() {
-  const options = {
-    url: "https://me-api.jd.com/user_new/info/GetJDUserInfoUnion",
-    headers: {
-      Host: "me-api.jd.com",
-      Accept: "*/*",
-      Connection: "keep-alive",
-      Cookie: cookie,
-      "User-Agent":
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.2 Mobile/15E148 Safari/604.1",
-      "Accept-Language": "zh-cn",
-      Referer: "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&",
-      "Accept-Encoding": "gzip, deflate, br",
-    },
-  };
-  return new Promise((resolve) => {
-    $.get(options, (err, resp, data) => {
-      try {
-        if (err) {
-          $.logErr(err);
-        } else {
-          if (data) {
-            data = JSON.parse(data);
-            if (data.retcode === "1001") {
-              $.isLogin = false; //cookie过期
-              return;
-            }
-            if (data.retcode === "0" && data.data.hasOwnProperty("userInfo")) {
-              $.nickName = data.data.userInfo.baseInfo.nickname;
-            }
-          } else {
-            $.log("京东返回了空数据");
-          }
-        }
-      } catch (e) {
-        $.logErr(e);
-      } finally {
-        resolve();
-      }
-    });
-  });
-}
-// prettier-ignore
-var _0xod7='jsjiami.com.v6',_0xod7_=['‮_0xod7'],_0x1acd=[_0xod7,'\x53\x33\x4a\x54\x56\x32\x4d\x3d','\x54\x47\x4e\x4c\x62\x6e\x6b\x3d','\x62\x47\x39\x6e','\x63\x47\x46\x79\x63\x32\x55\x3d','\x63\x33\x56\x6a\x59\x32\x56\x7a\x63\x77\x3d\x3d','\x63\x6d\x56\x7a\x64\x57\x78\x30','\x61\x57\x35\x30\x5a\x58\x4a\x6c\x63\x33\x52\x7a\x55\x6e\x56\x73\x5a\x55\x78\x70\x63\x33\x51\x3d','\x62\x33\x42\x6c\x62\x6b\x4e\x68\x63\x6d\x52\x42\x59\x33\x52\x70\x64\x6d\x6c\x30\x65\x55\x6c\x6b','\x61\x57\x35\x30\x5a\x58\x4a\x6c\x63\x33\x52\x7a\x53\x57\x35\x6d\x62\x77\x3d\x3d','\x59\x57\x4e\x30\x61\x58\x5a\x70\x64\x48\x6c\x4a\x5a\x41\x3d\x3d','\x56\x45\x56\x4a\x59\x57\x38\x3d','\x55\x6d\x78\x6d\x59\x32\x4d\x3d','\x63\x45\x39\x31\x52\x6b\x4d\x3d','\x64\x6e\x5a\x75\x57\x45\x4d\x3d','\x62\x33\x64\x32\x5a\x47\x55\x3d','\x59\x33\x70\x4b\x62\x47\x67\x3d','\x51\x55\x64\x59\x59\x30\x6b\x3d','\x54\x30\x4a\x58\x55\x45\x59\x3d','\x56\x57\x6c\x55\x51\x33\x63\x3d','\x59\x6d\x6c\x75\x5a\x46\x64\x70\x64\x47\x68\x57\x5a\x57\x35\x6b\x5a\x58\x49\x3d','\x52\x57\x52\x36\x62\x57\x67\x3d','\x55\x48\x56\x58\x62\x6b\x59\x3d','\x61\x48\x52\x30\x63\x48\x4d\x36\x4c\x79\x39\x68\x63\x47\x6b\x75\x62\x53\x35\x71\x5a\x43\x35\x6a\x62\x32\x30\x76\x59\x32\x78\x70\x5a\x57\x35\x30\x4c\x6d\x46\x6a\x64\x47\x6c\x76\x62\x6a\x38\x3d','\x52\x33\x5a\x75\x55\x6c\x55\x3d','\x52\x6c\x5a\x71\x53\x30\x55\x3d','\x56\x47\x35\x69\x63\x30\x73\x3d','\x61\x6e\x6c\x47\x54\x31\x41\x3d','\x66\x53\x5a\x6a\x61\x47\x46\x75\x62\x6d\x56\x73\x50\x54\x51\x77\x4d\x53\x5a\x79\x5a\x58\x52\x31\x63\x6d\x35\x56\x63\x6d\x77\x39','\x59\x55\x78\x36\x61\x31\x63\x3d','\x56\x6d\x74\x75\x62\x33\x51\x3d','\x54\x56\x6c\x6f\x54\x45\x4d\x3d','\x62\x58\x64\x34\x52\x47\x30\x3d','\x65\x6c\x5a\x70\x59\x57\x34\x3d','\x52\x55\x46\x4a\x51\x6b\x45\x3d','\x53\x57\x70\x7a\x59\x6b\x6f\x3d','\x56\x55\x74\x79\x61\x46\x55\x3d','\x56\x32\x74\x69\x53\x45\x77\x3d','\x54\x46\x4a\x49\x61\x6b\x77\x3d','\x54\x30\x4e\x44\x54\x6e\x63\x3d','\x56\x31\x70\x7a\x57\x56\x6f\x3d','\x56\x33\x4e\x72\x63\x48\x67\x3d','\x61\x56\x42\x6b\x5a\x58\x67\x3d','\x51\x6e\x64\x6c\x55\x31\x63\x3d','\x65\x57\x35\x5a\x63\x58\x49\x3d','\x63\x47\x74\x50\x64\x58\x4d\x3d','\x57\x6d\x56\x5a\x62\x6c\x67\x3d','\x61\x56\x68\x4e\x54\x33\x6b\x3d','\x62\x56\x5a\x33\x65\x56\x67\x3d','\x55\x47\x4a\x50\x51\x55\x49\x3d','\x54\x33\x68\x74\x56\x57\x59\x3d','\x62\x55\x31\x52\x61\x33\x59\x3d','\x53\x57\x4a\x45\x62\x56\x45\x3d','\x59\x6d\x6c\x75\x5a\x46\x64\x70\x64\x47\x68\x57\x5a\x57\x35\x6b\x5a\x58\x4a\x74\x5a\x58\x4e\x7a\x59\x57\x64\x6c','\x62\x57\x56\x7a\x63\x32\x46\x6e\x5a\x51\x3d\x3d','\x5a\x57\x35\x32','\x55\x30\x6c\x48\x54\x6c\x39\x56\x55\x6b\x77\x3d','\x59\x6d\x52\x6e\x63\x30\x30\x3d','\x57\x6b\x74\x34\x53\x6b\x34\x3d','\x59\x30\x56\x51\x63\x6d\x4d\x3d','\x65\x45\x64\x72\x54\x47\x38\x3d','\x5a\x45\x74\x57\x64\x6d\x67\x3d','\x51\x58\x68\x73\x63\x6d\x6f\x3d','\x4f\x47\x46\x6b\x5a\x6d\x49\x3d','\x61\x6d\x52\x66\x63\x32\x68\x76\x63\x46\x39\x74\x5a\x57\x31\x69\x5a\x58\x49\x3d','\x4f\x53\x34\x79\x4c\x6a\x41\x3d','\x61\x6d\x52\x7a\x61\x57\x64\x75\x4c\x6d\x4e\x6d','\x59\x58\x42\x77\x62\x47\x6c\x6a\x59\x58\x52\x70\x62\x32\x34\x76\x61\x6e\x4e\x76\x62\x67\x3d\x3d','\x64\x6c\x6c\x43\x5a\x45\x67\x3d','\x51\x6b\x31\x47\x61\x33\x6b\x3d','\x61\x58\x56\x36\x61\x31\x45\x3d','\x5a\x30\x68\x33\x52\x58\x6f\x3d','\x55\x32\x56\x4d\x52\x6e\x45\x3d','\x52\x57\x35\x59\x65\x6c\x6b\x3d','\x55\x48\x70\x34\x63\x55\x67\x3d','\x54\x6c\x52\x42\x55\x56\x41\x3d','\x61\x30\x56\x78\x65\x6e\x45\x3d','\x61\x6c\x5a\x59\x63\x48\x45\x3d','\x51\x57\x31\x4f\x63\x6b\x6b\x3d','\x63\x57\x6c\x43\x64\x32\x63\x3d','\x5a\x6d\x78\x76\x62\x33\x49\x3d','\x62\x46\x6c\x57\x65\x47\x73\x3d','\x63\x6d\x46\x75\x5a\x47\x39\x74','\x62\x47\x56\x75\x5a\x33\x52\x6f','\x61\x48\x52\x30\x63\x48\x4d\x36\x4c\x79\x39\x6a\x5a\x47\x34\x75\x62\x6e\x6f\x75\x62\x48\x55\x76\x5a\x32\x56\x30\x61\x44\x56\x7a\x64\x41\x3d\x3d','\x52\x47\x5a\x61\x62\x32\x67\x3d','\x57\x45\x4e\x36\x62\x6e\x59\x3d','\x63\x47\x39\x7a\x64\x41\x3d\x3d','\x53\x6b\x64\x4a\x53\x6b\x6f\x3d','\x59\x30\x78\x31\x57\x56\x63\x3d','\x53\x6d\x56\x74\x64\x6b\x67\x3d','\x56\x46\x4e\x6c\x59\x55\x59\x3d','\x5a\x6c\x64\x6d\x54\x31\x51\x3d','\x59\x58\x42\x77\x62\x48\x6b\x3d','\x65\x6b\x39\x49\x64\x45\x67\x3d','\x56\x46\x70\x75\x51\x6d\x6f\x3d','\x62\x47\x39\x6e\x52\x58\x4a\x79','\x61\x30\x64\x42\x55\x55\x51\x3d','\x56\x46\x6c\x48\x57\x48\x6f\x3d','\x59\x58\x42\x70\x4c\x6d\x30\x75\x61\x6d\x51\x75\x59\x32\x39\x74','\x4b\x69\x38\x71','\x61\x32\x56\x6c\x63\x43\x31\x68\x62\x47\x6c\x32\x5a\x51\x3d\x3d','\x65\x6d\x67\x74\x59\x32\x34\x3d','\x5a\x33\x70\x70\x63\x43\x77\x67\x5a\x47\x56\x6d\x62\x47\x46\x30\x5a\x53\x77\x67\x59\x6e\x49\x3d','\x61\x48\x52\x30\x63\x48\x4d\x36\x4c\x79\x39\x68\x63\x47\x6b\x75\x62\x53\x35\x71\x5a\x43\x35\x6a\x62\x32\x30\x76\x59\x32\x78\x70\x5a\x57\x35\x30\x4c\x6d\x46\x6a\x64\x47\x6c\x76\x62\x6a\x39\x68\x63\x48\x42\x70\x5a\x44\x31\x71\x5a\x46\x39\x7a\x61\x47\x39\x77\x58\x32\x31\x6c\x62\x57\x4a\x6c\x63\x69\x5a\x6d\x64\x57\x35\x6a\x64\x47\x6c\x76\x62\x6b\x6c\x6b\x50\x57\x64\x6c\x64\x46\x4e\x6f\x62\x33\x42\x50\x63\x47\x56\x75\x51\x32\x46\x79\x5a\x45\x6c\x75\x5a\x6d\x38\x6d\x59\x6d\x39\x6b\x65\x54\x30\x3d','\x65\x47\x52\x75\x51\x6c\x49\x3d','\x63\x33\x52\x79\x61\x57\x35\x6e\x61\x57\x5a\x35','\x4a\x6d\x4e\x73\x61\x57\x56\x75\x64\x44\x31\x49\x4e\x53\x5a\x6a\x62\x47\x6c\x6c\x62\x6e\x52\x57\x5a\x58\x4a\x7a\x61\x57\x39\x75\x50\x54\x6b\x75\x4d\x69\x34\x77\x4a\x6e\x56\x31\x61\x57\x51\x39\x4f\x44\x67\x34\x4f\x44\x67\x3d','\x55\x6b\x70\x46\x55\x33\x6f\x3d','\x62\x48\x5a\x6c\x64\x6e\x67\x3d','\x59\x31\x68\x71\x63\x6e\x41\x3d','\x61\x6d\x52\x68\x63\x48\x41\x37\x61\x56\x42\x6f\x62\x32\x35\x6c\x4f\x7a\x6b\x75\x4e\x53\x34\x30\x4f\x7a\x45\x7a\x4c\x6a\x59\x37','\x56\x56\x56\x4a\x52\x41\x3d\x3d','\x4f\x32\x35\x6c\x64\x48\x64\x76\x63\x6d\x73\x76\x64\x32\x6c\x6d\x61\x54\x74\x42\x52\x45\x6c\x45\x4c\x77\x3d\x3d','\x51\x55\x52\x4a\x52\x41\x3d\x3d','\x4f\x32\x31\x76\x5a\x47\x56\x73\x4c\x32\x6c\x51\x61\x47\x39\x75\x5a\x54\x45\x77\x4c\x44\x4d\x37\x59\x57\x52\x6b\x63\x6d\x56\x7a\x63\x32\x6c\x6b\x4c\x7a\x41\x37\x59\x58\x42\x77\x51\x6e\x56\x70\x62\x47\x51\x76\x4d\x54\x59\x33\x4e\x6a\x59\x34\x4f\x32\x70\x6b\x55\x33\x56\x77\x63\x47\x39\x79\x64\x45\x52\x68\x63\x6d\x74\x4e\x62\x32\x52\x6c\x4c\x7a\x41\x37\x54\x57\x39\x36\x61\x57\x78\x73\x59\x53\x38\x31\x4c\x6a\x41\x67\x4b\x47\x6c\x51\x61\x47\x39\x75\x5a\x54\x73\x67\x51\x31\x42\x56\x49\x47\x6c\x51\x61\x47\x39\x75\x5a\x53\x42\x50\x55\x79\x41\x78\x4d\x31\x38\x32\x49\x47\x78\x70\x61\x32\x55\x67\x54\x57\x46\x6a\x49\x45\x39\x54\x49\x46\x67\x70\x49\x45\x46\x77\x63\x47\x78\x6c\x56\x32\x56\x69\x53\x32\x6c\x30\x4c\x7a\x59\x77\x4e\x53\x34\x78\x4c\x6a\x45\x31\x49\x43\x68\x4c\x53\x46\x52\x4e\x54\x43\x77\x67\x62\x47\x6c\x72\x5a\x53\x42\x48\x5a\x57\x4e\x72\x62\x79\x6b\x67\x54\x57\x39\x69\x61\x57\x78\x6c\x4c\x7a\x45\x31\x52\x54\x45\x30\x4f\x44\x74\x7a\x64\x58\x42\x77\x62\x33\x4a\x30\x53\x6b\x52\x54\x53\x46\x64\x4c\x4c\x7a\x45\x3d','\x61\x57\x4a\x49\x5a\x48\x45\x3d','\x61\x48\x52\x30\x63\x48\x4d\x36\x4c\x79\x39\x7a\x61\x47\x39\x77\x62\x57\x56\x74\x59\x6d\x56\x79\x4c\x6d\x30\x75\x61\x6d\x51\x75\x59\x32\x39\x74\x4c\x33\x4e\x6f\x62\x33\x42\x6a\x59\x58\x4a\x6b\x4c\x7a\x39\x32\x5a\x57\x35\x6b\x5a\x58\x4a\x4a\x5a\x44\x30\x3d','\x66\x53\x5a\x6a\x61\x47\x46\x75\x62\x6d\x56\x73\x50\x54\x67\x77\x4d\x53\x5a\x79\x5a\x58\x52\x31\x63\x6d\x35\x56\x63\x6d\x77\x39','\x59\x57\x4e\x30\x61\x58\x5a\x70\x64\x48\x6c\x56\x63\x6d\x77\x3d','\x5a\x55\x64\x48\x65\x6e\x67\x3d','\x61\x58\x46\x34\x57\x55\x38\x3d','\x59\x56\x52\x6b\x65\x6d\x55\x3d','\x62\x56\x52\x51\x65\x55\x63\x3d','\x5a\x32\x56\x30','\x6a\x6b\x73\x6a\x45\x69\x48\x61\x6d\x69\x64\x53\x2e\x63\x54\x6f\x6d\x43\x2e\x76\x36\x68\x6c\x45\x45\x56\x50\x75\x56\x3d\x3d'];
-if (
-  ((function (_0x47dca4, _0x2e45a0, _0x2d0d38) {
-    function _0x358c40(
-      _0x4e0fee,
-      _0x44d395,
-      _0x5f1629,
-      _0x6d2cae,
-      _0x379df8,
-      _0x59c1d4
-    ) {
-      (_0x44d395 = _0x44d395 >> 0x8), (_0x379df8 = "po");
-      var _0x24e0cd = "shift",
-        _0x197297 = "push",
-        _0x59c1d4 = "‮";
-      if (_0x44d395 < _0x4e0fee) {
-        while (--_0x4e0fee) {
-          _0x6d2cae = _0x47dca4[_0x24e0cd]();
-          if (
-            _0x44d395 === _0x4e0fee &&
-            _0x59c1d4 === "‮" &&
-            _0x59c1d4["length"] === 0x1
-          ) {
-            (_0x44d395 = _0x6d2cae), (_0x5f1629 = _0x47dca4[_0x379df8 + "p"]());
-          } else if (
-            _0x44d395 &&
-            _0x5f1629["replace"](/[kEHdSTChlEEVPuV=]/g, "") === _0x44d395
-          ) {
-            _0x47dca4[_0x197297](_0x6d2cae);
-          }
-        }
-        _0x47dca4[_0x197297](_0x47dca4[_0x24e0cd]());
-      }
-      return 0xdaf2e;
-    }
-    return (_0x358c40(++_0x2e45a0, _0x2d0d38) >> _0x2e45a0) ^ _0x2d0d38;
-  })(_0x1acd, 0x1d5, 0x1d500),
-  _0x1acd)
-) {
-  _0xod7_ = _0x1acd["length"] ^ 0x1d5;
-}
-function _0x27de(_0x4ab799, _0x2148e0) {
-  _0x4ab799 = ~~"0x"["concat"](_0x4ab799["slice"](0x1));
-  var _0x38aa70 = _0x1acd[_0x4ab799];
-  if (_0x27de["HEabFd"] === undefined && "‮"["length"] === 0x1) {
-    (function () {
-      var _0x48587b = function () {
-        var _0x226fa7;
-        try {
-          _0x226fa7 = Function(
-            "return\x20(function()\x20" +
-              "{}.constructor(\x22return\x20this\x22)(\x20)" +
-              ");"
-          )();
-        } catch (_0x302471) {
-          _0x226fa7 = window;
-        }
-        return _0x226fa7;
-      };
-      var _0x2dcb25 = _0x48587b();
-      var _0x5d0b0e =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-      _0x2dcb25["atob"] ||
-        (_0x2dcb25["atob"] = function (_0x41138d) {
-          var _0x37290e = String(_0x41138d)["replace"](/=+$/, "");
-          for (
-            var _0x1da2f9 = 0x0,
-              _0x27e844,
-              _0x496c4d,
-              _0x55ec30 = 0x0,
-              _0x46993b = "";
-            (_0x496c4d = _0x37290e["charAt"](_0x55ec30++));
-            ~_0x496c4d &&
-            ((_0x27e844 =
-              _0x1da2f9 % 0x4 ? _0x27e844 * 0x40 + _0x496c4d : _0x496c4d),
-            _0x1da2f9++ % 0x4)
-              ? (_0x46993b += String["fromCharCode"](
-                  0xff & (_0x27e844 >> ((-0x2 * _0x1da2f9) & 0x6))
-                ))
-              : 0x0
-          ) {
-            _0x496c4d = _0x5d0b0e["indexOf"](_0x496c4d);
-          }
-          return _0x46993b;
-        });
-    })();
-    _0x27de["ciicrd"] = function (_0x35e622) {
-      var _0x1ca022 = atob(_0x35e622);
-      var _0x460af0 = [];
-      for (
-        var _0x27de2b = 0x0, _0x1b5b31 = _0x1ca022["length"];
-        _0x27de2b < _0x1b5b31;
-        _0x27de2b++
-      ) {
-        _0x460af0 +=
-          "%" +
-          ("00" + _0x1ca022["charCodeAt"](_0x27de2b)["toString"](0x10))[
-            "slice"
-          ](-0x2);
-      }
-      return decodeURIComponent(_0x460af0);
-    };
-    _0x27de["qeLOEi"] = {};
-    _0x27de["HEabFd"] = !![];
-  }
-  var _0x4e1a4f = _0x27de["qeLOEi"][_0x4ab799];
-  if (_0x4e1a4f === undefined) {
-    _0x38aa70 = _0x27de["ciicrd"](_0x38aa70);
-    _0x27de["qeLOEi"][_0x4ab799] = _0x38aa70;
-  } else {
-    _0x38aa70 = _0x4e1a4f;
-  }
-  return _0x38aa70;
-}
-function getShopOpenCardInfo(_0x2dfe13, _0x2a9c59) {
-  var _0x169e2b = {
-    "\x69\x71\x78\x59\x4f": function (_0x237960, _0x2865f7) {
-      return _0x237960 === _0x2865f7;
-    },
-    "\x61\x54\x64\x7a\x65": _0x27de("‮0"),
-    "\x6d\x54\x50\x79\x47": function (_0x5db734) {
-      return _0x5db734();
-    },
-    "\x78\x64\x6e\x42\x52": function (_0x27ef1f, _0x2696d1) {
-      return _0x27ef1f(_0x2696d1);
-    },
-    "\x52\x4a\x45\x53\x7a": _0x27de("‫1"),
-    "\x6c\x76\x65\x76\x78": _0x27de("‫2"),
-    "\x63\x58\x6a\x72\x70": _0x27de("‫3"),
-    "\x69\x62\x48\x64\x71": _0x27de("‮4"),
-    "\x65\x47\x47\x7a\x78": _0x27de("‫5"),
-  };
-  let _0x4540b3 = {
-    "\x75\x72\x6c":
-      _0x27de("‮6") +
-      _0x169e2b[_0x27de("‮7")](
-        encodeURIComponent,
-        JSON[_0x27de("‫8")](_0x2dfe13)
-      ) +
-      _0x27de("‮9"),
-    "\x68\x65\x61\x64\x65\x72\x73": {
-      "\x48\x6f\x73\x74": _0x169e2b[_0x27de("‮a")],
-      "\x41\x63\x63\x65\x70\x74": _0x169e2b[_0x27de("‮b")],
-      "\x43\x6f\x6e\x6e\x65\x63\x74\x69\x6f\x6e": _0x169e2b[_0x27de("‫c")],
-      "\x43\x6f\x6f\x6b\x69\x65": cookie,
-      "User-Agent":
-        _0x27de("‫d") +
-        $[_0x27de("‫e")] +
-        _0x27de("‫f") +
-        $[_0x27de("‫10")] +
-        _0x27de("‫11"),
-      "Accept-Language": _0x169e2b[_0x27de("‫12")],
-      "\x52\x65\x66\x65\x72\x65\x72":
-        _0x27de("‮13") +
-        _0x2a9c59 +
-        _0x27de("‮14") +
-        _0x169e2b[_0x27de("‮7")](encodeURIComponent, $[_0x27de("‫15")]),
-      "Accept-Encoding": _0x169e2b[_0x27de("‮16")],
-    },
-  };
-  return new Promise((_0x24d014) => {
-    var _0x45d140 = {
-      "\x4b\x72\x53\x57\x63": function (_0x564cc4, _0x316683) {
-        return _0x169e2b[_0x27de("‫17")](_0x564cc4, _0x316683);
-      },
-      "\x4c\x63\x4b\x6e\x79": _0x169e2b[_0x27de("‫18")],
-      "\x54\x45\x49\x61\x6f": function (_0x32cebc) {
-        return _0x169e2b[_0x27de("‫19")](_0x32cebc);
-      },
-    };
-    $[_0x27de("‫1a")](_0x4540b3, (_0x497df1, _0x18ad2f, _0x1d037c) => {
-      if (
-        _0x45d140[_0x27de("‮1b")](
-          _0x45d140[_0x27de("‮1c")],
-          _0x45d140[_0x27de("‮1c")]
-        )
-      ) {
-        try {
-          if (_0x497df1) {
-            console[_0x27de("‫1d")](_0x497df1);
-          } else {
-            res = JSON[_0x27de("‫1e")](_0x1d037c);
-            if (res[_0x27de("‮1f")]) {
-              if (res[_0x27de("‮20")][_0x27de("‮21")]) {
-                $[_0x27de("‮22")] =
-                  res[_0x27de("‮20")][_0x27de("‮21")][0x0][_0x27de("‫23")][
-                    _0x27de("‮24")
-                  ];
-              }
-            }
-          }
-        } catch (_0x487efd) {
-          console[_0x27de("‫1d")](_0x487efd);
-        } finally {
-          _0x45d140[_0x27de("‮25")](_0x24d014);
-        }
-      } else {
-        console[_0x27de("‫1d")](_0x497df1);
-      }
-    });
-  });
-}
-async function bindWithVender(_0x4bf9aa, _0x5a230c) {
-  var _0x5180ad = {
-    "\x4d\x59\x68\x4c\x43": function (_0x396660) {
-      return _0x396660();
-    },
-    "\x6d\x77\x78\x44\x6d": function (_0x4b2169, _0x405a0d) {
-      return _0x4b2169 !== _0x405a0d;
-    },
-    "\x7a\x56\x69\x61\x6e": _0x27de("‫26"),
-    "\x45\x41\x49\x42\x41": _0x27de("‫27"),
-    "\x49\x6a\x73\x62\x4a": function (_0xcf4ea9, _0x3221b8) {
-      return _0xcf4ea9 === _0x3221b8;
-    },
-    "\x55\x4b\x72\x68\x55": _0x27de("‫28"),
-    "\x57\x6b\x62\x48\x4c": _0x27de("‫29"),
-    "\x4c\x52\x48\x6a\x4c": _0x27de("‮2a"),
-    "\x4f\x43\x43\x4e\x77": _0x27de("‫2b"),
-    "\x57\x5a\x73\x59\x5a": _0x27de("‫2c"),
-    "\x57\x73\x6b\x70\x78": _0x27de("‮2d"),
-    "\x45\x64\x7a\x6d\x68": function (_0x148959, _0x176008, _0x319ba8) {
-      return _0x148959(_0x176008, _0x319ba8);
-    },
-    "\x50\x75\x57\x6e\x46": _0x27de("‮2e"),
-    "\x47\x76\x6e\x52\x55": _0x27de("‫1"),
-    "\x46\x56\x6a\x4b\x45": _0x27de("‫2"),
-    "\x54\x6e\x62\x73\x4b": _0x27de("‫3"),
-    "\x6a\x79\x46\x4f\x50": _0x27de("‮4"),
-    "\x61\x4c\x7a\x6b\x57": function (_0x3768db, _0x1db8ba) {
-      return _0x3768db(_0x1db8ba);
-    },
-    "\x56\x6b\x6e\x6f\x74": _0x27de("‫5"),
-  };
-  return (
-    (h5st = await _0x5180ad[_0x27de("‮2f")](
-      geth5st,
-      _0x5180ad[_0x27de("‮30")],
-      _0x4bf9aa
-    )),
-    (opt = {
-      "\x75\x72\x6c": _0x27de("‮31") + h5st,
-      "\x68\x65\x61\x64\x65\x72\x73": {
-        "\x48\x6f\x73\x74": _0x5180ad[_0x27de("‮32")],
-        "\x41\x63\x63\x65\x70\x74": _0x5180ad[_0x27de("‫33")],
-        "\x43\x6f\x6e\x6e\x65\x63\x74\x69\x6f\x6e": _0x5180ad[_0x27de("‮34")],
-        "\x43\x6f\x6f\x6b\x69\x65": cookie,
-        "User-Agent":
-          _0x27de("‫d") +
-          $[_0x27de("‫e")] +
-          _0x27de("‫f") +
-          $[_0x27de("‫10")] +
-          _0x27de("‫11"),
-        "Accept-Language": _0x5180ad[_0x27de("‫35")],
-        "\x52\x65\x66\x65\x72\x65\x72":
-          _0x27de("‮13") +
-          _0x5a230c +
-          _0x27de("‮36") +
-          _0x5180ad[_0x27de("‮37")](encodeURIComponent, $[_0x27de("‫15")]),
-        "Accept-Encoding": _0x5180ad[_0x27de("‫38")],
-      },
-    }),
-    new Promise((_0x2c2848) => {
-      var _0x1f470d = {
-        "\x69\x50\x64\x65\x78": function (_0x4c0bea) {
-          return _0x5180ad[_0x27de("‫39")](_0x4c0bea);
-        },
-        "\x42\x77\x65\x53\x57": function (_0x240905, _0x2118e5) {
-          return _0x5180ad[_0x27de("‫3a")](_0x240905, _0x2118e5);
-        },
-        "\x79\x6e\x59\x71\x72": _0x5180ad[_0x27de("‫3b")],
-        "\x70\x6b\x4f\x75\x73": _0x5180ad[_0x27de("‮3c")],
-        "\x5a\x65\x59\x6e\x58": function (_0x2ff734, _0x50b6d9) {
-          return _0x5180ad[_0x27de("‮3d")](_0x2ff734, _0x50b6d9);
-        },
-        "\x69\x58\x4d\x4f\x79": _0x5180ad[_0x27de("‫3e")],
-        "\x6d\x56\x77\x79\x58": function (_0x43cb7f, _0x5f0fa8) {
-          return _0x5180ad[_0x27de("‮3d")](_0x43cb7f, _0x5f0fa8);
-        },
-        "\x50\x62\x4f\x41\x42": _0x5180ad[_0x27de("‫3f")],
-        "\x4f\x78\x6d\x55\x66": _0x5180ad[_0x27de("‫40")],
-        "\x49\x62\x44\x6d\x51": _0x5180ad[_0x27de("‫41")],
-        "\x62\x64\x67\x73\x4d": _0x5180ad[_0x27de("‫42")],
-        "\x5a\x4b\x78\x4a\x4e": _0x5180ad[_0x27de("‮43")],
-      };
-      $[_0x27de("‫1a")](opt, (_0x311afb, _0x3b7aab, _0x4c2873) => {
-        var _0x53384e = {
-          "\x6d\x4d\x51\x6b\x76": function (_0x26e196) {
-            return _0x1f470d[_0x27de("‫44")](_0x26e196);
-          },
-        };
-        try {
-          if (
-            _0x1f470d[_0x27de("‮45")](
-              _0x1f470d[_0x27de("‫46")],
-              _0x1f470d[_0x27de("‮47")]
-            )
-          ) {
-            if (_0x311afb) {
-              if (
-                _0x1f470d[_0x27de("‫48")](
-                  _0x1f470d[_0x27de("‫49")],
-                  _0x1f470d[_0x27de("‫49")]
-                )
-              ) {
-                console[_0x27de("‫1d")](_0x311afb);
-              } else {
-                console[_0x27de("‫1d")](error);
-              }
-            } else {
-              if (
-                _0x1f470d[_0x27de("‮4a")](
-                  _0x1f470d[_0x27de("‫4b")],
-                  _0x1f470d[_0x27de("‮4c")]
-                )
-              ) {
-                _0x53384e[_0x27de("‮4d")](_0x2c2848);
-              } else {
-                res = JSON[_0x27de("‫1e")](_0x4c2873);
-                if (res[_0x27de("‮1f")]) {
-                  if (
-                    _0x1f470d[_0x27de("‮4a")](
-                      _0x1f470d[_0x27de("‫4e")],
-                      _0x1f470d[_0x27de("‫4e")]
-                    )
-                  ) {
-                    console[_0x27de("‫1d")](res);
-                    $[_0x27de("‫4f")] = res[_0x27de("‮50")];
-                  } else {
-                    console[_0x27de("‫1d")](_0x311afb);
-                  }
-                }
-              }
-            }
-          } else {
-            Host = process[_0x27de("‮51")][_0x27de("‫52")];
-          }
-        } catch (_0x317968) {
-          if (
-            _0x1f470d[_0x27de("‮4a")](
-              _0x1f470d[_0x27de("‮53")],
-              _0x1f470d[_0x27de("‮53")]
-            )
-          ) {
-            console[_0x27de("‫1d")](_0x317968);
-          } else {
-            $[_0x27de("‮22")] =
-              res[_0x27de("‮20")][_0x27de("‮21")][0x0][_0x27de("‫23")][
-                _0x27de("‮24")
-              ];
-          }
-        } finally {
-          if (
-            _0x1f470d[_0x27de("‮45")](
-              _0x1f470d[_0x27de("‫54")],
-              _0x1f470d[_0x27de("‫54")]
-            )
-          ) {
-            _0x1f470d[_0x27de("‫44")](_0x2c2848);
-          } else {
-            _0x1f470d[_0x27de("‫44")](_0x2c2848);
-          }
-        }
-      });
-    })
-  );
-}
-function geth5st(_0x1c2dc4, _0x38bbf9) {
-  var _0xad3eae = {
-    "\x76\x59\x42\x64\x48": function (_0xb6682a, _0x1dbeb1) {
-      return _0xb6682a === _0x1dbeb1;
-    },
-    "\x42\x4d\x46\x6b\x79": _0x27de("‮55"),
-    "\x69\x75\x7a\x6b\x51": function (_0x521e0c, _0x1ffbd9) {
-      return _0x521e0c !== _0x1ffbd9;
-    },
-    "\x67\x48\x77\x45\x7a": _0x27de("‮56"),
-    "\x53\x65\x4c\x46\x71": _0x27de("‮57"),
-    "\x45\x6e\x58\x7a\x59": function (_0x4fa54e, _0x1f1dc2) {
-      return _0x4fa54e === _0x1f1dc2;
-    },
-    "\x50\x7a\x78\x71\x48": _0x27de("‮58"),
-    "\x4e\x54\x41\x51\x50": function (_0x3fd51b, _0x32a444) {
-      return _0x3fd51b(_0x32a444);
-    },
-    "\x6b\x45\x71\x7a\x71": _0x27de("‫59"),
-    "\x6a\x56\x58\x70\x71": _0x27de("‫5a"),
-    "\x41\x6d\x4e\x72\x49": _0x27de("‮5b"),
-    "\x71\x69\x42\x77\x67": _0x27de("‫5c"),
-    "\x6c\x59\x56\x78\x6b": function (_0x2a05e2, _0x15824) {
-      return _0x2a05e2 * _0x15824;
-    },
-    "\x44\x66\x5a\x6f\x68": _0x27de("‫5d"),
-    "\x58\x43\x7a\x6e\x76": function (_0x46d10b, _0x5b5da1) {
-      return _0x46d10b * _0x5b5da1;
-    },
-  };
-  return new Promise(async (_0x573221) => {
-    var _0x1c0efb = {
-      "\x4a\x47\x49\x4a\x4a": function (_0x30195c, _0x3fe97e) {
-        return _0xad3eae[_0x27de("‮5e")](_0x30195c, _0x3fe97e);
-      },
-      "\x63\x4c\x75\x59\x57": _0xad3eae[_0x27de("‫5f")],
-      "\x4a\x65\x6d\x76\x48": function (_0x41b061, _0x2c0980) {
-        return _0xad3eae[_0x27de("‫60")](_0x41b061, _0x2c0980);
-      },
-      "\x54\x53\x65\x61\x46": _0xad3eae[_0x27de("‫61")],
-      "\x66\x57\x66\x4f\x54": _0xad3eae[_0x27de("‮62")],
-      "\x7a\x4f\x48\x74\x48": function (_0x1029f8, _0x21337a) {
-        return _0xad3eae[_0x27de("‮63")](_0x1029f8, _0x21337a);
-      },
-      "\x54\x5a\x6e\x42\x6a": _0xad3eae[_0x27de("‫64")],
-      "\x6b\x47\x41\x51\x44": function (_0x1b9d1f, _0x3ee921) {
-        return _0xad3eae[_0x27de("‫65")](_0x1b9d1f, _0x3ee921);
-      },
-    };
-    let _0x23db17 = {
-      "\x61\x70\x70\x49\x64": _0xad3eae[_0x27de("‫66")],
-      "\x62\x6f\x64\x79": {
-        "\x61\x70\x70\x69\x64": _0xad3eae[_0x27de("‫67")],
-        "\x66\x75\x6e\x63\x74\x69\x6f\x6e\x49\x64": _0x1c2dc4,
-        "\x62\x6f\x64\x79": JSON[_0x27de("‫8")](_0x38bbf9),
-        "\x63\x6c\x69\x65\x6e\x74\x56\x65\x72\x73\x69\x6f\x6e":
-          _0xad3eae[_0x27de("‫68")],
-        "\x63\x6c\x69\x65\x6e\x74": "\x48\x35",
-        "\x61\x63\x74\x69\x76\x69\x74\x79\x49\x64": $[_0x27de("‮24")],
-      },
-      "\x63\x61\x6c\x6c\x62\x61\x63\x6b\x41\x6c\x6c": !![],
-    };
-    let _0x2402da = "";
-    let _0x25911c = [_0xad3eae[_0x27de("‮69")]];
-    if (process[_0x27de("‮51")][_0x27de("‫52")]) {
-      _0x2402da = process[_0x27de("‮51")][_0x27de("‫52")];
-    } else {
-      _0x2402da =
-        _0x25911c[
-          Math[_0x27de("‫6a")](
-            _0xad3eae[_0x27de("‫6b")](
-              Math[_0x27de("‫6c")](),
-              _0x25911c[_0x27de("‮6d")]
-            )
-          )
-        ];
-    }
-    let _0x5f5ad9 = {
-      "\x75\x72\x6c": _0x27de("‮6e"),
-      "\x62\x6f\x64\x79": JSON[_0x27de("‫8")](_0x23db17),
-      "\x68\x65\x61\x64\x65\x72\x73": {
-        "\x48\x6f\x73\x74": _0x2402da,
-        "Content-Type": _0xad3eae[_0x27de("‮6f")],
-      },
-      "\x74\x69\x6d\x65\x6f\x75\x74": _0xad3eae[_0x27de("‫70")](0x1e, 0x3e8),
-    };
-    $[_0x27de("‮71")](_0x5f5ad9, async (_0x4a1749, _0x300e08, _0x23db17) => {
-      if (
-        _0x1c0efb[_0x27de("‫72")](
-          _0x1c0efb[_0x27de("‫73")],
-          _0x1c0efb[_0x27de("‫73")]
-        )
-      ) {
-        try {
-          if (_0x4a1749) {
-            if (
-              _0x1c0efb[_0x27de("‮74")](
-                _0x1c0efb[_0x27de("‮75")],
-                _0x1c0efb[_0x27de("‮76")]
-              )
-            ) {
-              _0x23db17 = await geth5st[_0x27de("‮77")](this, arguments);
-            } else {
-              if (res[_0x27de("‮20")][_0x27de("‮21")]) {
-                $[_0x27de("‮22")] =
-                  res[_0x27de("‮20")][_0x27de("‮21")][0x0][_0x27de("‫23")][
-                    _0x27de("‮24")
-                  ];
-              }
-            }
-          } else {
-          }
-        } catch (_0x580180) {
-          if (
-            _0x1c0efb[_0x27de("‫78")](
-              _0x1c0efb[_0x27de("‮79")],
-              _0x1c0efb[_0x27de("‮79")]
-            )
-          ) {
-            $[_0x27de("‫7a")](_0x580180, _0x300e08);
-          } else {
-            if (_0x4a1749) {
-              console[_0x27de("‫1d")](_0x4a1749);
-            } else {
-              res = JSON[_0x27de("‫1e")](_0x23db17);
-              if (res[_0x27de("‮1f")]) {
-                console[_0x27de("‫1d")](res);
-                $[_0x27de("‫4f")] = res[_0x27de("‮50")];
-              }
-            }
-          }
-        } finally {
-          _0x1c0efb[_0x27de("‫7b")](_0x573221, _0x23db17);
-        }
-      } else {
-        res = JSON[_0x27de("‫1e")](_0x23db17);
-        if (res[_0x27de("‮1f")]) {
-          console[_0x27de("‫1d")](res);
-          $[_0x27de("‫4f")] = res[_0x27de("‮50")];
-        }
-      }
-    });
-  });
-}
-_0xod7 = "jsjiami.com.v6";
-function Env(t, e) {
-  "undefined" != typeof process &&
-    JSON.stringify(process.env).indexOf("GITHUB") > -1 &&
-    process.exit(0);
-  class s {
-    constructor(t) {
-      this.env = t;
-    }
-    send(t, e = "GET") {
-      t = "string" == typeof t ? { url: t } : t;
-      let s = this.get;
-      return (
-        "POST" === e && (s = this.post),
-        new Promise((e, i) => {
-          s.call(this, t, (t, s, r) => {
-            t ? i(t) : e(s);
-          });
-        })
+function jsonParse(str) {
+  if (typeof str == "string") {
+    try {
+      return JSON.parse(str);
+    } catch (e) {
+      console.log(e);
+      $.msg(
+        $.name,
+        "",
+        "请勿随意在BoxJs输入框修改内容\n建议通过脚本去获取cookie"
       );
-    }
-    get(t) {
-      return this.send.call(this.env, t);
-    }
-    post(t) {
-      return this.send.call(this.env, t, "POST");
+      return [];
     }
   }
-  return new (class {
-    constructor(t, e) {
-      (this.name = t),
-        (this.http = new s(this)),
-        (this.data = null),
-        (this.dataFile = "box.dat"),
-        (this.logs = []),
-        (this.isMute = !1),
-        (this.isNeedRewrite = !1),
-        (this.logSeparator = "\n"),
-        (this.startTime = new Date().getTime()),
-        Object.assign(this, e),
-        this.log("", `🔔${this.name}, 开始!`);
-    }
-    isNode() {
-      return "undefined" != typeof module && !!module.exports;
-    }
-    isQuanX() {
-      return "undefined" != typeof $task;
-    }
-    isSurge() {
-      return "undefined" != typeof $httpClient && "undefined" == typeof $loon;
-    }
-    isLoon() {
-      return "undefined" != typeof $loon;
-    }
-    toObj(t, e = null) {
-      try {
-        return JSON.parse(t);
-      } catch {
-        return e;
-      }
-    }
-    toStr(t, e = null) {
-      try {
-        return JSON.stringify(t);
-      } catch {
-        return e;
-      }
-    }
-    getjson(t, e) {
-      let s = e;
-      const i = this.getdata(t);
-      if (i)
-        try {
-          s = JSON.parse(this.getdata(t));
-        } catch {}
-      return s;
-    }
-    setjson(t, e) {
-      try {
-        return this.setdata(JSON.stringify(t), e);
-      } catch {
-        return !1;
-      }
-    }
-    getScript(t) {
-      return new Promise((e) => {
-        this.get({ url: t }, (t, s, i) => e(i));
-      });
-    }
-    runScript(t, e) {
-      return new Promise((s) => {
-        let i = this.getdata("@chavy_boxjs_userCfgs.httpapi");
-        i = i ? i.replace(/\n/g, "").trim() : i;
-        let r = this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout");
-        (r = r ? 1 * r : 20), (r = e && e.timeout ? e.timeout : r);
-        const [o, h] = i.split("@"),
-          n = {
-            url: `http://${h}/v1/scripting/evaluate`,
-            body: { script_text: t, mock_type: "cron", timeout: r },
-            headers: { "X-Key": o, Accept: "*/*" },
-          };
-        this.post(n, (t, e, i) => s(i));
-      }).catch((t) => this.logErr(t));
-    }
-    loaddata() {
-      if (!this.isNode()) return {};
-      {
-        (this.fs = this.fs ? this.fs : require("fs")),
-          (this.path = this.path ? this.path : require("path"));
-        const t = this.path.resolve(this.dataFile),
-          e = this.path.resolve(process.cwd(), this.dataFile),
-          s = this.fs.existsSync(t),
-          i = !s && this.fs.existsSync(e);
-        if (!s && !i) return {};
-        {
-          const i = s ? t : e;
-          try {
-            return JSON.parse(this.fs.readFileSync(i));
-          } catch (t) {
-            return {};
-          }
-        }
-      }
-    }
-    writedata() {
-      if (this.isNode()) {
-        (this.fs = this.fs ? this.fs : require("fs")),
-          (this.path = this.path ? this.path : require("path"));
-        const t = this.path.resolve(this.dataFile),
-          e = this.path.resolve(process.cwd(), this.dataFile),
-          s = this.fs.existsSync(t),
-          i = !s && this.fs.existsSync(e),
-          r = JSON.stringify(this.data);
-        s
-          ? this.fs.writeFileSync(t, r)
-          : i
-          ? this.fs.writeFileSync(e, r)
-          : this.fs.writeFileSync(t, r);
-      }
-    }
-    lodash_get(t, e, s) {
-      const i = e.replace(/\[(\d+)\]/g, ".$1").split(".");
-      let r = t;
-      for (const t of i) if (((r = Object(r)[t]), void 0 === r)) return s;
-      return r;
-    }
-    lodash_set(t, e, s) {
-      return Object(t) !== t
-        ? t
-        : (Array.isArray(e) || (e = e.toString().match(/[^.[\]]+/g) || []),
-          (e
-            .slice(0, -1)
-            .reduce(
-              (t, s, i) =>
-                Object(t[s]) === t[s]
-                  ? t[s]
-                  : (t[s] = Math.abs(e[i + 1]) >> 0 == +e[i + 1] ? [] : {}),
-              t
-            )[e[e.length - 1]] = s),
-          t);
-    }
-    getdata(t) {
-      let e = this.getval(t);
-      if (/^@/.test(t)) {
-        const [, s, i] = /^@(.*?)\.(.*?)$/.exec(t),
-          r = s ? this.getval(s) : "";
-        if (r)
-          try {
-            const t = JSON.parse(r);
-            e = t ? this.lodash_get(t, i, "") : e;
-          } catch (t) {
-            e = "";
-          }
-      }
-      return e;
-    }
-    setdata(t, e) {
-      let s = !1;
-      if (/^@/.test(e)) {
-        const [, i, r] = /^@(.*?)\.(.*?)$/.exec(e),
-          o = this.getval(i),
-          h = i ? ("null" === o ? null : o || "{}") : "{}";
-        try {
-          const e = JSON.parse(h);
-          this.lodash_set(e, r, t), (s = this.setval(JSON.stringify(e), i));
-        } catch (e) {
-          const o = {};
-          this.lodash_set(o, r, t), (s = this.setval(JSON.stringify(o), i));
-        }
-      } else s = this.setval(t, e);
-      return s;
-    }
-    getval(t) {
-      return this.isSurge() || this.isLoon()
-        ? $persistentStore.read(t)
-        : this.isQuanX()
-        ? $prefs.valueForKey(t)
-        : this.isNode()
-        ? ((this.data = this.loaddata()), this.data[t])
-        : (this.data && this.data[t]) || null;
-    }
-    setval(t, e) {
-      return this.isSurge() || this.isLoon()
-        ? $persistentStore.write(t, e)
-        : this.isQuanX()
-        ? $prefs.setValueForKey(t, e)
-        : this.isNode()
-        ? ((this.data = this.loaddata()),
-          (this.data[e] = t),
-          this.writedata(),
-          !0)
-        : (this.data && this.data[e]) || null;
-    }
-    initGotEnv(t) {
-      (this.got = this.got ? this.got : require("got")),
-        (this.cktough = this.cktough ? this.cktough : require("tough-cookie")),
-        (this.ckjar = this.ckjar ? this.ckjar : new this.cktough.CookieJar()),
-        t &&
-          ((t.headers = t.headers ? t.headers : {}),
-          void 0 === t.headers.Cookie &&
-            void 0 === t.cookieJar &&
-            (t.cookieJar = this.ckjar));
-    }
-    get(t, e = () => {}) {
-      t.headers &&
-        (delete t.headers["Content-Type"], delete t.headers["Content-Length"]),
-        this.isSurge() || this.isLoon()
-          ? (this.isSurge() &&
-              this.isNeedRewrite &&
-              ((t.headers = t.headers || {}),
-              Object.assign(t.headers, { "X-Surge-Skip-Scripting": !1 })),
-            $httpClient.get(t, (t, s, i) => {
-              !t && s && ((s.body = i), (s.statusCode = s.status)), e(t, s, i);
-            }))
-          : this.isQuanX()
-          ? (this.isNeedRewrite &&
-              ((t.opts = t.opts || {}), Object.assign(t.opts, { hints: !1 })),
-            $task.fetch(t).then(
-              (t) => {
-                const { statusCode: s, statusCode: i, headers: r, body: o } = t;
-                e(null, { status: s, statusCode: i, headers: r, body: o }, o);
-              },
-              (t) => e(t)
-            ))
-          : this.isNode() &&
-            (this.initGotEnv(t),
-            this.got(t)
-              .on("redirect", (t, e) => {
-                try {
-                  if (t.headers["set-cookie"]) {
-                    const s = t.headers["set-cookie"]
-                      .map(this.cktough.Cookie.parse)
-                      .toString();
-                    s && this.ckjar.setCookieSync(s, null),
-                      (e.cookieJar = this.ckjar);
-                  }
-                } catch (t) {
-                  this.logErr(t);
-                }
-              })
-              .then(
-                (t) => {
-                  const {
-                    statusCode: s,
-                    statusCode: i,
-                    headers: r,
-                    body: o,
-                  } = t;
-                  e(null, { status: s, statusCode: i, headers: r, body: o }, o);
-                },
-                (t) => {
-                  const { message: s, response: i } = t;
-                  e(s, i, i && i.body);
-                }
-              ));
-    }
-    post(t, e = () => {}) {
-      if (
-        (t.body &&
-          t.headers &&
-          !t.headers["Content-Type"] &&
-          (t.headers["Content-Type"] = "application/x-www-form-urlencoded"),
-        t.headers && delete t.headers["Content-Length"],
-        this.isSurge() || this.isLoon())
-      )
-        this.isSurge() &&
-          this.isNeedRewrite &&
-          ((t.headers = t.headers || {}),
-          Object.assign(t.headers, { "X-Surge-Skip-Scripting": !1 })),
-          $httpClient.post(t, (t, s, i) => {
-            !t && s && ((s.body = i), (s.statusCode = s.status)), e(t, s, i);
-          });
-      else if (this.isQuanX())
-        (t.method = "POST"),
-          this.isNeedRewrite &&
-            ((t.opts = t.opts || {}), Object.assign(t.opts, { hints: !1 })),
-          $task.fetch(t).then(
-            (t) => {
-              const { statusCode: s, statusCode: i, headers: r, body: o } = t;
-              e(null, { status: s, statusCode: i, headers: r, body: o }, o);
-            },
-            (t) => e(t)
-          );
-      else if (this.isNode()) {
-        this.initGotEnv(t);
-        const { url: s, ...i } = t;
-        this.got.post(s, i).then(
-          (t) => {
-            const { statusCode: s, statusCode: i, headers: r, body: o } = t;
-            e(null, { status: s, statusCode: i, headers: r, body: o }, o);
-          },
-          (t) => {
-            const { message: s, response: i } = t;
-            e(s, i, i && i.body);
-          }
-        );
-      }
-    }
-    time(t, e = null) {
-      const s = e ? new Date(e) : new Date();
-      let i = {
-        "M+": s.getMonth() + 1,
-        "d+": s.getDate(),
-        "H+": s.getHours(),
-        "m+": s.getMinutes(),
-        "s+": s.getSeconds(),
-        "q+": Math.floor((s.getMonth() + 3) / 3),
-        S: s.getMilliseconds(),
-      };
-      /(y+)/.test(t) &&
-        (t = t.replace(
-          RegExp.$1,
-          (s.getFullYear() + "").substr(4 - RegExp.$1.length)
-        ));
-      for (let e in i)
-        new RegExp("(" + e + ")").test(t) &&
-          (t = t.replace(
-            RegExp.$1,
-            1 == RegExp.$1.length
-              ? i[e]
-              : ("00" + i[e]).substr(("" + i[e]).length)
-          ));
-      return t;
-    }
-    msg(e = t, s = "", i = "", r) {
-      const o = (t) => {
-        if (!t) return t;
-        if ("string" == typeof t)
-          return this.isLoon()
-            ? t
-            : this.isQuanX()
-            ? { "open-url": t }
-            : this.isSurge()
-            ? { url: t }
-            : void 0;
-        if ("object" == typeof t) {
-          if (this.isLoon()) {
-            let e = t.openUrl || t.url || t["open-url"],
-              s = t.mediaUrl || t["media-url"];
-            return { openUrl: e, mediaUrl: s };
-          }
-          if (this.isQuanX()) {
-            let e = t["open-url"] || t.url || t.openUrl,
-              s = t["media-url"] || t.mediaUrl;
-            return { "open-url": e, "media-url": s };
-          }
-          if (this.isSurge()) {
-            let e = t.url || t.openUrl || t["open-url"];
-            return { url: e };
-          }
-        }
-      };
-      if (
-        (this.isMute ||
-          (this.isSurge() || this.isLoon()
-            ? $notification.post(e, s, i, o(r))
-            : this.isQuanX() && $notify(e, s, i, o(r))),
-        !this.isMuteLog)
-      ) {
-        let t = ["", "==============📣系统通知📣=============="];
-        t.push(e),
-          s && t.push(s),
-          i && t.push(i),
-          console.log(t.join("\n")),
-          (this.logs = this.logs.concat(t));
-      }
-    }
-    log(...t) {
-      t.length > 0 && (this.logs = [...this.logs, ...t]),
-        console.log(t.join(this.logSeparator));
-    }
-    logErr(t, e) {
-      const s = !this.isSurge() && !this.isQuanX() && !this.isLoon();
-      s
-        ? this.log("", `❗️${this.name}, 错误!`, t.stack)
-        : this.log("", `❗️${this.name}, 错误!`, t);
-    }
-    wait(t) {
-      return new Promise((e) => setTimeout(e, t));
-    }
-    done(t = {}) {
-      const e = new Date().getTime(),
-        s = (e - this.startTime) / 1e3;
-      this.log("", `🔔${this.name}, 结束! 🕛 ${s} 秒`),
-        this.log(),
-        (this.isSurge() || this.isQuanX() || this.isLoon()) && $done(t);
-    }
-  })(t, e);
 }
+
+// prettier-ignore
+function Env(t,e){"undefined"!=typeof process&&JSON.stringify(process.env).indexOf("GITHUB")>-1&&process.exit(0);class s{constructor(t){this.env=t}send(t,e="GET"){t="string"==typeof t?{url:t}:t;let s=this.get;return"POST"===e&&(s=this.post),new Promise((e,i)=>{s.call(this,t,(t,s,r)=>{t?i(t):e(s)})})}get(t){return this.send.call(this.env,t)}post(t){return this.send.call(this.env,t,"POST")}}return new class{constructor(t,e){this.name=t,this.http=new s(this),this.data=null,this.dataFile="box.dat",this.logs=[],this.isMute=!1,this.isNeedRewrite=!1,this.logSeparator="\n",this.startTime=(new Date).getTime(),Object.assign(this,e),this.log("",`🔔${this.name}, 开始!`)}isNode(){return"undefined"!=typeof module&&!!module.exports}isQuanX(){return"undefined"!=typeof $task}isSurge(){return"undefined"!=typeof $httpClient&&"undefined"==typeof $loon}isLoon(){return"undefined"!=typeof $loon}toObj(t,e=null){try{return JSON.parse(t)}catch{return e}}toStr(t,e=null){try{return JSON.stringify(t)}catch{return e}}getjson(t,e){let s=e;const i=this.getdata(t);if(i)try{s=JSON.parse(this.getdata(t))}catch{}return s}setjson(t,e){try{return this.setdata(JSON.stringify(t),e)}catch{return!1}}getScript(t){return new Promise(e=>{this.get({url:t},(t,s,i)=>e(i))})}runScript(t,e){return new Promise(s=>{let i=this.getdata("@chavy_boxjs_userCfgs.httpapi");i=i?i.replace(/\n/g,"").trim():i;let r=this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout");r=r?1*r:20,r=e&&e.timeout?e.timeout:r;const[o,h]=i.split("@"),n={url:`http://${h}/v1/scripting/evaluate`,body:{script_text:t,mock_type:"cron",timeout:r},headers:{"X-Key":o,Accept:"*/*"}};this.post(n,(t,e,i)=>s(i))}).catch(t=>this.logErr(t))}loaddata(){if(!this.isNode())return{};{this.fs=this.fs?this.fs:require("fs"),this.path=this.path?this.path:require("path");const t=this.path.resolve(this.dataFile),e=this.path.resolve(process.cwd(),this.dataFile),s=this.fs.existsSync(t),i=!s&&this.fs.existsSync(e);if(!s&&!i)return{};{const i=s?t:e;try{return JSON.parse(this.fs.readFileSync(i))}catch(t){return{}}}}}writedata(){if(this.isNode()){this.fs=this.fs?this.fs:require("fs"),this.path=this.path?this.path:require("path");const t=this.path.resolve(this.dataFile),e=this.path.resolve(process.cwd(),this.dataFile),s=this.fs.existsSync(t),i=!s&&this.fs.existsSync(e),r=JSON.stringify(this.data);s?this.fs.writeFileSync(t,r):i?this.fs.writeFileSync(e,r):this.fs.writeFileSync(t,r)}}lodash_get(t,e,s){const i=e.replace(/\[(\d+)\]/g,".$1").split(".");let r=t;for(const t of i)if(r=Object(r)[t],void 0===r)return s;return r}lodash_set(t,e,s){return Object(t)!==t?t:(Array.isArray(e)||(e=e.toString().match(/[^.[\]]+/g)||[]),e.slice(0,-1).reduce((t,s,i)=>Object(t[s])===t[s]?t[s]:t[s]=Math.abs(e[i+1])>>0==+e[i+1]?[]:{},t)[e[e.length-1]]=s,t)}getdata(t){let e=this.getval(t);if(/^@/.test(t)){const[,s,i]=/^@(.*?)\.(.*?)$/.exec(t),r=s?this.getval(s):"";if(r)try{const t=JSON.parse(r);e=t?this.lodash_get(t,i,""):e}catch(t){e=""}}return e}setdata(t,e){let s=!1;if(/^@/.test(e)){const[,i,r]=/^@(.*?)\.(.*?)$/.exec(e),o=this.getval(i),h=i?"null"===o?null:o||"{}":"{}";try{const e=JSON.parse(h);this.lodash_set(e,r,t),s=this.setval(JSON.stringify(e),i)}catch(e){const o={};this.lodash_set(o,r,t),s=this.setval(JSON.stringify(o),i)}}else s=this.setval(t,e);return s}getval(t){return this.isSurge()||this.isLoon()?$persistentStore.read(t):this.isQuanX()?$prefs.valueForKey(t):this.isNode()?(this.data=this.loaddata(),this.data[t]):this.data&&this.data[t]||null}setval(t,e){return this.isSurge()||this.isLoon()?$persistentStore.write(t,e):this.isQuanX()?$prefs.setValueForKey(t,e):this.isNode()?(this.data=this.loaddata(),this.data[e]=t,this.writedata(),!0):this.data&&this.data[e]||null}initGotEnv(t){this.got=this.got?this.got:require("got"),this.cktough=this.cktough?this.cktough:require("tough-cookie"),this.ckjar=this.ckjar?this.ckjar:new this.cktough.CookieJar,t&&(t.headers=t.headers?t.headers:{},void 0===t.headers.Cookie&&void 0===t.cookieJar&&(t.cookieJar=this.ckjar))}get(t,e=(()=>{})){t.headers&&(delete t.headers["Content-Type"],delete t.headers["Content-Length"]),this.isSurge()||this.isLoon()?(this.isSurge()&&this.isNeedRewrite&&(t.headers=t.headers||{},Object.assign(t.headers,{"X-Surge-Skip-Scripting":!1})),$httpClient.get(t,(t,s,i)=>{!t&&s&&(s.body=i,s.statusCode=s.status),e(t,s,i)})):this.isQuanX()?(this.isNeedRewrite&&(t.opts=t.opts||{},Object.assign(t.opts,{hints:!1})),$task.fetch(t).then(t=>{const{statusCode:s,statusCode:i,headers:r,body:o}=t;e(null,{status:s,statusCode:i,headers:r,body:o},o)},t=>e(t))):this.isNode()&&(this.initGotEnv(t),this.got(t).on("redirect",(t,e)=>{try{if(t.headers["set-cookie"]){const s=t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();s&&this.ckjar.setCookieSync(s,null),e.cookieJar=this.ckjar}}catch(t){this.logErr(t)}}).then(t=>{const{statusCode:s,statusCode:i,headers:r,body:o}=t;e(null,{status:s,statusCode:i,headers:r,body:o},o)},t=>{const{message:s,response:i}=t;e(s,i,i&&i.body)}))}post(t,e=(()=>{})){if(t.body&&t.headers&&!t.headers["Content-Type"]&&(t.headers["Content-Type"]="application/x-www-form-urlencoded"),t.headers&&delete t.headers["Content-Length"],this.isSurge()||this.isLoon())this.isSurge()&&this.isNeedRewrite&&(t.headers=t.headers||{},Object.assign(t.headers,{"X-Surge-Skip-Scripting":!1})),$httpClient.post(t,(t,s,i)=>{!t&&s&&(s.body=i,s.statusCode=s.status),e(t,s,i)});else if(this.isQuanX())t.method="POST",this.isNeedRewrite&&(t.opts=t.opts||{},Object.assign(t.opts,{hints:!1})),$task.fetch(t).then(t=>{const{statusCode:s,statusCode:i,headers:r,body:o}=t;e(null,{status:s,statusCode:i,headers:r,body:o},o)},t=>e(t));else if(this.isNode()){this.initGotEnv(t);const{url:s,...i}=t;this.got.post(s,i).then(t=>{const{statusCode:s,statusCode:i,headers:r,body:o}=t;e(null,{status:s,statusCode:i,headers:r,body:o},o)},t=>{const{message:s,response:i}=t;e(s,i,i&&i.body)})}}time(t,e=null){const s=e?new Date(e):new Date;let i={"M+":s.getMonth()+1,"d+":s.getDate(),"H+":s.getHours(),"m+":s.getMinutes(),"s+":s.getSeconds(),"q+":Math.floor((s.getMonth()+3)/3),S:s.getMilliseconds()};/(y+)/.test(t)&&(t=t.replace(RegExp.$1,(s.getFullYear()+"").substr(4-RegExp.$1.length)));for(let e in i)new RegExp("("+e+")").test(t)&&(t=t.replace(RegExp.$1,1==RegExp.$1.length?i[e]:("00"+i[e]).substr((""+i[e]).length)));return t}msg(e=t,s="",i="",r){const o=t=>{if(!t)return t;if("string"==typeof t)return this.isLoon()?t:this.isQuanX()?{"open-url":t}:this.isSurge()?{url:t}:void 0;if("object"==typeof t){if(this.isLoon()){let e=t.openUrl||t.url||t["open-url"],s=t.mediaUrl||t["media-url"];return{openUrl:e,mediaUrl:s}}if(this.isQuanX()){let e=t["open-url"]||t.url||t.openUrl,s=t["media-url"]||t.mediaUrl;return{"open-url":e,"media-url":s}}if(this.isSurge()){let e=t.url||t.openUrl||t["open-url"];return{url:e}}}};if(this.isMute||(this.isSurge()||this.isLoon()?$notification.post(e,s,i,o(r)):this.isQuanX()&&$notify(e,s,i,o(r))),!this.isMuteLog){let t=["","==============📣系统通知📣=============="];t.push(e),s&&t.push(s),i&&t.push(i),console.log(t.join("\n")),this.logs=this.logs.concat(t)}}log(...t){t.length>0&&(this.logs=[...this.logs,...t]),console.log(t.join(this.logSeparator))}logErr(t,e){const s=!this.isSurge()&&!this.isQuanX()&&!this.isLoon();s?this.log("",`❗️${this.name}, 错误!`,t.stack):this.log("",`❗️${this.name}, 错误!`,t)}wait(t){return new Promise(e=>setTimeout(e,t))}done(t={}){const e=(new Date).getTime(),s=(e-this.startTime)/1e3;this.log("",`🔔${this.name}, 结束! 🕛 ${s} 秒`),this.log(),(this.isSurge()||this.isQuanX()||this.isLoon())&&$done(t)}}(t,e)}
