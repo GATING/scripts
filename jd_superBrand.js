@@ -157,6 +157,7 @@ async function doTask() {
     if (
       $.oneTask.assignmentType === 3 ||
       $.oneTask.assignmentType === 7 ||
+      $.oneTask.assignmentType === 0 ||
       $.oneTask.assignmentType === 1
     ) {
       //7是开卡  3是关注店铺 1是浏览会场
@@ -170,7 +171,8 @@ async function doTask() {
       let subInfo =
         $.oneTask.ext.followShop ||
         $.oneTask.ext.brandMemberList ||
-        $.oneTask.ext.shoppingActivity;
+        $.oneTask.ext.shoppingActivity ||
+        "";
       if (subInfo && subInfo[0]) {
         $.runInfo = subInfo[0];
       } else {

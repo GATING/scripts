@@ -27,24 +27,8 @@ let message = "",
 let cookiesArr = [],
   cookie = "";
 const JD_API_HOST = "https://api.m.jd.com/client.action";
-let appIdArr = [
-  "1EFBTxa6H",
-  "1EFdRwqyF",
-  "1EFZWxKqP",
-  "1FFVQyqw",
-  "1EFRQwA",
-  "1EFRWxKuG",
-  "1E1xZy6s",
-];
-let appNameArr = [
-  "森林历险记",
-  "春尚",
-  "新品来袭",
-  "1111点心动",
-  "疯狂砸金蛋",
-  "许愿抽好礼",
-  "PLUS生活特权",
-];
+let appIdArr = ["1EFFSyqaC", "1FFVQyqw", "1EFRWxKuG", "1E1xZy6s"];
+let appNameArr = ["吃货嘉年华", "1111点心动", "许愿抽好礼", "PLUS生活特权"];
 let appId, appName;
 $.shareCode = [];
 if ($.isNode()) {
