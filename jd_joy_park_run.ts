@@ -44,13 +44,16 @@ let assets: number = 0.04,
         ids: null,
       });
       let sum: number = 0;
-      for (let t of res.data.detailVos) {
-        if (getDate(new Date(t.createTime)) === new Date().getDate()) {
-          sum = add(sum, t.amount);
-        } else {
-          break;
+      if (res.data.detailVos) {
+        for (let t of res.data.detailVos) {
+          if (getDate(new Date(t.createTime)) === new Date().getDate()) {
+            sum = add(sum, t.amount);
+          } else {
+            break;
+          }
         }
       }
+
       console.log("今日收益", sum);
 
       await h5stTool.__genAlgo();

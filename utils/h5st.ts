@@ -56,6 +56,7 @@ class H5ST {
 
   __genKey(tk, fp, ts, ai, algo) {
     let str = `${tk}${fp}${ts}${ai}${this.rd}`;
+    console.log("enc", this.enc);
     return algo[this.enc](str, tk);
   }
 
