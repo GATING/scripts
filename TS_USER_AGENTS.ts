@@ -1,7 +1,6 @@
 import axios from "axios";
 import { Md5 } from "ts-md5";
 import * as dotenv from "dotenv";
-import { existsSync, readFileSync } from "fs";
 import { sendNotify } from "./sendNotify";
 
 dotenv.config();
@@ -58,6 +57,7 @@ function TotalBean(cookie: string) {
 }
 
 function getRandomNumberByRange(start: number, end: number) {
+  end <= start && (end = start + 100);
   return Math.floor(Math.random() * (end - start) + start);
 }
 
@@ -111,7 +111,7 @@ async function getFarmShareCode(cookie: string) {
 
 async function requireConfig(check: boolean = false): Promise<string[]> {
   let cookiesArr: string[] = [];
-  const jdCookieNode = require("./jdCookie.js");
+  const jdCookieNode = require("./jdCookie");
   let keys: string[] = Object.keys(jdCookieNode);
   for (let i = 0; i < keys.length; i++) {
     let cookie = jdCookieNode[keys[i]];
@@ -326,22 +326,26 @@ async function jdpingou() {
   )};pap/JA2019_3111789;brand/apple;supportJDSHWK/1;Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148`;
 }
 
-function get(url: string, prarms?: string, headers?: any) {
-  return axios
-    .get(url, {
-      params: prarms,
-      headers: headers,
-    })
-    .then((res) => {
-      if (typeof res.data === "string" && res.data.match(/^jsonpCBK/)) {
-        return JSON.parse(res.data.match(/jsonpCBK.?\(([\w\W]*)\);/)[1]);
-      } else {
-        return res.data;
-      }
-    })
-    .catch((err) => {
-      console.log(err?.response?.status, err?.response?.statusText);
-    });
+function get(url: string, headers?: any): Promise<any> {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: headers,
+      })
+      .then((res) => {
+        if (typeof res.data === "string" && res.data.includes("jsonpCBK")) {
+          resolve(JSON.parse(res.data.match(/jsonpCBK.?\(([\w\W]*)\);?/)[1]));
+        } else {
+          resolve(res.data);
+        }
+      })
+      .catch((err) => {
+        reject({
+          code: err?.response?.status || -1,
+          msg: err?.response?.statusText || err.message || "error",
+        });
+      });
+  });
 }
 
 function post(
@@ -349,14 +353,21 @@ function post(
   prarms?: string | object,
   headers?: any
 ): Promise<any> {
-  return axios
-    .post(url, prarms, {
-      headers: headers,
-    })
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err?.response?.status, err?.response?.statusText);
-    });
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, prarms, {
+        headers: headers,
+      })
+      .then((res) => {
+        resolve(res.data);
+      })
+      .catch((err) => {
+        reject({
+          code: err?.response?.status || -1,
+          msg: err?.response?.statusText || err.message || "error",
+        });
+      });
+  });
 }
 
 export default USER_AGENT;

@@ -24,26 +24,13 @@ let cookiesArr = [],
   cookie = "",
   message = "";
 // https://lzkj-isv.isvjcloud.com/sign/sevenDay/signActivity?activityId=
-let activityIdList = ["600fe9fc7a21450d9842c9056f3b0653"];
+let activityIdList = [];
 // https://lzkj-isv.isvjcloud.com/sign/signActivity2?activityId=
 let activityIdList2 = [
-  "84e9d04debf4415989b6728ef6a605df",
-  "bfafaaa4961b441a8e2bcb4b7de6bdf1",
-  "241f469b4a8a41388bdb1644331d9017",
-  "0260f46de12c4499bf9874f734add39a",
-  "60c1fb112db749bf8b23a80e030061d3",
-  "393ddb3a8ce04f19aed59fb458e2425f",
-  "b27cf28cb13e41c7a1c4a8f144c567a0",
-  "6d58dc7941a8427e8d2220cbfdc7da60",
-  "b10be16dc4ed48409e434f71fd3af3bc",
-  "5c4a8fc391b6416c97687b3aa6803d43",
-  "04048ae2f40f4b5c844c3f1187112847",
-  "25e4df8c3afc4825822fd420bf24150e",
+ 
 ];
 // https://cjhy-isv.isvjcloud.com/sign/signActivity?activityId=
 let activityIdList3 = [
-  "91526fcd5fb0456582d6e4c936b4add1",
-  "e4a77379ca4043b7b20fe09f006b7588",
 ];
 let lz_cookie = {};
 

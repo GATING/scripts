@@ -35,7 +35,7 @@ let min: number[] = [0.02, 0.03, 0.12, 0.3, 0.4, 0.6, 0.7, 0.8, 1, 1.2, 2, 3.6],
   await help();
 
   cookiesArr = await requireConfig(false);
-  cookiesArr = cookiesArr.slice(0, 9);
+  cookiesArr = cookiesArr.slice(0, 20);
   if (new Date().getHours() !== 6) await join();
   await getShareCodeSelf();
   await help();
