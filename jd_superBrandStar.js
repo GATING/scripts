@@ -1,8 +1,10 @@
 /**
-特务之明星送好礼
-cron 36 1,10 * * * jd_superBrandStar.js
+ 特务Z，默认选择左边战队
+ 脚本没有自动开卡，会尝试领取开卡奖励
+ cron 36 22 * * * https://raw.githubusercontent.com/star261/jd/main/scripts/jd_productZ4Brand.js
+ 一天要跑2次
  */
-const $ = new Env("特务之明星送好礼");
+const $ = new Env("特务Z");
 const notify = $.isNode() ? require("./sendNotify") : "";
 const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 let cookiesArr = [];
