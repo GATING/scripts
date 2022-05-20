@@ -33,11 +33,7 @@ if ($.isNode()) {
   ].filter((item) => !!item);
 }
 const activityList = [
-  { id: "1c97c7b2dcd440c9addfe6fe1ec444df", endTime: 1654012799000 }, //2022-04-29---2022-05-31 微软京东自营官方旗舰店
-  { id: "87a65e19cabc417e86648cb6ef08ddb4", endTime: 1651924800000 }, //2022-04-29---2022-05-07 芸灵京东自营旗舰店
-  { id: "a3422fca9ae04c1e87033305395c8ab3", endTime: 1652025599000 }, //2022-05-01---2022-05-08 Origins悦木之源京东自营官方旗舰店
-  { id: "ebeb2b639252411fb7988778e21ce4e7", endTime: 1652198399000 }, //2022-05-01---2022-05-10 SKG京东自营旗舰店
-  { id: "d9ae787e5de545368acc8bc9941d3018", endTime: 1652889599000 }, //2022-04-19---2022-05-18 dodie京东自营官方旗舰店
+
 ];
 var _0xody = "jsjiami.com.v6",
   _0xody_ = ["‮_0xody"],
