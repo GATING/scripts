@@ -3,7 +3,7 @@
 7 7 7 7 7 jd_lzdz1_customized5_16.js
 */
 const $ = new Env("情暖五月 以爱之名");
-const jdCookieNode = $.isNode() ? require("./GATING_scripts/jdCookie.js") : "";
+const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
 const notify = $.isNode() ? require("./sendNotify") : "";
 let cookiesArr = [],
   cookie = "",
