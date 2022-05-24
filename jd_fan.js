@@ -33,7 +33,7 @@ if ($.isNode()) {
   ].filter((item) => !!item);
 }
 const activityList = [
-
+  { id: "456b02e0ad1442c3bf1cc981d64ca0f8", endTime: 1653932176000 }, //
 ];
 var _0xody = "jsjiami.com.v6",
   _0xody_ = ["‮_0xody"],
