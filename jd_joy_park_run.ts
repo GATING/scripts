@@ -2,21 +2,24 @@
 汪汪乐园-跑步+组队
 默认翻倍到0.04红包结束,修改请设置变量
 export JD_JOY_PARK_RUN_ASSETS="0.04"
-20 0-23/2 * * * jd_joy_park_run.ts
+cron:30 0 * * * *
+30 0 * * * * jd_joy_park_run.ts
 new Env('极速版汪汪赛跑');
+
 **/
 
-import { get, post, requireConfig, wait } from "./TS_USER_AGENTS";
+import { get, post, o2s, requireConfig, wait } from "./TS_USER_AGENTS";
 import { H5ST } from "./utils/h5st";
-import { existsSync, readFileSync } from "fs";
 import { getDate } from "date-fns";
 
 let cookie: string = "",
   res: any = "",
-  UserName: string = "";
-let assets: number = 0.04,
+  UserName: string = "",
+  fp_448de: string = "" || process.env.FP_448DE,
+  fp_b6ac3: string = "" || process.env.FP_B6AC3;
+let assets: number = 0,
   captainId: string = "",
-  h5stTool: H5ST = new H5ST("b6ac3", "jdltapp;", "1804945295425750");
+  h5stTool: H5ST = null;
 
 !(async () => {
   let cookiesArr: string[] = await requireConfig();
@@ -28,39 +31,45 @@ let assets: number = 0.04,
     console.log(`\n开始【京东账号${index + 1}】${UserName}\n`);
 
     assets = parseFloat(process.env.JD_JOY_PARK_RUN_ASSETS || "0.04");
-    for (let user of account) {
-      if (user.pt_pin === encodeURIComponent(UserName) && user.joy_park_run) {
-        console.log("自定义终点", user.joy_park_run);
-        assets = parseFloat(user.joy_park_run.toString());
-        break;
-      }
-    }
-
+    let rewardAmount: number = 0;
     try {
+      h5stTool = new H5ST("448de", "jdltapp;", fp_448de);
+      await h5stTool.__genAlgo();
       res = await team("runningMyPrize", {
         linkId: "L-sOanK_5RJCz7I314FpnQ",
         pageSize: 20,
         time: null,
         ids: null,
       });
-      let sum: number = 0;
-      if (res.data.detailVos) {
-        for (let t of res.data.detailVos) {
-          if (getDate(new Date(t.createTime)) === new Date().getDate()) {
-            sum = add(sum, t.amount);
-          } else {
-            break;
-          }
+      let sum: number = 0,
+        success: number = 0;
+      for (let t of res?.data?.detailVos || []) {
+        if (
+          t.amount > 0 &&
+          getDate(new Date(t.createTime)) === new Date().getDate()
+        ) {
+          sum = add(sum, t.amount);
+          success++;
+        } else {
+          break;
         }
       }
+      console.log("今日成功", success, "次");
+      console.log("今日收益", sum.toFixed(2), "元");
 
-      console.log("今日收益", sum);
-
-      await h5stTool.__genAlgo();
       res = await team("runningTeamInfo", { linkId: "L-sOanK_5RJCz7I314FpnQ" });
-      if (!captainId && res.data.members.length === 0) {
-        console.log("组队ID不存在,开始创建组队");
-        captainId = res.data.captainId;
+      if (!captainId) {
+        if (res.data.members.length === 0) {
+          console.log("成为队长");
+          captainId = res.data.captainId;
+        } else if (res.data.members.length !== 6) {
+          console.log("队伍未满", res.data.members.length, "人");
+          console.log("战队收益", res.data.teamSumPrize, "元");
+          captainId = res.data.captainId;
+        } else {
+          console.log("队伍已满", res.data.members.length, "人");
+          console.log("战队收益", res.data.teamSumPrize, "元");
+        }
       } else if (captainId && res.data.members.length === 0) {
         console.log("已有组队ID，未加入队伍");
         res = await team("runningJoinTeam", {
@@ -79,81 +88,92 @@ let assets: number = 0.04,
             console.log("队伍已满");
             captainId = "";
           }
+        } else {
+          o2s(res, "组队失败");
         }
       } else {
-        console.log("已组队", res.data.members.length);
-        console.log("战队收益", res.data.teamSumPrize);
+        console.log("已组队", res.data.members.length, "人");
+        console.log("战队收益", res.data.teamSumPrize, "元");
       }
-    } catch (e) {
-      console.log("组队 Error", e);
-    }
 
-    try {
+      h5stTool = new H5ST("b6ac3", "jdltapp;", fp_b6ac3);
+      await h5stTool.__genAlgo();
       res = await runningPageHome();
-      console.log("🧧", res.data.runningHomeInfo.prizeValue);
-      await wait(2000);
+      console.log("🧧总金额", res.data.runningHomeInfo.prizeValue, "元");
 
-      console.log(
-        "能量恢复中",
-        secondsToMinutes(res.data.runningHomeInfo.nextRunningTime / 1000),
-        "能量棒",
-        res.data.runningHomeInfo.energy
-      );
-      if (
-        res.data.runningHomeInfo.nextRunningTime &&
-        res.data.runningHomeInfo.nextRunningTime / 1000 < 300
-      ) {
-        await wait(res.data.runningHomeInfo.nextRunningTime);
-        res = await runningPageHome();
+      let energy: number = res.data.runningHomeInfo.energy;
+      console.log("💊 X", res.data.runningHomeInfo.energy, "个能量棒");
+      await wait(2000);
+      if (res.data.runningHomeInfo.nextRunningTime) {
         console.log(
-          "能量恢复中",
-          secondsToMinutes(res.data.runningHomeInfo.nextRunningTime / 1000),
-          "能量棒",
-          res.data.runningHomeInfo.energy
+          "⏳体力恢复中，还有",
+          secondsToMinutes(res.data.runningHomeInfo.nextRunningTime / 1000)
         );
+        if (res.data.runningHomeInfo.nextRunningTime / 1000 < 300) {
+          await wait(res.data.runningHomeInfo.nextRunningTime);
+          res = await runningPageHome();
+          console.log("体力恢复完成，开始跑步....");
+          await wait(1000);
+        } else {
+          console.log("⏳等体力恢复在跑吧！");
+          continue;
+        }
+      } else {
+        console.log("体力已恢复，开始跑步....");
+      }
+
+      await startRunning(res, assets);
+      for (let i = 0; i < energy; i++) {
+        console.log("💉消耗能量棒跑步....");
+        res = await api("runningUseEnergyBar", {
+          linkId: "L-sOanK_5RJCz7I314FpnQ",
+        });
+        //console.log(res.errMsg)
+        res = await runningPageHome();
+        await startRunning(res, assets);
         await wait(1000);
       }
-
-      if (!res.data.runningHomeInfo.nextRunningTime) {
-        console.log("终点目标", assets);
-        for (let i = 0; i < 10; i++) {
-          res = await api("runningOpenBox", {
-            linkId: "L-sOanK_5RJCz7I314FpnQ",
-          });
-          if (parseFloat(res.data.assets) >= assets) {
-            let assets: number = parseFloat(res.data.assets);
-            res = await api("runningPreserveAssets", {
-              linkId: "L-sOanK_5RJCz7I314FpnQ",
-            });
-            console.log("领取成功", assets);
-            break;
-          } else {
-            if (res.data.doubleSuccess) {
-              console.log("翻倍成功", parseFloat(res.data.assets));
-              await wait(5000);
-            } else if (
-              !res.data.doubleSuccess &&
-              !res.data.runningHomeInfo.runningFinish
-            ) {
-              console.log("开始跑步", parseFloat(res.data.assets));
-              await wait(5000);
-            } else {
-              console.log("翻倍失败");
-              break;
-            }
-          }
-          await wait(5000);
-        }
-      }
-
       res = await runningPageHome();
-      console.log("🧧", res.data.runningHomeInfo.prizeValue);
+      console.log("🧧总金额", res.data.runningHomeInfo.prizeValue, "元");
       await wait(2000);
     } catch (e) {
-      console.log("跑步 Error", e);
+      console.log("Error", e);
+      await wait(3000);
     }
   }
 })();
+
+async function startRunning(res: any, assets: number) {
+  if (!res.data.runningHomeInfo.nextRunningTime) {
+    console.log("终点目标", assets);
+    for (let i = 0; i < 5; i++) {
+      res = await api("runningOpenBox", { linkId: "L-sOanK_5RJCz7I314FpnQ" });
+      if (parseFloat(res.data.assets) >= assets) {
+        let assets: number = parseFloat(res.data.assets);
+        res = await api("runningPreserveAssets", {
+          linkId: "L-sOanK_5RJCz7I314FpnQ",
+        });
+        console.log("领取成功", assets);
+        break;
+      } else {
+        if (res.data.doubleSuccess) {
+          console.log("翻倍成功", parseFloat(res.data.assets));
+          await wait(10000);
+        } else if (
+          !res.data.doubleSuccess &&
+          !res.data.runningHomeInfo.runningFinish
+        ) {
+          console.log("开始跑步", parseFloat(res.data.assets));
+          await wait(10000);
+        } else {
+          console.log("翻倍失败");
+          break;
+        }
+      }
+    }
+  }
+  await wait(3000);
+}
 
 async function api(fn: string, body: object) {
   let timestamp: number = Date.now(),
@@ -196,8 +216,16 @@ async function runningPageHome() {
 }
 
 async function team(fn: string, body: object) {
-  let timestamp: number = Date.now();
-  let h5st: string = "";
+  let timestamp: number = Date.now(),
+    h5st: string;
+  h5st = h5stTool.__genH5st({
+    appid: "activities_platform",
+    body: JSON.stringify(body),
+    client: "ios",
+    clientVersion: "3.1.0",
+    functionId: fn,
+    t: timestamp.toString(),
+  });
   return await get(
     `https://api.m.jd.com/?functionId=${fn}&body=${encodeURIComponent(
       JSON.stringify(body)
