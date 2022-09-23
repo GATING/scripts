@@ -9,251 +9,207 @@ export tytpacketId=""
 助力逻辑：优先助力互助码变量
 入口-极速版-推推赚大钱  5元无门槛卷 大概需要50人助力
 */
-const $ = new Env("推推赚大钱-快速");
-const notify = $.isNode() ? require("./sendNotify") : "";
+const $ = new Env('推推赚大钱-快速');
+const notify = $.isNode() ? require('./sendNotify') : '';
 //Node.js用户请在jdCookie.js处填写京东ck;
-const jdCookieNode = $.isNode() ? require("./jdCookie.js") : "";
-const ua = `jdltapp;iPhone;3.1.0;${Math.ceil(
-  Math.random() * 4 + 10
-)}.${Math.ceil(Math.random() * 4)};${randomString(40)}`;
-var status = 0;
+const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
+const ua = `jdltapp;iPhone;3.1.0;${Math.ceil(Math.random()*4+10)}.${Math.ceil(Math.random()*4)};${randomString(40)}`
+var status = 0
 
 //IOS等用户直接用NobyDa的jd cookie
 let cookiesArr = [],
-  cookie = "",
-  message;
-let tytpacketId = "";
+    cookie = '',
+    message;
+let tytpacketId = '';
 if (process.env.tytpacketId) {
-  tytpacketId = process.env.tytpacketId;
+    tytpacketId = process.env.tytpacketId;
 }
 if ($.isNode()) {
-  Object.keys(jdCookieNode).forEach((item) => {
-    cookiesArr.push(jdCookieNode[item]);
-  });
-  //     if (process.env.JD_DEBUG && process.env.JD_DEBUG === 'false') console.log = () => {};
+    Object.keys(jdCookieNode).forEach((item) => {
+            cookiesArr.push(jdCookieNode[item])
+        })
+        //     if (process.env.JD_DEBUG && process.env.JD_DEBUG === 'false') console.log = () => {};
 } else {
-  cookiesArr = [
-    $.getdata("CookieJD"),
-    $.getdata("CookieJD2"),
-    ...jsonParse($.getdata("CookiesJD") || "[]").map((item) => item.cookie),
-  ].filter((item) => !!item);
+    cookiesArr = [$.getdata('CookieJD'), $.getdata('CookieJD2'), ...jsonParse($.getdata('CookiesJD') || "[]").map(item => item.cookie)].filter(item => !!item);
 }
-const JD_API_HOST = "https://api.m.jd.com/client.action";
+const JD_API_HOST = 'https://api.m.jd.com/client.action';
 
-!(async () => {
-  if (!cookiesArr[0]) {
-    $.msg(
-      $.name,
-      "【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取",
-      "https://bean.m.jd.com/bean/signIndex.action",
-      {
-        "open-url": "https://bean.m.jd.com/bean/signIndex.action",
-      }
-    );
-    return;
-  }
-  console.log("推一推开始");
-  for (let i = cookiesArr.length - 1; i > 0; i--) {
-    if (cookiesArr[i]) {
-      cookie = cookiesArr[i];
-      $.UserName = decodeURIComponent(
-        cookie.match(/pt_pin=([^; ]+)(?=;?)/) &&
-          cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1]
-      );
-      $.index = i + 1;
-      $.isLogin = true;
-      $.nickName = "";
-      message = "";
-      await TotalBean();
-      console.log(
-        `\n******开始【京东账号${$.index}】${
-          $.nickName || $.UserName
-        }*********\n`
-      );
-      if (!$.isLogin) {
-        $.msg(
-          $.name,
-          `【提示】cookie已失效`,
-          `京东账号${$.index} ${
-            $.nickName || $.UserName
-          }\n请重新登录获取\nhttps://bean.m.jd.com/bean/signIndex.action`,
-          {
-            "open-url": "https://bean.m.jd.com/bean/signIndex.action",
-          }
-        );
-
-        if ($.isNode()) {
-          await notify.sendNotify(
-            `${$.name}cookie已失效 - ${$.UserName}`,
-            `京东账号${$.index} ${$.UserName}\n请重新登录获取cookie`
-          );
-        }
-        continue;
-      }
-      if (status == 1) {
-        break;
-      }
-      await tythelp();
-      await $.wait(15000);
+!(async() => {
+    if (!cookiesArr[0]) {
+        $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/bean/signIndex.action', {
+            "open-url": "https://bean.m.jd.com/bean/signIndex.action"
+        });
+        return;
     }
-  }
-  console.log("推一推结束");
+    console.log("推一推开始")
+    for (let i = cookiesArr.length - 1; i > 0; i--) {
+        if (cookiesArr[i]) {
+            cookie = cookiesArr[i];
+            $.UserName = decodeURIComponent(cookie.match(/pt_pin=([^; ]+)(?=;?)/) && cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1])
+            $.index = i + 1;
+            $.isLogin = true;
+            $.nickName = '';
+            message = '';
+            //await TotalBean();
+            console.log(`\n******开始【京东账号${$.index}】${$.nickName || $.UserName}*********\n`);
+            if (!$.isLogin) {
+                $.msg($.name, `【提示】cookie已失效`, `京东账号${$.index} ${$.nickName || $.UserName}\n请重新登录获取\nhttps://bean.m.jd.com/bean/signIndex.action`, {
+                    "open-url": "https://bean.m.jd.com/bean/signIndex.action"
+                });
+
+                if ($.isNode()) {
+                    await notify.sendNotify(`${$.name}cookie已失效 - ${$.UserName}`, `京东账号${$.index} ${$.UserName}\n请重新登录获取cookie`);
+                }
+                continue
+            }
+            if (status == 1) {
+                break
+            }
+            await tythelp()
+            await $.wait(15000)
+        }
+    }
+    console.log("推一推结束")
 })()
-  .catch((e) => {
-    $.log("", `❌ ${$.name}, 失败! 原因: ${e}!`, "");
-  })
-  .finally(() => {
-    $.done();
-  });
+.catch((e) => {
+        $.log('', `❌ ${$.name}, 失败! 原因: ${e}!`, '')
+    })
+    .finally(() => {
+        $.done();
+    })
 
 function tythelp() {
-  return new Promise(async (resolve) => {
-    let options = {
-      url: `https://api.m.jd.com/?t=1623066557140`,
+    return new Promise(async(resolve) => {
+        let options = {
+            url: `https://api.m.jd.com/?t=1623066557140`,
 
-      body: `functionId=helpCoinDozer&appid=station-soa-h5&client=H5&clientVersion=1.0.0&t=1623120183787&body={"actId":"3075b6eab065464dad1c4042d345ac97","channel":"coin_dozer","antiToken":"","referer":"-1","frontendInitStatus":"s","packetId":"${tytpacketId}","helperStatus":"0"}&_ste=1&_stk=appid,body,client,clientVersion,functionId,t&h5st=20210608104303790;8489907903583162;10005;tk01w89681aa9a8nZDdIanIyWnVuWFLK4gnqY+05WKcPY3NWU2dcfa73B7PBM7ufJEN0U+4MyHW5N2mT/RNMq72ycJxH;7e6b956f1a8a71b269a0038bbb4abd24bcfb834a88910818cf1bdfc55b7b96e5`,
-      headers: {
-        Origin: "https://pushgold.jd.com",
-        Host: "api.m.jd.com",
-        Accept: "application/json, text/plain, */*",
-        "User-Agent": ua,
-        Cookie: cookie,
-      },
-    };
-
-    $.post(options, async (err, resp, data) => {
-      try {
-        data = JSON.parse(data);
-
-        if (data.code == 0) {
-          console.log("帮砍：" + data.data.amount);
-        } else if (data.msg.indexOf("完成") != -1) {
-          console.log("已完成砍价");
-          status = 1;
-        } else {
-          if (data.msg !== "need verify") {
-            console.log(data.msg);
-          }
-          console.log(data.msg);
+            body: `functionId=helpCoinDozer&appid=station-soa-h5&client=H5&clientVersion=1.0.0&t=1623120183787&body={"actId":"3075b6eab065464dad1c4042d345ac97","channel":"coin_dozer","antiToken":"","referer":"-1","frontendInitStatus":"s","packetId":"${tytpacketId}","helperStatus":"0"}&_ste=1&_stk=appid,body,client,clientVersion,functionId,t&h5st=20210608104303790;8489907903583162;10005;tk01w89681aa9a8nZDdIanIyWnVuWFLK4gnqY+05WKcPY3NWU2dcfa73B7PBM7ufJEN0U+4MyHW5N2mT/RNMq72ycJxH;7e6b956f1a8a71b269a0038bbb4abd24bcfb834a88910818cf1bdfc55b7b96e5`,
+            headers: {
+                "Origin": "https://pushgold.jd.com",
+                "Host": "api.m.jd.com",
+                "Accept": "application/json, text/plain, */*",
+                "User-Agent": ua,
+                "Cookie": cookie,
+            }
         }
-      } catch (e) {
-        $.logErr(e, resp);
-      } finally {
-        resolve();
-      }
+
+        $.post(options, async(err, resp, data) => {
+            try {
+                data = JSON.parse(data);
+
+                if (data.code == 0) {
+                     console.log("帮砍：" + data.data.amount)
+
+                } else if (data.msg.indexOf("完成") != -1) {
+                    console.log("已完成砍价")
+                    status = 1
+                } else {
+                     if (data.msg !== "need verify"){
+                         console.log(data.msg)
+                     }
+                     console.log(data.msg)
+                }
+            } catch (e) {
+                $.logErr(e, resp);
+            } finally {
+                resolve();
+            }
+        });
     });
-  });
 }
 
 function randomString(e) {
-  e = e || 32;
-  let t = "abcdefhijkmnprstwxyz2345678",
-    a = t.length,
-    n = "";
-  for (i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
-  return n;
+    e = e || 32;
+    let t = "abcdefhijkmnprstwxyz2345678",
+        a = t.length,
+        n = "";
+    for (i = 0; i < e; i++)
+        n += t.charAt(Math.floor(Math.random() * a));
+    return n
 }
 async function taskPostUrl(functionId, body) {
-  return {
-    url: `${JD_API_HOST}`,
-    body: `functionId=${functionId}&body=${escape(
-      JSON.stringify(body)
-    )}&client=wh5&clientVersion=1.0.0&appid=content_ecology&uuid=6898c30638c55142969304c8e2167997fa59eb54&t=1622588448365`,
-    headers: {
-      Cookie: cookie,
-      Host: "api.m.jd.com",
-      Connection: "keep-alive",
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": $.isNode()
-        ? process.env.JD_USER_AGENT
-          ? process.env.JD_USER_AGENT
-          : require("./USER_AGENTS").USER_AGENT
-        : $.getdata("JDUA")
-        ? $.getdata("JDUA")
-        : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
-      "Accept-Language": "zh-cn",
-      "Accept-Encoding": "gzip, deflate, br",
-    },
-  };
+    return {
+        url: `${JD_API_HOST}`,
+        body: `functionId=${functionId}&body=${escape(JSON.stringify(body))}&client=wh5&clientVersion=1.0.0&appid=content_ecology&uuid=6898c30638c55142969304c8e2167997fa59eb54&t=1622588448365`,
+        headers: {
+            'Cookie': cookie,
+            'Host': 'api.m.jd.com',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1"),
+            'Accept-Language': 'zh-cn',
+            'Accept-Encoding': 'gzip, deflate, br',
+        }
+    }
 }
 
+
 async function TotalBean() {
-  return new Promise(async (resolve) => {
-    const options = {
-      url: `https://wq.jd.com/user/info/QueryJDUserInfo?sceneval=2`,
-      headers: {
-        Accept: "application/json,text/plain, */*",
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "zh-cn",
-        Connection: "keep-alive",
-        Cookie: cookie,
-        Referer: "https://wqs.jd.com/my/jingdou/my.shtml?sceneval=2",
-        "User-Agent": $.isNode()
-          ? process.env.JD_USER_AGENT
-            ? process.env.JD_USER_AGENT
-            : require("./USER_AGENTS").USER_AGENT
-          : $.getdata("JDUA")
-          ? $.getdata("JDUA")
-          : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1",
-      },
-    };
-    $.post(options, (err, resp, data) => {
-      try {
-        if (err) {
-          console.log(`${JSON.stringify(err)}`);
-          console.log(`${$.name} API请求失败，请检查网路重试`);
-        } else {
-          if (data) {
-            data = JSON.parse(data);
-            if (data["retcode"] === 13) {
-              $.isLogin = false; //cookie过期
-              return;
+    return new Promise(async resolve => {
+        const options = {
+            "url": `https://wq.jd.com/user/info/QueryJDUserInfo?sceneval=2`,
+            "headers": {
+                "Accept": "application/json,text/plain, */*",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Accept-Language": "zh-cn",
+                "Connection": "keep-alive",
+                "Cookie": cookie,
+                "Referer": "https://wqs.jd.com/my/jingdou/my.shtml?sceneval=2",
+                "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1")
             }
-            if (data["retcode"] === 0) {
-              $.nickName =
-                (data["base"] && data["base"].nickname) || $.UserName;
-            } else {
-              $.nickName = $.UserName;
-            }
-          } else {
-            console.log(`京东服务器返回空数据`);
-          }
         }
-      } catch (e) {
-        $.logErr(e, resp);
-      } finally {
-        resolve();
-      }
-    });
-  });
+        $.post(options, (err, resp, data) => {
+            try {
+                if (err) {
+                     console.log(`${JSON.stringify(err)}`)
+                     console.log(`${$.name} API请求失败，请检查网路重试`)
+                } else {
+                    if (data) {
+                        data = JSON.parse(data);
+                        if (data["retcode"] === 13) {
+                            $.isLogin = false; //cookie过期
+                            return;
+                        }
+                        if (data["retcode"] === 0) {
+                            $.nickName = (data["base"] && data["base"].nickname) || $.UserName;
+                        } else {
+                            $.nickName = $.UserName;
+                        }
+                    } else {
+                             console.log(`京东服务器返回空数据`)
+                    }
+                }
+            } catch (e) {
+                $.logErr(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
 }
 async function safeGet(data) {
-  try {
-    if (typeof JSON.parse(data) == "object") {
-      return true;
+    try {
+        if (typeof JSON.parse(data) == "object") {
+            return true;
+        }
+    } catch (e) {
+            console.log(e);
+            console.log(`京东服务器访问数据为空，请检查自身设备网络情况`);
+        return false;
     }
-  } catch (e) {
-    console.log(e);
-    console.log(`京东服务器访问数据为空，请检查自身设备网络情况`);
-    return false;
-  }
 }
 
 function jsonParse(str) {
-  if (typeof str == "string") {
-    try {
-      return JSON.parse(str);
-    } catch (e) {
-      console.log(e);
-      $.msg(
-        $.name,
-        "",
-        "请勿随意在BoxJs输入框修改内容\n建议通过脚本去获取cookie"
-      );
-      return [];
+    if (typeof str == "string") {
+        try {
+            return JSON.parse(str);
+        } catch (e) {
+               console.log(e);
+            $.msg($.name, '', '请勿随意在BoxJs输入框修改内容\n建议通过脚本去获取cookie')
+            return [];
+        }
     }
-  }
 }
 // prettier-ignore
 

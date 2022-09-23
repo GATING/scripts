@@ -1,13 +1,12 @@
 /* 
-cron 10 8 * * * jd_sign_graphics1.js
+8 8,16 * * * jd_sign_graphics1.js
 只支持nodejs环境
 需要安装依赖 
 npm i png-js 或者 npm i png-js -S
-
 */
 
-const Faker = require('./sign_graphics_validate.js')
-const $ = new Env('京东签到翻牌');
+const Faker = require('./function/sign_graphics_validate.js')
+const $ = new Env('京东美妆签到');
 const notify = $.isNode() ? require('./sendNotify') : '';
 //Node.js用户请在jdCookie.js处填写京东ck;
 const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
@@ -29,13 +28,10 @@ let successNum = 0
 let errorNum = 0
 let JD_API_HOST = 'https://sendbeans.jd.com'
 const turnTableId = [
-  //{ "name": "美妆-1", "id": 1345, "shopid": 1000000142, "url": "https://sendbeans.jd.com/jump/index/" },
-   { "name": "美妆-2", "id": 1401, "shopid": 1000283022, "url": "https://sendbeans.jd.com/jump/index/" },
-   { "name": "美妆-3", "id": 1082, "shopid": 1000004123, "url": "https://sendbeans.jd.com/jump/index/" },
-  //{ "name": "美妆-3", "id": 1355, "shopid": 1000225742, "url": "https://sendbeans.jd.com/jump/index/" },
-  //{ "name": "美妆-3", "id": 1349, "shopid": 12137, "url": "https://sendbeans.jd.com/jump/index/" },
-  //{ "name": "美妆-3", "id": 1316, "shopid": 1000075555, "url": "https://sendbeans.jd.com/jump/index/" },
-  //{ "name": "美妆-3", "id": 1307, "shopid": 1000002743, "url": "https://sendbeans.jd.com/jump/index/" },
+ //  { "name": "美妆-1", "id": 293, "shopid": 30284, "url": "https://sendbeans.jd.com/jump/index/" },
+   { "name": "小米", "id": 1082, "shopid": 1000004123, "url": "https://sendbeans.jd.com/jump/index/" },
+   //{ "name": "美妆-3", "id": 1082, "shopid": 1000004123, "url": "https://sendbeans.jd.com/jump/index/" },
+   //{ "name": "翻牌", "id": 1419, "shopid": 1000007205, "url": "https://sendbeans.jd.com/jump/index/" },
 ]
 
 !(async () => {

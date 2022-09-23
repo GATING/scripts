@@ -2,23 +2,23 @@
 领京豆额外奖励&抢京豆
 脚本自带助力码，介意者可将 29行 helpAuthor 变量设置为 false
 活动入口：京东APP首页-领京豆
-更新地址：https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_bean_home.js
+更新地址：https://raw.githubusercontent.com/shufflewzc/faker2/main/jd_bean_home.js
 已支持IOS双京东账号, Node.js支持N个京东账号
 脚本兼容: QuantumultX, Surge, Loon, 小火箭，JSBox, Node.js
 ============Quantumultx===============
 [task_local]
 #领京豆额外奖励
-23 1,12,22 * * * https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_bean_home.js, tag=领京豆额外奖励, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jd_bean_home.png, enabled=true
+23 1,18 * * * https://raw.githubusercontent.com/shufflewzc/faker2/main/jd_bean_home.js, tag=领京豆额外奖励, img-url=https://raw.githubusercontent.com/58xinian/icon/master/jd_bean_home.png, enabled=true
 
 ================Loon==============
 [Script]
-cron "23 1,12,22 * * *" script-path=https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_bean_home.js, tag=领京豆额外奖励
+cron "23 1,18 * * *" script-path=https://raw.githubusercontent.com/shufflewzc/faker2/main/jd_bean_home.js, tag=领京豆额外奖励
 
 ===============Surge=================
-领京豆额外奖励 = type=cron,cronexp="23 1,12,22 * * *",wake-system=1,timeout=3600,script-path=https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_bean_home.js
+领京豆额外奖励 = type=cron,cronexp="23 1,18 * * *",wake-system=1,timeout=3600,script-path=https://raw.githubusercontent.com/shufflewzc/faker2/main/jd_bean_home.js
 
 ============小火箭=========
-领京豆额外奖励 = type=cron,script-path=https://raw.githubusercontent.com/Aaron-lv/sync/jd_scripts/jd_bean_home.js, cronexpr="23 1,12,22 * * *", timeout=3600, enable=true
+领京豆额外奖励 = type=cron,script-path=https://raw.githubusercontent.com/shufflewzc/faker2/main/jd_bean_home.js, cronexpr="23 1,18 * * *", timeout=3600, enable=true
  */
 const $ = new Env('领京豆额外奖励');
 
@@ -29,6 +29,7 @@ let jdNotify = true;//是否关闭通知，false打开通知推送，true关闭�
 const helpAuthor = false; // 是否帮助作者助力，false打开通知推送，true关闭通知推送
 //IOS等用户直接用NobyDa的jd cookie
 let cookiesArr = [], cookie = '', uuid = '', message;
+$.outFlag = false
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item])
@@ -41,7 +42,6 @@ if ($.isNode()) {
 const JD_API_HOST = 'https://api.m.jd.com/';
 !(async () => {
   $.newShareCodes = []
-  $.authorCode = []
   if (!cookiesArr[0]) {
     $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/bean/signIndex.action', {"open-url": "https://bean.m.jd.com/bean/signIndex.action"});
     return;
@@ -66,51 +66,52 @@ const JD_API_HOST = 'https://api.m.jd.com/';
         continue
       }
       await jdBeanHome();
+			await $.wait(parseInt(Math.random() * 5000 + 8000, 10))
     }
   }
-  for (let i = 0; i < cookiesArr.length; i++) {
-    $.index = i + 1;
-    if (cookiesArr[i]) {
-      cookie = cookiesArr[i];
-      $.canHelp = true;
-      $.UserName = decodeURIComponent(cookie.match(/pt_pin=([^; ]+)(?=;?)/) && cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1])
-      if ($.newShareCodes.length > 1) {
-        console.log(`\n【抢京豆】 ${$.UserName} 去助力排名第一的cookie`);
-        // let code = $.newShareCodes[(i + 1) % $.newShareCodes.length]
-        // await help(code[0], code[1])
-        let code = $.newShareCodes[0];
-        if(code[2] && code[2] ===  $.UserName){
-          //不助力自己
-        } else {
-          await help(code[0], code[1]);
-        }
-      }
-      if (helpAuthor && $.authorCode && $.canHelp) {
-        console.log(`\n【抢京豆】${$.UserName} 去帮助作者`)
-        for (let code of $.authorCode) {
-          const helpRes = await help(code.shareCode, code.groupCode);
-          if (helpRes && helpRes['code'] === '0') {
-            if (helpRes && helpRes.data && helpRes.data.respCode === 'SG209') {
-              console.log(`${helpRes.data.helpToast}\n`);
-              break;
-            }
-          } else {
-            console.log(`助力异常:${JSON.stringify(helpRes)}\n`);
-          }
-        }
-      }
-      for (let j = 1; j < $.newShareCodes.length && $.canHelp; j++) {
-        let code = $.newShareCodes[j];
-        if(code[2] && code[2] ===  $.UserName){
-          //不助力自己
-        } else {
-          console.log(`【抢京豆】${$.UserName} 去助力账号 ${j + 1}`);
-          await help(code[0], code[1]);
-          await $.wait(2000);
-        }
-      }
-    }
-  }
+  // for (let i = 0; i < cookiesArr.length; i++) {
+  //   $.index = i + 1;
+  //   if (cookiesArr[i]) {
+  //     cookie = cookiesArr[i];
+  //     $.canHelp = true;
+  //     $.UserName = decodeURIComponent(cookie.match(/pt_pin=([^; ]+)(?=;?)/) && cookie.match(/pt_pin=([^; ]+)(?=;?)/)[1])
+  //     if ($.newShareCodes.length > 1) {
+  //       console.log(`\n【抢京豆】 ${$.UserName} 去助力排名第一的cookie`);
+  //       // let code = $.newShareCodes[(i + 1) % $.newShareCodes.length]
+  //       // await help(code[0], code[1])
+  //       let code = $.newShareCodes[0];
+  //       if(code[2] && code[2] ===  $.UserName){
+  //         //不助力自己
+  //       } else {
+  //         await help(code[0], code[1]);
+  //       }
+  //     }
+  //     if (helpAuthor && $.authorCode && $.canHelp) {
+  //       console.log(`\n【抢京豆】${$.UserName} 去帮助作者`)
+  //       for (let code of $.authorCode) {
+  //         const helpRes = await help(code.shareCode, code.groupCode);
+  //         if (helpRes && helpRes['code'] === '0') {
+  //           if (helpRes && helpRes.data && helpRes.data.respCode === 'SG209') {
+  //             console.log(`${helpRes.data.helpToast}\n`);
+  //             break;
+  //           }
+  //         } else {
+  //           console.log(`助力异常:${JSON.stringify(helpRes)}\n`);
+  //         }
+  //       }
+  //     }
+  //     for (let j = 1; j < $.newShareCodes.length && $.canHelp; j++) {
+  //       let code = $.newShareCodes[j];
+  //       if(code[2] && code[2] ===  $.UserName){
+  //         //不助力自己
+  //       } else {
+  //         console.log(`【抢京豆】${$.UserName} 去助力账号 ${j + 1}`);
+  //         await help(code[0], code[1]);
+  //         await $.wait(2000);
+  //       }
+  //     }
+  //   }
+  // }
 })()
   .catch((e) => {
     $.log('', `❌ ${$.name}, 失败! 原因: ${e}!`, '')
@@ -127,9 +128,11 @@ async function jdBeanHome() {
     //   await $.wait(1000)
     //   if ($.doneState) break
     // }
-    do {
+		$.outFlag = false
+		do {
       await doTask2()
-      await $.wait(3000)
+			if ($.outFlag) break
+      await $.wait(5000)
     } while (!$.doneState)
     await $.wait(1000)
     await award("feeds")
@@ -139,20 +142,20 @@ async function jdBeanHome() {
     await getTaskList();
     await receiveJd2();
 
-    // await morningGetBean()
-    // await $.wait(1000)
+    //await morningGetBean()
+    //await $.wait(1000)
 
     await beanTaskList(1)
-    await $.wait(1000)
+    await $.wait(2000)
     await queryCouponInfo()
     $.doneState = false
     let num = 0
     do {
-      await $.wait(2000)
+      await $.wait(3000)
       await beanTaskList(2)
       num++
     } while (!$.doneState && num < 5)
-    await $.wait(2000)
+    await $.wait(3000)
     if ($.doneState) await beanTaskList(3)
 
     await showMsg();
@@ -393,8 +396,9 @@ function doTask2() {
       $.post(taskUrl('beanHomeTask', body), (err, resp, data) => {
         try {
           if (err) {
-            console.log(`${JSON.stringify(err)}`)
-            console.log(`${$.name} API请求失败，请检查网路重试`)
+            $.outFlag = true
+						console.log(`${JSON.stringify(err)}`)
+            console.log(`doTask2 API请求失败，请检查网路重试`)
           } else {
             if (safeGet(data)) {
               data = JSON.parse(data);
@@ -420,14 +424,46 @@ function doTask2() {
     })
 }
 
-
+function getAuthorShareCode(url) {
+  return new Promise(resolve => {
+    const options = {
+      url: `${url}?${new Date()}`, "timeout": 10000, headers: {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/87.0.4280.88"
+      }
+    };
+    if ($.isNode() && process.env.TG_PROXY_HOST && process.env.TG_PROXY_PORT) {
+      const tunnel = require("tunnel");
+      const agent = {
+        https: tunnel.httpsOverHttp({
+          proxy: {
+            host: process.env.TG_PROXY_HOST,
+            port: process.env.TG_PROXY_PORT * 1
+          }
+        })
+      }
+      Object.assign(options, { agent })
+    }
+    $.get(options, async (err, resp, data) => {
+      try {
+        if (err) {
+        } else {
+          if (data) data = JSON.parse(data)
+        }
+      } catch (e) {
+        // $.logErr(e, resp)
+      } finally {
+        resolve(data);
+      }
+    })
+  })
+}
 function getUserInfo() {
   return new Promise(resolve => {
     $.post(taskUrl('signBeanGroupStageIndex', 'body'), async (err, resp, data) => {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
-          console.log(`${$.name} API请求失败，请检查网路重试`)
+          console.log(`getUserInfo API请求失败，请检查网路重试`)
         } else {
           if (safeGet(data)) {
             data = JSON.parse(data);
@@ -465,7 +501,7 @@ function hitGroup() {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
-          console.log(`${$.name} API请求失败，请检查网路重试`)
+          console.log(`hitGroup API请求失败，请检查网路重试`)
         } else {
           if (safeGet(data)) {
             data = JSON.parse(data);
@@ -547,7 +583,7 @@ function getTaskList() {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
-          console.log(`${$.name} API请求失败，请检查网路重试`)
+          console.log(`getTaskList API请求失败，请检查网路重试`)
         } else {
           if (safeGet(data)) {
             data = JSON.parse(data);
@@ -583,7 +619,7 @@ function receiveTask(itemId = "zddd", type = "3") {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
-          console.log(`${$.name} API请求失败，请检查网路重试`)
+          console.log(`receiveTask API请求失败，请检查网路重试`)
         } else {
           if (safeGet(data)) {
             data = JSON.parse(data);
@@ -611,7 +647,8 @@ function award(source="home") {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
-          console.log(`${$.name} API请求失败，请检查网路重试`)
+          console.log(`award API请求失败，请检查网路重试`)
+					$.outFlag = true
         } else {
           if (safeGet(data)) {
             data = JSON.parse(data);
@@ -652,7 +689,8 @@ function receiveJd2() {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
-          console.log(`${$.name} API请求失败，请检查网路重试`)
+          console.log(`receiveJd2 API请求失败，请检查网路重试`)
+					$.outFlag = true
         } else {
           if (safeGet(data)) {
             data = JSON.parse(data);
@@ -743,7 +781,7 @@ function TotalBean() {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
-          console.log(`${$.name} API请求失败，请检查网路重试`)
+          console.log(`TotalBean API请求失败，请检查网路重试`)
         } else {
           if (data) {
             data = JSON.parse(data);

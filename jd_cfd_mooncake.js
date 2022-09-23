@@ -3053,23 +3053,12 @@ let cookiesArr = [],
   token = "";
 let UA,
   UAInfo = {};
-let nowTimes;
 const randomCount = $.isNode() ? 20 : 3;
-$.appId = 10032;
+$.appId = "92a36";
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => {
     cookiesArr.push(jdCookieNode[item]);
   });
-  if (process.env.CFD_FORBID_ACCOUNT) {
-    process.env.CFD_FORBID_ACCOUNT.split(",").forEach((item) => {
-      const index = cookiesArr.findIndex((cookie) =>
-        cookie?.match(/pt_pin=([^; ]+)(?=;?)/)[1]?.includes(item)
-      );
-      if (index !== -1) {
-        cookiesArr.splice(index, 1);
-      }
-    });
-  }
   if (process.env.JD_DEBUG && process.env.JD_DEBUG === "false")
     console.log = () => {};
   if (JSON.stringify(process.env).indexOf("GITHUB") > -1) process.exit(0);
@@ -3141,6 +3130,7 @@ if ($.isNode()) {
     }
   }
   let res = null;
+
   $.strMyShareIds = [...((res && res.shareId) || [])];
   await shareCodesFormat();
   for (let i = 0; i < cookiesArr.length; i++) {
@@ -3175,11 +3165,6 @@ if ($.isNode()) {
 
 async function cfd() {
   try {
-    nowTimes = new Date(
-      new Date().getTime() +
-        new Date().getTimezoneOffset() * 60 * 1000 +
-        8 * 60 * 60 * 1000
-    );
     let beginInfo = await getUserInfo();
     if (beginInfo.LeadInfo.dwLeadType === 2) {
       console.log(`还未开通活动，尝试初始化`);
@@ -3193,9 +3178,11 @@ async function cfd() {
         return;
       }
     }
+
     if (!beginInfo.MarkList.daily_task_win) {
       await setMark();
     }
+
     //抽奖
     await $.wait(2000);
     await composePearlState(4);
@@ -3223,32 +3210,6 @@ async function cfd() {
   } catch (e) {
     $.logErr(e);
   }
-}
-
-function setMark() {
-  return new Promise((resolve) => {
-    $.get(
-      taskUrl("user/SetMark", `strMark=daily_task_win&strValue=1&dwType=1`),
-      (err, resp, data) => {
-        try {
-          if (err) {
-            console.log(`${JSON.stringify(err)}`);
-            console.log(`${$.name} SetMark API请求失败，请检查网路重试`);
-          } else {
-            data = JSON.parse(
-              data
-                .replace(/\n/g, "")
-                .match(new RegExp(/jsonpCBK.?\((.*);*\)/))[1]
-            );
-          }
-        } catch (e) {
-          $.logErr(e, resp);
-        } finally {
-          resolve();
-        }
-      }
-    );
-  });
 }
 
 // 合成月饼
@@ -3644,6 +3605,33 @@ function helpByStage(shareCodes) {
   });
 }
 
+
+function setMark() {
+  return new Promise((resolve) => {
+    $.get(
+      taskUrl("user/SetMark", `strMark=daily_task_win&strValue=1&dwType=1`),
+      (err, resp, data) => {
+        try {
+          if (err) {
+            console.log(`${JSON.stringify(err)}`);
+            console.log(`${$.name} SetMark API请求失败，请检查网路重试`);
+          } else {
+            data = JSON.parse(
+              data
+                .replace(/\n/g, "")
+                .match(new RegExp(/jsonpCBK.?\((.*);*\)/))[1]
+            );
+          }
+        } catch (e) {
+          $.logErr(e, resp);
+        } finally {
+          resolve();
+        }
+      }
+    );
+  });
+}
+
 // 获取用户信息
 function getUserInfo(showInvite = true) {
   return new Promise(async (resolve) => {
@@ -3651,10 +3639,10 @@ function getUserInfo(showInvite = true) {
       taskUrl(
         `user/QueryUserInfo`,
         `ddwTaskId=&strShareId=&strMarkList=${encodeURIComponent(
-          "guider_step,collect_coin_auth,guider_medal,guider_over_flag,build_food_full,build_sea_full,build_shop_full,build_fun_full,medal_guider_show,guide_guider_show,guide_receive_vistor,daily_task,guider_daily_task"
-        )}&strPgUUNum=${token["farm_jstoken"]}&strPgtimestamp=${
-          token["timestamp"]
-        }&strPhoneID=${token["phoneid"]}`
+          "guider_step,collect_coin_auth,guider_medal,guider_over_flag,build_food_full,build_sea_full,build_shop_full,build_fun_full,medal_guider_show,guide_guider_show,guide_receive_vistor,daily_task,guider_daily_task,cfd_has_show_selef_point,choose_goods_has_show,daily_task_win,new_user_task_win,guider_new_user_task,guider_daily_task_icon,guider_nn_task_icon,tool_layer,new_ask_friend_m"
+        )}&strPgtimestamp=${token["timestamp"]}&strPhoneID=${
+          token["phoneid"]
+        }&strPgUUNum=${token["farm_jstoken"]}&strVersion=1.0.1&dwIsReJoin=1`
       ),
       async (err, resp, data) => {
         try {
@@ -3765,7 +3753,7 @@ function biz(contents) {
     let option = {
       url: `https://m.jingxi.com/webmonitor/collect/biz.json?contents=${contents}&t=${Math.random()}&sceneval=2`,
       headers: {
-        Cookie: cookie + "cid=4",
+        Cookie: cookie,
         Accept: "*/*",
         Connection: "keep-alive",
         Referer:
@@ -3858,26 +3846,29 @@ function showMsg() {
 
 function readShareCode() {
   return new Promise(async (resolve) => {
-    $.get({ url: ``, timeout: 10000 }, (err, resp, data) => {
-      try {
-        if (err) {
-          console.log(JSON.stringify(err));
-          console.log(`${$.name} readShareCode API请求失败，请检查网路重试`);
-        } else {
-          if (data) {
-            console.log(
-              `\n随机取${randomCount}个码放到您固定的互助码后面(不影响已有固定互助)`
-            );
-            data = JSON.parse(data);
+    $.get(
+      { url: `https://transfer.nz.lu/cfd`, timeout: 30 * 1000 },
+      (err, resp, data) => {
+        try {
+          if (err) {
+            console.log(JSON.stringify(err));
+            console.log(`${$.name} readShareCode API请求失败，请检查网路重试`);
+          } else {
+            if (data) {
+              console.log(
+                `\n随机取${randomCount}个码放到您固定的互助码后面(不影响已有固定互助)`
+              );
+              data = JSON.parse(data);
+            }
           }
+        } catch (e) {
+          $.logErr(e, resp);
+        } finally {
+          resolve(data);
         }
-      } catch (e) {
-        $.logErr(e, resp);
-      } finally {
-        resolve(data);
       }
-    });
-    await $.wait(10000);
+    );
+    await $.wait(30 * 1000);
     resolve();
   });
 }
@@ -3885,6 +3876,12 @@ function readShareCode() {
 function shareCodesFormat() {
   return new Promise(async (resolve) => {
     $.newShareCodes = [];
+    // const readShareCodeRes = await readShareCode();
+    // if (readShareCodeRes && readShareCodeRes.code === 200) {
+    //   $.newShareCodes = [...new Set([...$.shareCodes, ...$.strMyShareIds, ...(readShareCodeRes.data || [])])];
+    // } else {
+    //   $.newShareCodes = [...new Set([...$.shareCodes, ...$.strMyShareIds])];
+    // }
     $.newShareCodes = [...new Set([...$.shareCodes, ...$.strMyShareIds])];
     console.log(`您将要助力的好友${JSON.stringify($.newShareCodes)}`);
     resolve();
@@ -4009,7 +4006,7 @@ async function requestAlgo() {
       "Accept-Language": "zh-CN,zh;q=0.9,zh-TW;q=0.8,en;q=0.7",
     },
     body: JSON.stringify({
-      version: "1.0",
+      version: "3.0",
       fp: $.fingerprint,
       appId: $.appId.toString(),
       timestamp: Date.now(),
@@ -4017,7 +4014,7 @@ async function requestAlgo() {
       expandParams: "",
     }),
   };
-  new Promise(async (resolve) => {
+  return new Promise(async (resolve) => {
     $.post(options, (err, resp, data) => {
       try {
         if (err) {
@@ -4092,6 +4089,8 @@ function decrypt(time, stk, type, url) {
         "".concat($.appId.toString()),
         "".concat($.token),
         "".concat(hash2),
+        "".concat("3.0"),
+        "".concat(time),
       ].join(";")
     );
   } else {
