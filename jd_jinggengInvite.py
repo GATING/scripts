@@ -11,6 +11,7 @@ new Env('jinggeng邀请入会有礼');
 活动入口: https://jinggeng-isv.isvjcloud.com/ql/front/showInviteJoin?id=9e80809282a4bdc90182ab254c7e0a12&user_id=1000121005
 变量设置: export redis_url="xxx", export redis_port="xxx"(没有可省略), export redis_pwd="xxx"(没有可省略)
         export jinggengInviteJoin="9e80809282a4bdc90182ab254c7e0a12&1000121005"(活动id&店铺id)
+Update: 2022/11/01 更新入会算法，内置船新入会本地算法
 """
 
 import time, requests, sys, re, os, json, random
@@ -333,25 +334,32 @@ def shopmember(cookie):
 
 def bindWithVender(cookie):
     try:
-        body = {"venderId": user_id, "shopId": user_id, "bindByVerifyCodeFlag": 1,"registerExtend": {},"writeChildFlag":0, "channel": 401}
-        url = f'https://api.m.jd.com/client.action?appid=jd_shop_member&functionId=bindWithVender&body={json.dumps(body)}&client=H5&clientVersion=9.2.0&uuid=88888&h5st=20220614102046318%3B7327310984571307%3Bef79a%3Btk02wa31b1c7718neoZNHBp75rw4pE%2Fw7fXko2SdFCd1vIeWy005pEHdm0lw2CimWpaw3qc9il8r9xVLHp%2Bhzmo%2B4swg%3Bdd9526fc08234276b392435c8623f4a737e07d4503fab90bf2cd98d2a3a778ac%3B3.0%3B1655173246318'
-        headers = {
-            'Host': 'api.m.jd.com',
-            'Cookie': cookie,
-            'Accept-Encoding': 'gzip, deflate, br',
+        s.headers = {
             'Connection': 'keep-alive',
-            'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'User-Agent': ua,
-            'Referer': f'https://shopmember.m.jd.com/shopcard/?venderId={user_id}&channel=401&returnUrl={quote_plus(activityUrl + "&isOpenCard=1")}'
+            'Cookie': cookie,
+            'Host': 'api.m.jd.com',
+            'Referer': f'https://shopmember.m.jd.com/shopcard/?venderId={user_id}&returnUrl={quote_plus(activityUrl + "&isOpenCard=1")}',
+            'Accept-Language': 'zh-Hans-CN;q=1 en-CN;q=0.9',
+            'Accept': '*/*'
         }
-        response = requests.get(url=url, headers=headers, timeout=30).text
-        res = json.loads(response)
+        s.params = {
+            'appid': 'jd_shop_member',
+            'functionId': 'bindWithVender',
+            'body': json.dumps({
+                'venderId': user_id,
+                'shopId': user_id,
+                'bindByVerifyCodeFlag': 1
+            }, separators=(',', ':'))
+        }
+        res = s.post('https://api.m.jd.com/', verify=False, timeout=30).json()
         if res['success']:
-            open_result = res['message']
-            if "火爆" in open_result:
-                print(f"\t⛈⛈⛈{open_result}")
+            if "火爆" in res['message'] or "失败" in res['message']:
+                print(f"\t⛈⛈⛈{res['message']}")
             else:
-                print(f"\t🎉🎉🎉{open_result}")
+                print(f"\t🎉🎉🎉{res['message']}")
             return res['message']
     except Exception as e:
         print(e)
@@ -497,11 +505,11 @@ if __name__ == '__main__':
         print("现在去开卡")
         open_result = bindWithVender(cookie)
         if open_result is not None:
-            if "火爆" in open_result:
+            if "火爆" in open_result or "失败" in open_result:
                 time.sleep(1.5)
                 print("\t尝试重新入会 第1次")
                 open_result = bindWithVender(cookie)
-                if "火爆" in open_result:
+                if "火爆" in open_result or "失败" in open_result:
                     time.sleep(1.5)
                     print("\t尝试重新入会 第2次")
                     open_result = bindWithVender(cookie)

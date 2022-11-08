@@ -13,6 +13,7 @@ ActivityEntry: https://cjhydz-isv.isvjcloud.com/microDz/invite/activity/wx/view/
 Description: 微定制组队通用脚本
             本地sign算法+redis缓存Token+代理ip(自行配置，实测可行)
             变量: export jd_wdz_activityId="eb24d792fdcf4732be29030f9fc8e007"
+Update: 2022/11/01 更新入会算法，内置船新入会本地算法
 """
 
 import time, requests, sys, re, os, json, random
@@ -172,6 +173,9 @@ def getActivity():
     }
     try:
         response = requests.request("GET", url, headers=headers)
+        if "活动未开始" in response.text:
+            print("⚠活动未开始,晚点再来~")
+            sys.exit()
         if response.status_code == 493:
             print(response.status_code, "⚠️ip疑似黑了,休息一会再来撸~")
             sys.exit()
@@ -376,20 +380,27 @@ def acceptInvite(inviterNick, inviterPin, inviterImg, pin, nickName, inviteeImg)
 
 def bindWithVender(cookie, venderId):
     try:
-        shopcard_url = f"https://shopmember.m.jd.com/shopcard/?venderId={venderId}&channel=401&returnUrl={quote_plus(activityUrl)}"
-        body = {"venderId": venderId, "bindByVerifyCodeFlag": 1,"registerExtend": {},"writeChildFlag":0, "channel": 401}
-        url = f'https://api.m.jd.com/client.action?appid=jd_shop_member&functionId=bindWithVender&body={json.dumps(body)}&client=H5&clientVersion=9.2.0&uuid=88888&h5st=20220614102046318%3B7327310984571307%3Bef79a%3Btk02wa31b1c7718neoZNHBp75rw4pE%2Fw7fXko2SdFCd1vIeWy005pEHdm0lw2CimWpaw3qc9il8r9xVLHp%2Bhzmo%2B4swg%3Bdd9526fc08234276b392435c8623f4a737e07d4503fab90bf2cd98d2a3a778ac%3B3.0%3B1655173246318'
-        headers = {
-            'Host': 'api.m.jd.com',
-            'Cookie': cookie,
-            'Accept-Encoding': 'gzip, deflate, br',
+        s.headers = {
             'Connection': 'keep-alive',
-            'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'User-Agent': ua,
-            'Referer': shopcard_url
+            'Cookie': cookie,
+            'Host': 'api.m.jd.com',
+            'Referer': f'https://shopmember.m.jd.com/shopcard/?venderId={venderId}&returnUrl={quote_plus(activityUrl)}',
+            'Accept-Language': 'zh-Hans-CN;q=1 en-CN;q=0.9',
+            'Accept': '*/*'
         }
-        response = requests.get(url=url, headers=headers, timeout=30).text
-        res = json.loads(response)
+        s.params = {
+            'appid': 'jd_shop_member',
+            'functionId': 'bindWithVender',
+            'body': json.dumps({
+                'venderId': venderId,
+                'shopId': venderId,
+                'bindByVerifyCodeFlag': 1
+            }, separators=(',', ':'))
+        }
+        res = s.post('https://api.m.jd.com/', verify=False, timeout=30).json()
         if res['success']:
             return res['message']
     except Exception as e:
@@ -478,6 +489,10 @@ if __name__ == '__main__':
         venderIds = getSimAct[3]
         actRule = getSimAct[4]
         actRule0 = actRule.replace("\n", "").split("</br>4")[0].split("</br>3)")[1]
+        try:
+            maxGroups = int(actRule0.split("最多可组队")[1].split("次")[0])
+        except:
+            maxGroups = 5
         if num == 1:
             print(f"【活动规则】{actRule0}")
         print(f"【剩余京豆】{beansResidueByDay}")
@@ -511,15 +526,15 @@ if __name__ == '__main__':
                         getShopOpenCardInfo(cookie, venderId)
                         open_result = bindWithVender(cookie, venderId)
                         if open_result is not None:
-                            if "火爆" in open_result:
+                            if "火爆" in open_result or "失败" in open_result:
                                 time.sleep(1.2)
                                 print("\t尝试重新入会 第1次")
                                 open_result = bindWithVender(cookie, venderId)
-                                if "火爆" in open_result:
+                                if "火爆" in open_result or "失败" in open_result:
                                     time.sleep(1.2)
                                     print("\t尝试重新入会 第2次")
                                     open_result = bindWithVender(cookie, venderId)
-                            if "火爆" in open_result:
+                            if "火爆" in open_result or "失败" in open_result:
                                 print(f"\t⛈⛈{venderCardName} {open_result}")
                                 errorShopCard += 1
                             else:
@@ -542,8 +557,8 @@ if __name__ == '__main__':
                             print(f"🎉加入{isInvi['nickName']}队伍成功")
                             inviteSuccNum += 1
                             print(f"本次车头已邀请{inviteSuccNum}人")
-                            if inviteSuccNum >= maxGroup * 5:
-                                print(f"已达到{maxGroup}组好友,退出程序~")
+                            if inviteSuccNum >= maxGroup * maxGroups:
+                                print(f"已达到{maxGroups}组好友,退出程序~")
                                 sys.exit()
                     else:
                         print("😐加入队伍失败")
