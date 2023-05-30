@@ -1,13 +1,16 @@
 /*
 积分换话费
 入口：首页-生活·缴费-积分换话费
-cron "33 5 * * *" jd_dwapp.js
+update：20220530
+cron 33 7 * * * jd_dwapp.js
 */
+
 const $ = new Env('积分换话费');
 const notify = $.isNode() ? require('./sendNotify') : '';
+//Node.js用户请在jdCookie.js处填写京东ck;
 const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
 CryptoJS = $.isNode() ? require('crypto-js') : CryptoJS;
-
+//IOS等用户直接用NobyDa的jd cookie
 let cookiesArr = [], cookie = '';
 if ($.isNode()) {
   Object.keys(jdCookieNode).forEach((item) => { cookiesArr.push(jdCookieNode[item]) })
@@ -89,6 +92,7 @@ async function taskrecord(id) {
   })
 
 }
+
 async function taskreceive(id) {
   enc = await sign(id)
   let body = { "id": id, ...enc }
@@ -118,6 +122,7 @@ async function taskreceive(id) {
     })
   })
 }
+
 async function usersign() {
   body = await sign()
   return new Promise(resolve => {
@@ -144,6 +149,7 @@ async function usersign() {
     })
   })
 }
+
 async function tasklist() {
   body = await sign()
   return new Promise(resolve => {
@@ -185,6 +191,7 @@ function taskPostUrl(function_id, body) {
     }
   }
 }
+
 function TotalBean() {
   return new Promise(async resolve => {
     const options = {
@@ -229,6 +236,7 @@ function TotalBean() {
     })
   })
 }
+
 function getUUID(format = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UpperCase = 0) {
   return format.replace(/[xy]/g, function (c) {
     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -240,6 +248,7 @@ function getUUID(format = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', UpperCase 
     return uuid;
   });
 }
+
 async function sign(en) {
   time = new Date().getTime();
   let encStr = en || '';
